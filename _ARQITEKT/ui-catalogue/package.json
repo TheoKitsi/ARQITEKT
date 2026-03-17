@@ -1,0 +1,10 @@
+{
+  "name": "arqitekt-ui-catalogue",
+  "version": "1.0.0",
+  "description": "ARQITEKT Shared UI Design Tokens — Messkraft Brand",
+  "private": true,
+  "scripts": {
+    "build:css": "node scripts/build-css-vars.mjs",
+    "build": "npm run build:css"
+  }
+}

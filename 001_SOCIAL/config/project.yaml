@@ -1,0 +1,76 @@
+# ============================================================================
+# ARQITEKT — Project Configuration
+# ============================================================================
+# Project-specific metadata. One project.yaml per workspace.
+# ============================================================================
+
+project:
+  name: "Social"
+  codename: "SOCIAL"
+  description: "Long-Term Relationship Dating Platform. A serious dating platform for people seeking lasting partnerships, built on a 5-level funnel model that guides users from core values to micro-preferences."
+  version: "1.0"
+  date: "2026-03-10"
+  language: "en"
+  owner: "kitsi"
+
+# Requirement counters (current state)
+counters:
+  solutions: 17
+  user_stories: 26
+  components: 29
+  functions: 130
+  conversations: 0
+  notifications: 3
+  infrastructure: 7
+  adrs: 1
+
+# Lifecycle state
+lifecycle:
+  state: "planning"
+
+# Notification channels used by this project
+notification_channels:
+  - push
+  - email
+  - sms
+  - in_app
+
+# Infrastructure categories used by this project
+infrastructure_categories:
+  - WCAG
+  - OWASP
+  - DSGVO
+  - i18n
+  - State
+  - Performance
+  - CI_CD
+
+tags:
+  - saas
+  - mobile
+  - ai
+  - social
+  - verification
+
+branding:
+  primary: "#FF4081"
+  secondary: "#1A1A2E"
+  font_heading: "Poppins"
+  font_body: "Poppins"
+  font_mono: "Fira Code"
+  mode: "dark"
+
+# GitHub integration (TK.Apps monorepo)
+github:
+  repo: "TheoKitsi/TK.Apps"
+  path: "001-social"
+  url: "https://github.com/TheoKitsi/TK.Apps/tree/main/001-social"
+
+# App configuration
+app:
+  type: ""
+  start_command: ""
+  port: 3000
+
+# Readiness threshold
+readiness_threshold: 100

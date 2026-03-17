@@ -1,0 +1,74 @@
+# ============================================================================
+# ARQITEKT — Project Configuration
+# ============================================================================
+# Project-specific metadata. One project.yaml per workspace.
+# ============================================================================
+
+project:
+  name: "{{PROJECT_NAME}}"
+  codename: "{{PROJECT_CODENAME}}"
+  description: "{{PROJECT_DESCRIPTION}}"
+  version: "1.0"
+  date: "{{DATE}}"
+  language: "en"
+  owner: "kitsi"
+
+# Requirement counters (current state)
+counters:
+  solutions: 0
+  user_stories: 0
+  components: 0
+  functions: 0
+  conversations: 0
+  notifications: 0
+  infrastructure: 0
+  adrs: 0
+
+# Notification channels used by this project
+notification_channels:
+  - push
+  - email
+  - sms
+  - in_app
+
+# INF categories used by this project
+infrastructure_categories:
+  - WCAG
+  - OWASP
+  - DSGVO
+  - i18n
+  - State
+  - Performance
+  - CI_CD
+
+# Lifecycle state
+lifecycle:
+  state: "planning"
+
+# Readiness threshold (percentage) for scaffold to be enabled
+readiness_threshold: 100
+
+# Project tags (auto-detected or manually set)
+tags: []
+
+# Project branding (overrides UI Catalogue defaults when scaffolding)
+branding:
+  primary: ""
+  secondary: ""
+  font_heading: ""
+  font_body: ""
+  font_mono: ""
+  mode: ""
+  logo: ""
+
+# GitHub integration
+github:
+  repo: ""
+  path: ""
+  url: ""
+
+# App configuration (auto-detected or manual)
+app:
+  type: ""
+  start_command: ""
+  port: 3000

@@ -1,0 +1,14 @@
+{
+  "name": "arqitekt-hub",
+  "version": "1.0.0",
+  "description": "ARQITEKT Framework — Multi-Projekt Hub Dashboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dashboard": "node scripts/dashboard.mjs"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {}
+}

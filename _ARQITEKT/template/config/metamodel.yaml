@@ -1,0 +1,219 @@
+# ============================================================================
+# ARQITEKT — Metamodel Configuration
+# ============================================================================
+# Defines the requirement hierarchy, allowed relationships,
+# naming conventions, and status workflow.
+# This file is the Single Source of Truth for the structure.
+# ============================================================================
+
+project:
+  framework: ARQITEKT
+  version: "1.0"
+
+# ----------------------------------------------------------------------------
+# Entity Hierarchy
+# ----------------------------------------------------------------------------
+entities:
+  # --- Core Requirements Tree ---
+  - name: BusinessCase
+    prefix: BC
+    pattern: "BC-{n}"
+    directory: requirements/
+    filename: "00_BUSINESS_CASE.md"
+    template: requirements/templates/business-case.md
+    allowedParents: []
+    allowedChildren: [Solution]
+    maxInstances: 1
+
+  - name: Solution
+    prefix: SOL
+    pattern: "SOL-{n}"
+    directory: requirements/solutions/
+    filename: "SOL-{n}_{title}.md"
+    template: requirements/templates/solution.md
+    allowedParents: [BusinessCase]
+    allowedChildren: [UserStory]
+
+  - name: UserStory
+    prefix: US
+    pattern: "US-{sol}.{n}"
+    directory: requirements/user-stories/
+    filename: "US-{sol}.{n}_{title}.md"
+    template: requirements/templates/user-story.md
+    allowedParents: [Solution]
+    allowedChildren: [Component]
+
+  - name: Component
+    prefix: CMP
+    pattern: "CMP-{sol}.{us}.{n}"
+    directory: requirements/components/
+    filename: "CMP-{sol}.{us}.{n}_{title}.md"
+    template: requirements/templates/component.md
+    allowedParents: [UserStory]
+    allowedChildren: [Function]
+
+  - name: Function
+    prefix: FN
+    pattern: "FN-{sol}.{us}.{cmp}.{n}"
+    directory: requirements/functions/
+    filename: "FN-{sol}.{us}.{cmp}.{n}_{title}.md"
+    template: requirements/templates/function.md
+    allowedParents: [Component]
+    allowedChildren: [ConversationFlow]
+
+  # --- Extended Types ---
+  - name: ConversationFlow
+    prefix: CONV
+    pattern: "CONV-{sol}.{us}.{cmp}.{fn}.{n}"
+    directory: requirements/conversations/
+    filename: "CONV-{sol}.{us}.{cmp}.{fn}.{n}_{title}.md"
+    template: requirements/templates/conversation.md
+    allowedParents: [Function]
+    allowedChildren: []
+    description: "Chatbot/AI conversation: Intent -> Response -> Escalation"
+
+  - name: Notification
+    prefix: NTF
+    pattern: "NTF-{n}"
+    directory: requirements/notifications/
+    filename: "NTF-{n}_{title}.md"
+    template: requirements/templates/notification.md
+    allowedParents: []
+    allowedChildren: []
+    crossCutting: true
+    description: "Notification channel: Push, Email, SMS, In-App"
+
+  # --- Cross-Cutting (no parent-child) ---
+  - name: Infrastructure
+    prefix: INF
+    pattern: "INF-{n}"
+    directory: requirements/infrastructure/
+    filename: "INF-{n}_{title}.md"
+    template: requirements/templates/infrastructure.md
+    allowedParents: []
+    allowedChildren: []
+    crossCutting: true
+    constrains: [all]
+    description: "Cross-cutting requirement: WCAG, OWASP, DSGVO, i18n, State, Performance, CI/CD"
+
+  - name: ArchitectureDecision
+    prefix: ADR
+    pattern: "ADR-{n}"
+    directory: requirements/adrs/
+    filename: "ADR-{n}_{title}.md"
+    template: requirements/templates/adr.md
+    allowedParents: []
+    allowedChildren: []
+    crossCutting: true
+    constrains: [all]
+    description: "Architecture decision with reasoning, alternatives, and consequences"
+
+  - name: Feedback
+    prefix: FBK
+    pattern: "FBK-{n}"
+    directory: requirements/feedback/
+    filename: "FBK-{n}_{title}.md"
+    template: requirements/templates/feedback.md
+    allowedParents: []
+    allowedChildren: []
+    crossCutting: true
+    description: "User feedback from manual input, app store reviews, or in-app reports"
+
+# ----------------------------------------------------------------------------
+# Relationship Types
+# ----------------------------------------------------------------------------
+relations:
+  - name: refines
+    directional: true
+    description: "Child refines parent (standard parent->child)"
+
+  - name: constrains
+    directional: true
+    description: "Cross-cutting constraint (INF/ADR -> any entity)"
+
+  - name: depends_on
+    directional: true
+    description: "Prerequisite (SOL-1 depends_on SOL-2)"
+
+  - name: triggers
+    directional: true
+    description: "Triggers notification (FN -> NTF)"
+
+# ----------------------------------------------------------------------------
+# Optional Frontmatter Fields
+# ----------------------------------------------------------------------------
+# In addition to mandatory fields (type, id, title, status, parent),
+# artifacts may include optional cross-cutting relationships:
+#
+# relationships:
+#   depends_on: []    # IDs this artifact depends on
+#   constrains: []    # IDs this artifact constrains
+
+# ----------------------------------------------------------------------------
+# Status Workflow
+# ----------------------------------------------------------------------------
+statuses:
+  - name: idea
+    description: "Initial idea, not yet elaborated"
+    transitions: [draft]
+
+  - name: draft
+    description: "Elaborated but not yet reviewed"
+    transitions: [review, idea]
+
+  - name: review
+    description: "Under review by @review agent or stakeholder"
+    transitions: [approved, draft]
+
+  - name: approved
+    description: "Accepted, ready for implementation"
+    transitions: [implemented, review]
+
+  - name: implemented
+    description: "Implemented and verified"
+    transitions: [approved]
+
+# ----------------------------------------------------------------------------
+# Validation Rules
+# ----------------------------------------------------------------------------
+validation:
+  rules:
+    - id: V-001
+      rule: "Every SOL must have at least one US"
+      scope: Solution
+      check: "children.UserStory.count >= 1"
+
+    - id: V-002
+      rule: "Every US must have at least one CMP"
+      scope: UserStory
+      check: "children.Component.count >= 1"
+
+    - id: V-003
+      rule: "Every CMP must have at least one FN"
+      scope: Component
+      check: "children.Function.count >= 1"
+
+    - id: V-004
+      rule: "Every US must have acceptance criteria"
+      scope: UserStory
+      check: "content.acceptance_criteria.count >= 1"
+
+    - id: V-005
+      rule: "Child status must not exceed parent status"
+      scope: all
+      check: "child.status.order <= parent.status.order"
+
+    - id: V-006
+      rule: "Mandatory frontmatter fields must be populated"
+      scope: all
+      check: "frontmatter.type AND frontmatter.title AND frontmatter.status"
+
+    - id: V-007
+      rule: "No orphaned references"
+      scope: all
+      check: "all references resolve to existing files"
+
+    - id: V-008
+      rule: "NTF must define at least one channel"
+      scope: Notification
+      check: "content.channels.count >= 1"

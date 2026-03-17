@@ -1,0 +1,31 @@
+{
+  "color": {
+    "brand": {
+      "gold": { "value": "#FFD700", "type": "color", "description": "Messkraft Brand Gold — primary accent" },
+      "anthracite": { "value": "#1F1F1F", "type": "color", "description": "Messkraft Anthracite — primary dark" }
+    },
+    "surface": {
+      "bg": { "value": "#0d1117", "type": "color" },
+      "bg2": { "value": "#161b22", "type": "color" },
+      "bg3": { "value": "#21262d", "type": "color" },
+      "bg4": { "value": "#30363d", "type": "color" }
+    },
+    "text": {
+      "primary": { "value": "#e6edf3", "type": "color" },
+      "secondary": { "value": "#8b949e", "type": "color" },
+      "tertiary": { "value": "#6e7681", "type": "color" }
+    },
+    "semantic": {
+      "accent": { "value": "#58a6ff", "type": "color" },
+      "green": { "value": "#3fb950", "type": "color" },
+      "yellow": { "value": "#d29922", "type": "color" },
+      "orange": { "value": "#db6d28", "type": "color" },
+      "red": { "value": "#f85149", "type": "color" },
+      "purple": { "value": "#bc8cff", "type": "color" }
+    },
+    "border": {
+      "default": { "value": "#30363d", "type": "color" },
+      "strong": { "value": "#484f58", "type": "color" }
+    }
+  }
+}

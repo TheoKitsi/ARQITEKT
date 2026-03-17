@@ -1,0 +1,79 @@
+# ============================================================================
+# ARQITEKT — Project Configuration
+# ============================================================================
+# Project-specific metadata. One project.yaml per workspace.
+# ============================================================================
+
+project:
+  name: "SCS Play"
+  codename: "SCS_PLAY"
+  description: "Gamified social card game PWA with touch gestures, Firebase auth, and 7 game modes"
+  version: "1.0"
+  date: "2025-06-19"
+  language: "de"
+  owner: "kitsi"
+
+# Requirement counters (current state)
+counters:
+  solutions: 0
+  user_stories: 0
+  components: 0
+  functions: 0
+  conversations: 0
+  notifications: 0
+  infrastructure: 0
+  adrs: 0
+
+# Notification channels used by this project
+notification_channels:
+  - push
+  - email
+  - sms
+  - in_app
+
+# INF categories used by this project
+infrastructure_categories:
+  - WCAG
+  - OWASP
+  - DSGVO
+  - i18n
+  - State
+  - Performance
+  - CI_CD
+
+# Readiness threshold (percentage) for scaffold to be enabled
+readiness_threshold: 100
+
+# Project tags (auto-detected or manually set)
+tags:
+  - game
+  - mobile
+  - pwa
+  - capacitor
+  - firebase
+
+# Project branding (overrides UI Catalogue defaults when scaffolding)
+branding:
+  primary: "#9D4EDD"
+  secondary: "#0F172A"
+  font_heading: "Inter"
+  font_body: "Inter"
+  font_mono: "JetBrains Mono"
+  mode: "dark"
+  logo: ""
+
+# GitHub integration
+github:
+  repo: "TheoKitsi/TK.Apps"
+  path: "006-scs-play"
+  url: "https://github.com/TheoKitsi/TK.Apps/tree/main/006-scs-play"
+
+# App configuration (auto-detected or manual)
+app:
+  type: "capacitor"
+  start_command: "npx cap serve"
+  port: 3000
+
+# Lifecycle state
+lifecycle:
+  state: "built"

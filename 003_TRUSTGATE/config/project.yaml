@@ -1,0 +1,75 @@
+# ============================================================================
+# ARQITEKT — Project Configuration
+# ============================================================================
+# Project-specific metadata. One project.yaml per workspace.
+# ============================================================================
+
+project:
+  name: "TrustGate"
+  codename: "TRUSTGATE"
+  description: "Identity, income, and credit verification as a service - internal module and standalone SaaS API"
+  version: "1.0"
+  date: "2026-03-14"
+  language: "en"
+  owner: "kitsi"
+
+# Requirement counters (current state)
+counters:
+  solutions: 1
+  user_stories: 10
+  components: 10
+  functions: 20
+  conversations: 2
+  notifications: 3
+  infrastructure: 7
+  adrs: 2
+
+# Lifecycle state
+lifecycle:
+  state: "planning"
+
+# Notification channels used by this project
+notification_channels:
+  - push
+  - email
+  - sms
+  - in_app
+
+# INF categories used by this project
+infrastructure_categories:
+  - WCAG
+  - OWASP
+  - DSGVO
+  - i18n
+  - State
+  - Performance
+  - CI_CD
+
+tags:
+  - api
+  - saas
+  - verification
+
+# Project branding
+branding:
+  primary: ""
+  secondary: ""
+  font_heading: ""
+  font_body: ""
+  font_mono: ""
+  mode: "dark"
+
+# GitHub integration (TK.Apps monorepo)
+github:
+  repo: "TheoKitsi/TK.Apps"
+  path: "003-trustgate"
+  url: "https://github.com/TheoKitsi/TK.Apps/tree/main/003-trustgate"
+
+# App configuration
+app:
+  type: ""
+  start_command: ""
+  port: 3000
+
+# Readiness threshold
+readiness_threshold: 100

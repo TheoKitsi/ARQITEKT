@@ -1,0 +1,10 @@
+{
+  "radius": {
+    "none": { "value": "0px", "type": "borderRadius" },
+    "sm": { "value": "4px", "type": "borderRadius" },
+    "md": { "value": "8px", "type": "borderRadius", "description": "Default component radius" },
+    "lg": { "value": "12px", "type": "borderRadius", "description": "M3 card radius (12dp)" },
+    "xl": { "value": "16px", "type": "borderRadius" },
+    "full": { "value": "9999px", "type": "borderRadius", "description": "Pill shape" }
+  }
+}

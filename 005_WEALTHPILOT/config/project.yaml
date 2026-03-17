@@ -1,0 +1,78 @@
+# ============================================================================
+# ARQITEKT — Project Configuration
+# ============================================================================
+# Project-specific metadata. One project.yaml per workspace.
+# ============================================================================
+
+project:
+  name: "WealthPilot"
+  codename: "WEALTHPILOT"
+  description: "Gemini-gestützter Vermögensaufbau-Beratungsplaner für Banken und Versicherer. B2B SaaS mit Cross-Impact-Simulation: Was passiert mit dem gesamten Finanz-Ökosystem eines Kunden, wenn er Kapital umschichtet?"
+  version: "1.0"
+  date: "2026-03-14"
+  language: "de"
+  owner: "kitsi"
+
+# Requirement counters (current state)
+counters:
+  solutions: 10
+  user_stories: 24
+  components: 25
+  functions: 101
+  conversations: 0
+  notifications: 8
+  infrastructure: 7
+  adrs: 5
+
+# Notification channels used by this project
+notification_channels:
+  - push
+  - email
+  - sms
+  - in_app
+
+# INF categories used by this project
+infrastructure_categories:
+  - WCAG
+  - OWASP
+  - DSGVO
+  - i18n
+  - State
+  - Performance
+  - CI_CD
+
+tags:
+  - api
+  - tool
+  - saas
+  - ai
+  - finance
+  - real-estate
+
+# GitHub integration (TK.Apps monorepo)
+github:
+  repo: "TheoKitsi/TK.Apps"
+  path: "005-wealthpilot"
+  url: "https://github.com/TheoKitsi/TK.Apps/tree/main/005-wealthpilot"
+
+# Project branding
+branding:
+  primary: ""
+  secondary: ""
+  font_heading: ""
+  font_body: ""
+  font_mono: ""
+  mode: "dark"
+
+# App configuration
+app:
+  type: ""
+  start_command: ""
+  port: 3000
+
+# Project lifecycle
+lifecycle:
+  state: "ready"
+
+# Readiness threshold
+readiness_threshold: 100

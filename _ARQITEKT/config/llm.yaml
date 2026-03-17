@@ -1,0 +1,22 @@
+# ARQITEKT — LLM Configuration for Discussion Phase
+# This LLM is used for brainstorming/discussion before formalizing with Claude.
+#
+# Supported providers: Any OpenAI-compatible chat API
+#   - DeepSeek (deepseek-chat) — very cheap, very capable
+#   - Google Gemini (via OpenAI-compatible endpoint)
+#   - Groq (llama/mixtral) — free tier available
+#   - OpenRouter — aggregator with many models
+#   - Any OpenAI-compatible API
+#
+# SECURITY: API key is read from an environment variable, NEVER stored here.
+# Set the environment variable before starting the dashboard:
+#   Windows:  set ARQITEKT_LLM_KEY=your-key-here
+#   Linux:    export ARQITEKT_LLM_KEY=your-key-here
+
+llm:
+  provider: deepseek
+  endpoint: https://api.deepseek.com/v1/chat/completions
+  model: deepseek-chat
+  api_key_env: ARQITEKT_LLM_KEY
+  temperature: 0.7
+  max_tokens: 4096

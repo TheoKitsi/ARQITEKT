@@ -1,0 +1,18 @@
+{
+  "name": "arqitekt-relay",
+  "version": "1.0.0",
+  "description": "ARQITEKT Projekt — Relay",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "tree": "node scripts/tree.mjs",
+    "export:jira": "node scripts/export-jira.mjs",
+    "export:github": "node scripts/export-github.mjs",
+    "stats": "node scripts/tree.mjs --stats"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {}
+}

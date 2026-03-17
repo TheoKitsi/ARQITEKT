@@ -1,0 +1,6 @@
+# ARQITEKT Hub — Auto-Update Configuration
+# Set the GitHub repository slug (owner/repo) for update checks.
+# The Hub checks for new releases on startup and notifies the user.
+#
+# Example: repo: TheoKitsi/ARQITEKT
+repo: TheoKitsi/ARQITEKT

@@ -1,0 +1,7 @@
+{
+  "shadow": {
+    "sm": { "value": "0 2px 8px rgba(0,0,0,.2)", "type": "boxShadow" },
+    "md": { "value": "0 4px 24px rgba(0,0,0,.4)", "type": "boxShadow" },
+    "lg": { "value": "0 8px 30px rgba(0,0,0,.5)", "type": "boxShadow" }
+  }
+}
