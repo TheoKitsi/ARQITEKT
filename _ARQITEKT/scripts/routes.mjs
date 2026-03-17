@@ -320,7 +320,8 @@ export function handleAPI(req, url, res) {
       return;
     }
 
-    if (subPath === '/scaffold' && req.method === 'POST') {
+    if ((subPath === '/scaffold' || subPath === '/force-scaffold') && req.method === 'POST') {
+      const isForce = subPath === '/force-scaffold' || params.get('force') === 'true';
       if (buildingProjects.has(projectId)) {
         res.statusCode = 409;
         return res.end(JSON.stringify({ error: 'Build laeuft bereits fuer dieses Projekt.' }));
@@ -334,7 +335,7 @@ export function handleAPI(req, url, res) {
         const filesMatch = result.match(/(\d+)\s*files created/);
         const filesCreated = filesMatch ? parseInt(filesMatch[1]) : 0;
         setLifecycle(projectDir, 'built');
-        return res.end(JSON.stringify({ success: true, filesCreated }));
+        return res.end(JSON.stringify({ success: true, filesCreated, forced: isForce }));
       } catch (err) {
         setLifecycle(projectDir, 'planning');
         res.statusCode = 500;
@@ -896,8 +897,9 @@ test('no console errors', async ({ page }) => {
           res.statusCode = 400;
           return res.end(JSON.stringify({ error: 'GitHub repo and path not configured.' }));
         }
-        // Find the monorepo local clone
-        const monoDir = join(dirname(dirname(projectDir)), 'TK.Apps');
+        // Find the monorepo local clone — try config path, then sibling dir
+        const monoRepoName = gh.monorepo || 'TK.Apps';
+        const monoDir = join(dirname(dirname(projectDir)), monoRepoName);
         const targetDir = join(monoDir, gh.path);
         if (!existsSync(monoDir) || !existsSync(join(monoDir, '.git'))) {
           res.statusCode = 400;
@@ -1000,29 +1002,7 @@ test('no console errors', async ({ page }) => {
       return;
     }
 
-    // --- Force Scaffold (ignore readiness) ---
-    if (subPath === '/force-scaffold' && req.method === 'POST') {
-      if (buildingProjects.has(projectId)) {
-        res.statusCode = 409;
-        return res.end(JSON.stringify({ error: 'Build laeuft bereits.' }));
-      }
-      buildingProjects.add(projectId);
-      try {
-        setLifecycle(projectDir, 'building');
-        const result = execSync('node "' + join(HUB_ROOT, 'scripts', 'scaffold.mjs').replace(/\\/g, '/') + '" "' + projectDir.replace(/\\/g, '/') + '"', {
-          cwd: HUB_ROOT, encoding: 'utf-8', timeout: 60000,
-        });
-        const filesMatch = result.match(/(\d+)\s*files created/);
-        setLifecycle(projectDir, 'built');
-        return res.end(JSON.stringify({ success: true, filesCreated: filesMatch ? parseInt(filesMatch[1]) : 0, forced: true }));
-      } catch (err) {
-        setLifecycle(projectDir, 'planning');
-        res.statusCode = 500;
-        return res.end(JSON.stringify({ error: 'Scaffold fehlgeschlagen: ' + (err.stdout || err.message).slice(0, 500) }));
-      } finally {
-        buildingProjects.delete(projectId);
-      }
-    }
+    // (force-scaffold merged into /scaffold above)
 
     if (subPath === '/read') {
       const id = params.get('id');

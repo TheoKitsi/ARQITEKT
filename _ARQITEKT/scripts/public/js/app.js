@@ -454,6 +454,11 @@ const i18n = {
     updateNoRepo: 'Kein Update-Repository konfiguriert',
     updateUpToDate: 'ARQITEKT Hub ist aktuell (v{version})',
     updateChecking: 'Pruefe auf Updates...',
+    cmdSearch: 'Suchen oder Aktion starten...',
+    noResults: 'Keine Ergebnisse',
+    noActivity: 'Noch keine Aktivitaeten',
+    trackerTitle: 'Fortschritt',
+    noConversations: 'Keine gespeicherten Gespraeche',
   },
   en: {
     projects: 'Projects', hubSub: 'Your apps and projects',
@@ -654,6 +659,11 @@ const i18n = {
     updateNoRepo: 'No update repository configured',
     updateUpToDate: 'ARQITEKT Hub is up to date (v{version})',
     updateChecking: 'Checking for updates...',
+    cmdSearch: 'Search or run action...',
+    noResults: 'No results',
+    noActivity: 'No activity yet',
+    trackerTitle: 'Progress',
+    noConversations: 'No saved conversations',
   }
 };
 function t(key) { return (i18n[currentLang] || i18n.de)[key] || key; }
@@ -755,6 +765,7 @@ async function init() {
   await checkGitHubStatus();
   // Check for Hub updates
   checkForHubUpdate();
+  updateChatFabDot();
 }
 
 // ===== HUB VIEW =====
@@ -765,9 +776,8 @@ async function showHub() {
   document.getElementById('projectView').classList.remove('active');
   document.getElementById('breadcrumb').innerHTML = '';
   document.getElementById('hdrActions').innerHTML = '';
-  document.getElementById('hdrCenter').style.display = '';
-  document.getElementById('hdrTitle').innerHTML = t('projects');
-  document.getElementById('hdrSub').textContent = '';
+  document.getElementById('hdrCenter').style.display = 'none';
+  document.getElementById('hubHeroSub').textContent = t('hubSubFull');
   closeChat();
   await loadProjects();
 }
@@ -1042,15 +1052,17 @@ async function loadProjects() {
   h += newProjectCardHTML();
   grid.innerHTML = h;
 
-  // Show hub controls when there are projects
-  const hubCtrl = document.getElementById('hubControls');
-  if (hubCtrl) {
-    hubCtrl.style.display = projects.length > 0 ? 'flex' : 'none';
-    const ea = document.getElementById('hubExpandAll');
-    const ca = document.getElementById('hubCollapseAll');
-    if (ea) ea.textContent = t('expandAllCards');
-    if (ca) ca.textContent = t('collapseAllCards');
+  // Projects section title
+  const pTitle = document.getElementById('hubProjectsTitle');
+  if (pTitle) {
+    pTitle.textContent = t('projects') + ' (' + projects.length + ')';
+    if (activeTagFilters.length) {
+      pTitle.textContent += ' — ' + activeTagFilters.join(', ');
+    }
   }
+
+  // Activity feed
+  buildActivityFeed(projects);
 }
 
 function setTagFilter(tag) {
@@ -3389,6 +3401,195 @@ function renderMonitorTab() {
         '<button class="btn sm" onclick="doRunTests(\'' + esc(pid) + '\')">' + esc(t('monitorRunTests')) + '</button>' +
       '</div>' +
     '</div>';
+}
+
+// ===== CHAT FAB =====
+function toggleChatFab() {
+  const panel = document.getElementById('chatPanel');
+  if (panel.classList.contains('open')) {
+    closeChat();
+  } else {
+    // Open a general chat or context-aware chat
+    if (currentProject) {
+      openChat(currentProject.id, currentProject.bcTitle || currentProject.name || currentProject.id);
+    } else {
+      openChat('new', 'General');
+    }
+  }
+}
+
+function updateChatFabDot() {
+  const dot = document.getElementById('chatFabDot');
+  if (!dot) return;
+  dot.className = 'chat-fab-dot';
+  if (githubConnected) {
+    dot.classList.add('connected');
+  } else if (!chatLLMConfigured) {
+    dot.classList.add('needs-setup');
+  }
+}
+
+// ===== COMMAND PALETTE =====
+let cmdPaletteItems = [];
+let cmdActiveIdx = 0;
+
+function openCmdPalette() {
+  const cp = document.getElementById('cmdPalette');
+  cp.style.display = '';
+  const input = document.getElementById('cmdInput');
+  input.value = '';
+  input.focus();
+  cmdActiveIdx = 0;
+  buildCmdItems();
+  renderCmdResults('');
+}
+
+function closeCmdPalette() {
+  document.getElementById('cmdPalette').style.display = 'none';
+}
+
+function buildCmdItems() {
+  cmdPaletteItems = [];
+  // Projects
+  const projects = window.__projectsCache || [];
+  for (const p of projects) {
+    cmdPaletteItems.push({
+      label: p.name + ' (' + p.id + ')',
+      type: t('projects'),
+      icon: '\u25C6',
+      action: function() { closeCmdPalette(); openProject(p.id); }
+    });
+  }
+  // Actions
+  cmdPaletteItems.push({ label: t('newProject'), type: 'Action', icon: '+', action: function() { closeCmdPalette(); openCreateModal(); } });
+  cmdPaletteItems.push({ label: t('import'), type: 'Action', icon: '\u2193', action: function() { closeCmdPalette(); openImportModal(); } });
+  cmdPaletteItems.push({ label: 'AI Chat', type: 'Action', icon: '\u2709', action: function() { closeCmdPalette(); toggleChatFab(); } });
+  cmdPaletteItems.push({ label: 'GitHub Setup', type: 'Action', icon: '\u2699', action: function() { closeCmdPalette(); openGitHubSetup(); } });
+  cmdPaletteItems.push({ label: 'Mobile PWA', type: 'Action', icon: '\u260E', action: function() { closeCmdPalette(); window.open('/mobile','_blank'); } });
+  if (currentProject) {
+    cmdPaletteItems.push({ label: t('validate'), type: 'Project', icon: '\u2713', action: function() { closeCmdPalette(); doValidate(); } });
+    cmdPaletteItems.push({ label: t('refresh'), type: 'Project', icon: '\u21BB', action: function() { closeCmdPalette(); doRefresh(); } });
+    cmdPaletteItems.push({ label: 'Plan', type: 'Tab', icon: '\u2637', action: function() { closeCmdPalette(); switchTab('plan'); } });
+    cmdPaletteItems.push({ label: 'Develop', type: 'Tab', icon: '\u2702', action: function() { closeCmdPalette(); switchTab('develop'); } });
+    cmdPaletteItems.push({ label: 'Deploy', type: 'Tab', icon: '\u2B06', action: function() { closeCmdPalette(); switchTab('deploy'); } });
+    cmdPaletteItems.push({ label: 'Monitor', type: 'Tab', icon: '\u25CB', action: function() { closeCmdPalette(); switchTab('monitor'); } });
+  }
+}
+
+function filterCmdPalette(query) {
+  cmdActiveIdx = 0;
+  renderCmdResults(query);
+}
+
+function renderCmdResults(query) {
+  const el = document.getElementById('cmdResults');
+  const q = query.toLowerCase().trim();
+  const filtered = q ? cmdPaletteItems.filter(function(it) { return it.label.toLowerCase().includes(q) || it.type.toLowerCase().includes(q); }) : cmdPaletteItems;
+  let h = '';
+  for (var i = 0; i < filtered.length; i++) {
+    var it = filtered[i];
+    h += '<div class="cmd-item' + (i === cmdActiveIdx ? ' active' : '') + '" data-idx="' + i + '" onclick="executeCmdItem(' + i + ')" onmouseenter="cmdActiveIdx=' + i + '">';
+    h += '<span class="cmd-item-icon">' + it.icon + '</span>';
+    h += '<span class="cmd-item-label">' + esc(it.label) + '</span>';
+    h += '<span class="cmd-item-type">' + esc(it.type) + '</span>';
+    h += '</div>';
+  }
+  if (!filtered.length) {
+    h = '<div class="cmd-item" style="color:var(--fg3);justify-content:center">' + t('noResults') + '</div>';
+  }
+  el.innerHTML = h;
+  el._filtered = filtered;
+}
+
+function cmdKeydown(e) {
+  var items = document.getElementById('cmdResults')._filtered || [];
+  if (e.key === 'Escape') { closeCmdPalette(); e.preventDefault(); return; }
+  if (e.key === 'ArrowDown') { cmdActiveIdx = Math.min(cmdActiveIdx + 1, items.length - 1); renderCmdResults(document.getElementById('cmdInput').value); e.preventDefault(); return; }
+  if (e.key === 'ArrowUp') { cmdActiveIdx = Math.max(cmdActiveIdx - 1, 0); renderCmdResults(document.getElementById('cmdInput').value); e.preventDefault(); return; }
+  if (e.key === 'Enter' && items.length) { executeCmdItem(cmdActiveIdx); e.preventDefault(); }
+}
+
+function executeCmdItem(idx) {
+  var items = document.getElementById('cmdResults')._filtered || [];
+  if (items[idx] && items[idx].action) items[idx].action();
+}
+
+// Global keyboard shortcut
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    var cp = document.getElementById('cmdPalette');
+    if (cp.style.display === 'none') openCmdPalette(); else closeCmdPalette();
+  }
+  if (e.key === 'Escape' && document.getElementById('cmdPalette').style.display !== 'none') {
+    closeCmdPalette();
+  }
+});
+
+// ===== ACTIVITY FEED =====
+function buildActivityFeed(projects) {
+  var feed = document.getElementById('activityFeed');
+  if (!feed) return;
+  var items = [];
+  for (var p of projects) {
+    var lc = p.lifecycle || 'planning';
+    var lcColors = { planning: 'var(--fg3)', ready: 'var(--green)', building: 'var(--yellow)', built: 'var(--accent)', running: 'var(--green)', deployed: 'var(--purple)' };
+    items.push({ text: '<strong>' + esc(p.name) + '</strong> — ' + lifecycleLabel(lc), color: lcColors[lc] || 'var(--fg3)', time: '', project: p.id });
+    if (p.stats) {
+      var s = p.stats;
+      if (s['business-case']) items.push({ text: esc(p.name) + ': ' + s.solutions + ' ' + t('statSOL') + ', ' + (s['user-stories']||0) + ' ' + t('statUS'), color: 'var(--accent)', time: '', project: p.id });
+    }
+    if (p.hasApp && p.appRunning) {
+      items.push({ text: esc(p.name) + ' ' + t('running') + ' :' + (p.appPort||'?'), color: 'var(--green)', time: '', project: p.id });
+    }
+  }
+  var h = '';
+  for (var i = 0; i < Math.min(items.length, 12); i++) {
+    var it = items[i];
+    h += '<div class="activity-item" onclick="openProject(\'' + esc(it.project) + '\')">';
+    h += '<span class="activity-dot" style="background:' + it.color + '"></span>';
+    h += '<span class="activity-text">' + it.text + '</span>';
+    if (it.time) h += '<span class="activity-time">' + esc(it.time) + '</span>';
+    h += '</div>';
+  }
+  if (!h) h = '<div style="color:var(--fg3);font-size:12px;text-align:center;padding:24px">' + t('noActivity') + '</div>';
+  feed.innerHTML = h;
+}
+
+// ===== CONVERSATION HISTORY =====
+async function loadConversationHistory() {
+  if (!currentProject) return;
+  try {
+    var convs = await (await fetch('/api/projects/' + currentProject.id + '/conversations')).json();
+    if (!Array.isArray(convs) || !convs.length) {
+      showToast(t('noConversations'), 'info');
+      return;
+    }
+    var h = '<div class="chat-history-list">';
+    for (var c of convs) {
+      h += '<div class="chat-history-item" onclick="reopenConversation(\'' + esc(c.id || c.file || '') + '\')">';
+      h += '<div class="chi-title">' + esc(c.title || c.id || 'Untitled') + '</div>';
+      if (c.date) h += '<div class="chi-date">' + esc(c.date) + '</div>';
+      h += '</div>';
+    }
+    h += '</div>';
+    document.getElementById('chatMessages').innerHTML = h;
+  } catch(e) {
+    showToast(t('error') + ': ' + e.message, 'error');
+  }
+}
+
+async function reopenConversation(convId) {
+  if (!currentProject || !convId) return;
+  try {
+    var conv = await (await fetch('/api/projects/' + currentProject.id + '/conversations/' + encodeURIComponent(convId))).json();
+    if (conv.error) { showToast(conv.error, 'error'); return; }
+    chatMessages = conv.messages || [];
+    chatContext = { relatedTo: conv.relatedTo || currentProject.id, title: conv.title || 'Conversation' };
+    renderChatMessages();
+  } catch(e) {
+    showToast(t('error') + ': ' + e.message, 'error');
+  }
 }
 
 init();

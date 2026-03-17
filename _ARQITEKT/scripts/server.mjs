@@ -20,11 +20,14 @@ const MIME = {
   '.png':  'image/png',
   '.ico':  'image/x-icon',
   '.woff2': 'font/woff2',
+  '.webmanifest': 'application/manifest+json',
 };
 
 function serveStatic(res, urlPath) {
   // Map / to /index.html
   if (urlPath === '/' || urlPath === '') urlPath = '/index.html';
+  // Map /mobile to /mobile/index.html
+  if (urlPath === '/mobile' || urlPath === '/mobile/') urlPath = '/mobile/index.html';
 
   const filePath = join(PUBLIC_DIR, urlPath);
 

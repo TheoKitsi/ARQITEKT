@@ -745,9 +745,11 @@
   .cc-item .cc-ttl { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .cc-item .cc-st { font-size:9px; padding:2px 7px; border-radius:4px; border:1px solid var(--border); color:var(--fg3); font-weight:600; }
 
-  /* Tracker Panel (hidden — replaced by card tabs) */
+  /* Tracker Panel (shown in Plan tab sidebar) */
   .tracker-panel {
-    display: none !important;
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
   }
   .tracker-panel.active { display: block; }
   .tracker-title {
@@ -2143,3 +2145,208 @@
     background: rgba(63,185,80,.12); color: var(--green);
   }
   .ai-provider-badge.legacy { background: rgba(88,166,255,.12); color: var(--accent); }
+
+  /* ===== CHAT FAB ===== */
+  .chat-fab {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 500;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: var(--bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 24px rgba(255,215,0,.25), 0 2px 8px rgba(0,0,0,.4);
+    transition: all .3s var(--ease);
+  }
+  .chat-fab:hover {
+    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 8px 32px rgba(255,215,0,.35), 0 4px 12px rgba(0,0,0,.5);
+  }
+  .chat-fab:active { transform: scale(.95); }
+  .chat-fab-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--red);
+    border: 2px solid var(--bg);
+    display: none;
+  }
+  .chat-fab-dot.needs-setup { display: block; }
+  .chat-fab-dot.connected { display: block; background: var(--green); }
+
+  /* ===== COMMAND PALETTE ===== */
+  .cmd-palette-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 600;
+    background: rgba(0,0,0,.55);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: min(20vh, 160px);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: cmdFadeIn .15s ease;
+  }
+  @keyframes cmdFadeIn { from { opacity:0 } to { opacity:1 } }
+  .cmd-palette {
+    width: min(640px, 90vw);
+    background: var(--bg2);
+    border: 1px solid var(--border3);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 80px rgba(0,0,0,.7);
+    overflow: hidden;
+    animation: cmdSlideIn .2s var(--ease);
+  }
+  @keyframes cmdSlideIn { from { opacity:0; transform: translateY(-16px) scale(.97) } to { opacity:1; transform: none } }
+  .cmd-input {
+    width: 100%;
+    padding: 16px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--fg);
+    font-size: 16px;
+    font-family: var(--font);
+    outline: none;
+  }
+  .cmd-input::placeholder { color: var(--fg3); }
+  .cmd-results {
+    max-height: 380px;
+    overflow-y: auto;
+  }
+  .cmd-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background .12s;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--fg);
+  }
+  .cmd-item:last-child { border-bottom: none; }
+  .cmd-item:hover, .cmd-item.active { background: rgba(255,215,0,.08); }
+  .cmd-item-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--fg3);
+  }
+  .cmd-item-label { flex: 1; }
+  .cmd-item-hint { font-size: 11px; color: var(--fg3); }
+  .cmd-item-type {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--bg4);
+    color: var(--fg3);
+    font-weight: 600;
+  }
+
+  /* ===== FULLSCREEN HUB ===== */
+  .hub-view {
+    padding: 0;
+    min-height: calc(100vh - 52px);
+  }
+  .hub-hero {
+    padding: 48px 48px 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .hub-hero-left h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--fg);
+    letter-spacing: -.5px;
+    line-height: 1.1;
+  }
+  .hub-hero-left h1 span { color: var(--gold); }
+  .hub-hero-left .hub-hero-sub {
+    font-size: 14px;
+    color: var(--fg2);
+    margin-top: 6px;
+  }
+  .hub-quick-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .hub-quick-actions .btn { font-size: 13px; }
+  .hub-body {
+    padding: 0 48px 48px;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 32px;
+  }
+  .hub-projects-col {
+    min-width: 0;
+  }
+  .hub-activity-col {
+    min-width: 0;
+  }
+  .hub-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--fg3);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  /* Activity feed */
+  .activity-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--fg2);
+    transition: border-color .2s;
+  }
+  .activity-item:hover { border-color: var(--gold); cursor: pointer; }
+  .activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+  .activity-text { flex: 1; line-height: 1.4; }
+  .activity-time { color: var(--fg3); font-size: 10px; white-space: nowrap; }
+
+  @media (max-width: 960px) {
+    .hub-hero { padding: 32px 24px 16px; flex-direction: column; align-items: flex-start; }
+    .hub-body { padding: 0 24px 32px; grid-template-columns: 1fr; }
+    .hub-activity-col { display: none; }
+  }
+  @media (max-width: 640px) {
+    .hub-hero-left h1 { font-size: 24px; }
+    .project-grid { grid-template-columns: 1fr !important; }
+    .hub-quick-actions { flex-wrap: wrap; }
+  }

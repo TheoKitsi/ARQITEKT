@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#FFD700">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ARQITEKT Mobile</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.svg">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Status Bar -->
+<header id="statusBar">
+  <div class="status-left">
+    <span class="logo-mark">&#9670;</span> ARQITEKT
+  </div>
+  <div class="status-right">
+    <span id="connectionDot" class="conn-dot offline"></span>
+  </div>
+</header>
+
+<!-- Nav Tabs -->
+<nav id="bottomNav">
+  <button class="nav-btn active" data-view="ideas" onclick="switchView('ideas')">
+    <span class="nav-icon">&#9733;</span><span class="nav-label">Ideas</span>
+  </button>
+  <button class="nav-btn" data-view="projects" onclick="switchView('projects')">
+    <span class="nav-icon">&#9670;</span><span class="nav-label">Projects</span>
+  </button>
+  <button class="nav-btn" data-view="chat" onclick="switchView('chat')">
+    <span class="nav-icon">&#9993;</span><span class="nav-label">AI Chat</span>
+  </button>
+  <button class="nav-btn" data-view="settings" onclick="switchView('settings')">
+    <span class="nav-icon">&#9881;</span><span class="nav-label">Settings</span>
+  </button>
+</nav>
+
+<!-- ===== Views ===== -->
+
+<!-- Ideas View -->
+<main id="view-ideas" class="view active">
+  <div class="view-header">
+    <h1>Capture Ideas</h1>
+    <p class="view-sub">Speak or type your next big idea</p>
+  </div>
+  <div class="idea-input-area">
+    <textarea id="ideaText" rows="4" placeholder="Describe your idea..."></textarea>
+    <div class="idea-actions">
+      <button class="btn-voice" id="voiceBtn" onclick="toggleVoice()">
+        <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" fill="currentColor"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" fill="currentColor"/></svg>
+      </button>
+      <button class="btn-primary" onclick="submitIdea()">Create Requirement</button>
+    </div>
+  </div>
+  <div id="recentIdeas" class="ideas-list"></div>
+</main>
+
+<!-- Projects View -->
+<main id="view-projects" class="view">
+  <div class="view-header">
+    <h1>Projects</h1>
+  </div>
+  <div id="projectsList" class="projects-list"></div>
+</main>
+
+<!-- Project Detail -->
+<main id="view-project-detail" class="view">
+  <div class="view-header">
+    <button class="btn-back" onclick="switchView('projects')">&larr; Back</button>
+    <h1 id="pdTitle">Project</h1>
+    <span id="pdLifecycle" class="lifecycle-badge"></span>
+  </div>
+  <div class="pd-tabs">
+    <button class="pd-tab active" data-tab="overview" onclick="switchPdTab('overview')">Overview</button>
+    <button class="pd-tab" data-tab="requirements" onclick="switchPdTab('requirements')">Requirements</button>
+    <button class="pd-tab" data-tab="actions" onclick="switchPdTab('actions')">Actions</button>
+  </div>
+  <div id="pdContent" class="pd-content"></div>
+</main>
+
+<!-- Chat View -->
+<main id="view-chat" class="view">
+  <div class="view-header">
+    <h1>AI Assistant</h1>
+    <p class="view-sub" id="chatModelInfo"></p>
+  </div>
+  <div id="chatMsgs" class="chat-messages"></div>
+  <div class="chat-input-area">
+    <input id="chatInput" type="text" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="btn-send" onclick="sendChat()">&#10148;</button>
+  </div>
+</main>
+
+<!-- Settings View -->
+<main id="view-settings" class="view">
+  <div class="view-header">
+    <h1>Settings</h1>
+  </div>
+  <div class="settings-list">
+    <div class="setting-item">
+      <span>Hub URL</span>
+      <input id="settingHubUrl" type="url" placeholder="http://192.168.x.x:3333" onchange="saveSettings()">
+    </div>
+    <div class="setting-item">
+      <span>Connection</span>
+      <span id="settingStatus">Checking...</span>
+    </div>
+    <div class="setting-item">
+      <button class="btn-primary" onclick="testConnection()">Test Connection</button>
+    </div>
+    <div class="setting-item">
+      <span>Language</span>
+      <select id="settingLang" onchange="saveSettings()">
+        <option value="en">English</option>
+        <option value="de">Deutsch</option>
+      </select>
+    </div>
+    <div class="setting-item">
+      <span>Version</span>
+      <span>1.0.0</span>
+    </div>
+  </div>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

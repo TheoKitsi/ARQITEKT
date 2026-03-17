@@ -26,7 +26,7 @@ counters:
 
 # Lifecycle state
 lifecycle:
-  state: "planning"
+  state: "built"
 
 # Notification channels used by this project
 notification_channels:

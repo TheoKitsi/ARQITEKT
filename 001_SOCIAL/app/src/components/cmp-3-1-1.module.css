@@ -1,0 +1,18 @@
+.container {
+  background: var(--colors-surface-bg2, #161b22);
+  border: 1px solid var(--colors-border-default, #30363d);
+  border-radius: var(--radii-lg, 12px);
+  padding: var(--spacing-5, 20px);
+}
+
+.heading {
+  font-size: var(--typography-fontSize-base, 15px);
+  font-weight: 600;
+  color: var(--colors-text-primary, #e6edf3);
+  margin-bottom: var(--spacing-4, 16px);
+}
+
+.todo {
+  color: var(--colors-text-tertiary, #6e7681);
+  font-style: italic;
+}
