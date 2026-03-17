@@ -62,11 +62,10 @@ branding:
   mode: "dark"
   logo: ""
 
-# GitHub integration
+# GitHub integration (dedicated repo)
 github:
-  repo: "TheoKitsi/TK.Apps"
-  path: "006-scs-play"
-  url: "https://github.com/TheoKitsi/TK.Apps/tree/main/006-scs-play"
+  repo: "TheoKitsi/scs-play"
+  url: "https://github.com/TheoKitsi/scs-play"
 
 # App configuration (auto-detected or manual)
 app:

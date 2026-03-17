@@ -1,3 +1,6 @@
 .env
 node_modules/
 exports/
+
+# App code lives in separate repos per project
+*/app/

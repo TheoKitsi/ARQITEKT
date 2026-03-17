@@ -893,41 +893,31 @@ test('no console errors', async ({ page }) => {
       try {
         const cfg = parseYaml(readFileSync(join(projectDir, 'config', 'project.yaml'), 'utf-8'));
         const gh = cfg.github || {};
-        if (!gh.repo || !gh.path) {
+        if (!gh.repo) {
           res.statusCode = 400;
-          return res.end(JSON.stringify({ error: 'GitHub repo and path not configured.' }));
+          return res.end(JSON.stringify({ error: 'GitHub repo not configured in project.yaml.' }));
         }
-        // Find the monorepo local clone — try config path, then sibling dir
-        const monoRepoName = gh.monorepo || 'TK.Apps';
-        const monoDir = join(dirname(dirname(projectDir)), monoRepoName);
-        const targetDir = join(monoDir, gh.path);
-        if (!existsSync(monoDir) || !existsSync(join(monoDir, '.git'))) {
-          res.statusCode = 400;
-          return res.end(JSON.stringify({ error: 'TK.Apps monorepo not found at ' + monoDir + '. Clone it first.' }));
+        const projectName = cfg.project?.name || projectId;
+
+        // Dedicated repo mode: app/ is its own git repo
+        const hasGit = existsSync(join(appDir, '.git'));
+        if (!hasGit) {
+          // Initialize and link to remote
+          execSync('git init', { cwd: appDir, encoding: 'utf-8' });
+          execSync('git remote add origin https://github.com/' + gh.repo + '.git', { cwd: appDir, encoding: 'utf-8' });
         }
-        // Sync app/ to monorepo/<path>/
-        mkdirSync(targetDir, { recursive: true });
-        cpSync(appDir, targetDir, { recursive: true, force: true });
-        // Also copy .github/workflows if they exist
-        const wfDir = join(projectDir, '.github', 'workflows');
-        if (existsSync(wfDir)) {
-          const monoWfDir = join(monoDir, '.github', 'workflows');
-          mkdirSync(monoWfDir, { recursive: true });
-          for (const f of readdirSync(wfDir)) {
-            cpSync(join(wfDir, f), join(monoWfDir, gh.path + '-' + f), { force: true });
-          }
-        }
-        // Git add, commit, push
-        const commitMsg = 'Update ' + (cfg.project?.name || projectId) + ' from ARQITEKT';
-        execSync('git add -A', { cwd: monoDir, encoding: 'utf-8' });
-        const status = execSync('git status --porcelain', { cwd: monoDir, encoding: 'utf-8' }).trim();
+
+        // Commit and push
+        execSync('git add -A', { cwd: appDir, encoding: 'utf-8' });
+        const status = execSync('git status --porcelain', { cwd: appDir, encoding: 'utf-8' }).trim();
         if (!status) {
           return res.end(JSON.stringify({ success: true, message: 'No changes to push.' }));
         }
-        execSync('git commit -m "' + commitMsg.replace(/"/g, '\\"') + '"', { cwd: monoDir, encoding: 'utf-8' });
-        execSync('git push origin main 2>&1', { cwd: monoDir, encoding: 'utf-8', timeout: 30000 });
+        const commitMsg = 'Update ' + projectName + ' from ARQITEKT';
+        execSync('git commit -m "' + commitMsg.replace(/"/g, '\\"') + '"', { cwd: appDir, encoding: 'utf-8' });
+        execSync('git push -u origin master 2>&1', { cwd: appDir, encoding: 'utf-8', timeout: 30000 });
 
-        return res.end(JSON.stringify({ success: true, message: 'Pushed to ' + gh.repo + '/' + gh.path }));
+        return res.end(JSON.stringify({ success: true, message: 'Pushed to ' + gh.repo }));
       } catch (err) {
         res.statusCode = 500;
         return res.end(JSON.stringify({ error: 'Push failed: ' + (err.message || '').slice(0, 500) }));

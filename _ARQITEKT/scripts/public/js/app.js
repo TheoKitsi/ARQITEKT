@@ -370,7 +370,7 @@ const i18n = {
     confirmScaffold: 'Anwendung aus Requirements generieren?',
     confirmForceScaffold: 'Force Scaffold: Implementierung erzwingen?',
     confirmExport: 'GitHub Issues aus Requirements exportieren?',
-    confirmPush: 'App-Code zum TK.Apps Monorepo pushen?',
+    confirmPush: 'App-Code zum GitHub Repository pushen?',
     confirmStoreBuild: 'Release-Build starten?',
     confirmBuildDeploy: 'Production Build + Start?',
     confirmPlaywright: 'Playwright E2E Testing im Projekt einrichten?',
@@ -575,7 +575,7 @@ const i18n = {
     confirmScaffold: 'Generate application from requirements?',
     confirmForceScaffold: 'Force Scaffold: Generate implementation anyway?',
     confirmExport: 'Export requirements as GitHub Issues?',
-    confirmPush: 'Push app code to TK.Apps monorepo?',
+    confirmPush: 'Push app code to GitHub repository?',
     confirmStoreBuild: 'Start release build?',
     confirmBuildDeploy: 'Production Build + Start?',
     confirmPlaywright: 'Set up Playwright E2E Testing?',
@@ -796,7 +796,6 @@ async function loadProjects() {
   document.getElementById('hdrTitle').innerHTML = t('projects') + ' <span class=\"hdr-count\">' + projects.length + '</span>';
 
   if (!projects.length) {
-    document.getElementById('tagFilterBar').style.display = 'none';
     grid.innerHTML = '<div class="empty-state"><div class="es-icon">+</div><div class="es-text">' + t('noEmpty') + '</div><button class="btn pri" onclick="openCreateModal()">+ ' + t('newProject') + '</button></div>';
     grid.innerHTML += newProjectCardHTML();
     return;
@@ -804,8 +803,6 @@ async function loadProjects() {
 
   // Build filter button + chips in header actions
   const allTags = [...new Set(projects.flatMap(p => p.tags || []))].sort();
-  const filterBar = document.getElementById('tagFilterBar');
-  filterBar.style.display = 'none'; // deprecated: old pill bar hidden
   // Render filter button + active chips into header
   let filterHtml = '';
   if (allTags.length > 0) {
@@ -1187,7 +1184,7 @@ async function openProject(projectId) {
     const ghLink = gh.url || ('https://github.com/' + gh.repo);
     let ghBtns = '<button class="btn sm" onclick="window.open(\'' + ghLink.replace(/'/g, "\\'") + '\',\'_blank\')">GitHub</button>';
     ghBtns += '<button class="btn sm" onclick="doGitHubExport(\'' + projectId.replace(/'/g, "\\'") + '\')">' + t('exportIssues') + '</button>';
-    if (gh.path) {
+    if (gh.repo) {
       ghBtns += '<button class="btn sm gold" id="btnGhPush" onclick="doGitHubPush(\'' + projectId.replace(/'/g, "\\'") + '\')">' + t('storePush') + '</button>';
     }
     document.getElementById('hdrActions').insertAdjacentHTML('afterbegin', ghBtns);

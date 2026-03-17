@@ -60,11 +60,10 @@ branding:
   font_mono: "Fira Code"
   mode: "dark"
 
-# GitHub integration (TK.Apps monorepo)
+# GitHub integration (dedicated repo)
 github:
-  repo: "TheoKitsi/TK.Apps"
-  path: "001-social"
-  url: "https://github.com/TheoKitsi/TK.Apps/tree/main/001-social"
+  repo: "TheoKitsi/social"
+  url: "https://github.com/TheoKitsi/social"
 
 # App configuration
 app:
