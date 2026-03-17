@@ -1,0 +1,159 @@
+/* ================================================================
+   EditorTabs – horizontal scrollable tab bar
+   ================================================================ */
+
+.tabBar {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  background-color: var(--color-surface-bg2, #161b22);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  min-height: 34px;
+  max-height: 34px;
+
+  /* Hide scrollbar but allow scrolling */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tabBar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---- Single tab ---- */
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  min-width: 0;
+  max-width: 180px;
+  height: 34px;
+  border: none;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 2px solid transparent;
+  background-color: transparent;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm, 13px);
+  cursor: pointer;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  transition:
+    background-color var(--transition-fast, 120ms) ease,
+    color var(--transition-fast, 120ms) ease,
+    border-color var(--transition-fast, 120ms) ease;
+}
+
+.tab:hover {
+  background-color: var(--color-surface-bg3, #1c2128);
+  color: var(--color-text-secondary);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: -2px;
+}
+
+/* ---- Active tab ---- */
+.active {
+  background-color: var(--color-surface-bg, #0d1117);
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-brand-gold);
+}
+
+.active:hover {
+  background-color: var(--color-surface-bg, #0d1117);
+  color: var(--color-text-primary);
+}
+
+/* ---- File type icon ---- */
+.fileIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-sm, 3px);
+  font-size: 9px;
+  font-weight: var(--font-weight-bold, 700);
+  font-family: var(--font-mono, monospace);
+  flex-shrink: 0;
+  letter-spacing: -0.5px;
+}
+
+.extTs {
+  background-color: #3178c6;
+  color: #fff;
+}
+
+.extJs {
+  background-color: #f7df1e;
+  color: #000;
+}
+
+.extCss {
+  background-color: #264de4;
+  color: #fff;
+}
+
+.extData {
+  background-color: #6e7681;
+  color: #fff;
+}
+
+.extHtml {
+  background-color: #e34c26;
+  color: #fff;
+}
+
+.extDefault {
+  background-color: var(--color-surface-bg4, #30363d);
+  color: var(--color-text-tertiary);
+}
+
+/* ---- Filename ---- */
+.filename {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* ---- Modified dot ---- */
+.modified {
+  color: var(--color-brand-gold);
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-left: -2px;
+}
+
+/* ---- Close button ---- */
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-sm, 3px);
+  flex-shrink: 0;
+  opacity: 0;
+  color: var(--color-text-tertiary);
+  transition:
+    opacity var(--transition-fast, 120ms) ease,
+    background-color var(--transition-fast, 120ms) ease,
+    color var(--transition-fast, 120ms) ease;
+}
+
+.tab:hover .closeBtn,
+.active .closeBtn {
+  opacity: 1;
+}
+
+.closeBtn:hover {
+  background-color: rgba(248, 81, 73, 0.2);
+  color: #f85149;
+}

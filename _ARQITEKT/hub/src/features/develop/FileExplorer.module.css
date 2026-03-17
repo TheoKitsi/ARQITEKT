@@ -1,0 +1,186 @@
+/* ================================================================
+   FileExplorer – file tree browser for project files
+   ================================================================ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-size: var(--font-size-sm);
+  user-select: none;
+}
+
+/* ---- Header ---- */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-1);
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.refreshBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.refreshBtn:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-bg3);
+}
+
+.refreshBtn:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: -2px;
+}
+
+/* ---- Loading / Empty states ---- */
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-4);
+}
+
+.emptyText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+/* ---- Tree list ---- */
+.fileList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---- File / Directory row ---- */
+.fileRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 28px;
+  padding-right: var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast);
+}
+
+.fileRow:hover {
+  background-color: var(--color-surface-bg3);
+}
+
+.fileRow:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: -2px;
+}
+
+.fileRowSelected {
+  background-color: rgba(255, 215, 0, 0.06);
+}
+
+.fileRowSelected:hover {
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+/* ---- Chevron for directories ---- */
+.chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+  transition: transform var(--transition-fast);
+}
+
+.chevronExpanded {
+  transform: rotate(90deg);
+}
+
+.chevronSpacer {
+  width: 14px;
+  flex-shrink: 0;
+}
+
+/* ---- File icon ---- */
+.fileIcon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.iconDefault {
+  color: var(--color-text-tertiary);
+}
+
+.iconTs {
+  color: var(--color-accent);
+}
+
+.iconCss {
+  color: var(--color-purple);
+}
+
+.iconMd {
+  color: var(--color-green);
+}
+
+.iconJson {
+  color: var(--color-yellow);
+}
+
+.iconFolder {
+  color: var(--color-yellow);
+}
+
+/* ---- File name ---- */
+.fileName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-tight);
+}
+
+.dirName {
+  font-weight: var(--font-weight-medium);
+}
+
+/* ---- Error ---- */
+.errorText {
+  font-size: var(--font-size-sm);
+  color: var(--color-red);
+  padding: var(--space-3);
+}

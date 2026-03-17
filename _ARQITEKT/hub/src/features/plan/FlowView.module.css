@@ -1,0 +1,71 @@
+/* ================================================================
+   FlowView – main plan content area with solution cards
+   ================================================================ */
+
+.flow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex: 1;
+  min-height: 0;
+}
+
+/* ---- Centered states (loading / error / onboarding) ---- */
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  min-height: 300px;
+}
+
+.errorText {
+  color: var(--color-red);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
+.onboard {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-base);
+  text-align: center;
+  max-width: 480px;
+  line-height: var(--line-height-relaxed);
+  margin: 0;
+}
+
+/* ---- Toolbar ---- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* ---- Cards list ---- */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+  overflow-y: auto;
+  padding-right: var(--space-1);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-bg4) transparent;
+}
+
+.cards::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cards::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cards::-webkit-scrollbar-thumb {
+  background-color: var(--color-surface-bg4);
+  border-radius: var(--radius-full);
+}

@@ -1,18 +1,39 @@
 @echo off
-:: ============================================================================
-:: ARQITEKT — Workspace Launcher
-:: ============================================================================
-:: Doppelklick startet Dashboard im Hintergrund + oeffnet Browser
-:: VS Code wird ueber das Dashboard geoeffnet
-:: ============================================================================
+title ARQITEKT Hub
+echo ============================================
+echo   ARQITEKT Hub - Starting...
+echo ============================================
+echo.
 
-cd /d "%~dp0_ARQITEKT"
+:: Start backend server in background
+echo [1/2] Starting Express backend on port 3334...
+start "ARQITEKT Backend" /min cmd /c "cd /d %~dp0_ARQITEKT\server && npm run dev"
 
-:: Start Dashboard Server im Hintergrund (kein sichtbares Terminal)
-start "" /B /MIN node scripts/server.mjs >nul 2>&1
+:: Wait for backend
+timeout /t 3 /nobreak >nul
 
-:: Warten bis Server bereit
-timeout /t 2 /nobreak >nul
+:: Start frontend
+echo [2/2] Starting Vite frontend on port 5173...
+start "ARQITEKT Frontend" /min cmd /c "cd /d %~dp0_ARQITEKT\hub && npm run dev"
 
-:: Dashboard im Browser oeffnen
-start "" "http://localhost:3333"
+:: Wait for frontend
+timeout /t 3 /nobreak >nul
+
+:: Open browser
+echo.
+echo Opening http://localhost:5173 ...
+start http://localhost:5173
+
+echo.
+echo ============================================
+echo   ARQITEKT Hub is running!
+echo   Frontend: http://localhost:5173
+echo   Backend:  http://localhost:3334
+echo.
+echo   Close this window to stop all servers.
+echo ============================================
+echo.
+pause
+:: Kill background processes when user closes
+taskkill /fi "WINDOWTITLE eq ARQITEKT Backend" /f >nul 2>&1
+taskkill /fi "WINDOWTITLE eq ARQITEKT Frontend" /f >nul 2>&1

@@ -1,0 +1,190 @@
+/* ================================================================
+   ProgressTracker – step-by-step onboarding progress panel
+   ================================================================ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+}
+
+/* ---- Header with title ---- */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-1);
+}
+
+.title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+/* ---- Progress bar ---- */
+.progressBarWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 0 var(--space-1);
+}
+
+.progressLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.progressPercent {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand-gold);
+}
+
+.progressTrack {
+  position: relative;
+  height: 4px;
+  background-color: var(--color-surface-bg4);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progressFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--color-brand-gold), #ffc800);
+  transition: width var(--transition-normal);
+}
+
+/* ---- Steps list ---- */
+.stepsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 var(--space-1);
+}
+
+/* ---- Step row ---- */
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  position: relative;
+  padding: var(--space-1) 0;
+  min-height: 28px;
+}
+
+/* Vertical connecting line between steps */
+.step::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--color-border);
+}
+
+.step:first-child::before {
+  top: 50%;
+}
+
+.step:last-child::before {
+  bottom: 50%;
+}
+
+/* ---- Step circle ---- */
+.stepCircle {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.stepCompleted .stepCircle {
+  background-color: var(--color-brand-gold);
+  color: var(--color-brand-anthracite);
+}
+
+.stepCurrent .stepCircle {
+  background-color: rgba(255, 215, 0, 0.2);
+  color: var(--color-brand-gold);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+}
+
+.stepPending .stepCircle {
+  background-color: var(--color-surface-bg3);
+  color: var(--color-text-tertiary);
+}
+
+/* ---- Step label ---- */
+.stepLabel {
+  flex: 1;
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.stepCompleted .stepLabel {
+  color: var(--color-text-secondary);
+}
+
+.stepCurrent .stepLabel {
+  color: var(--color-brand-gold);
+  font-weight: var(--font-weight-medium);
+}
+
+.stepPending .stepLabel {
+  color: var(--color-text-tertiary);
+}
+
+/* ---- Connecting line override for completed ---- */
+.stepCompleted::before {
+  background-color: var(--color-brand-gold);
+}
+
+/* If current step, top half of line is gold */
+.stepCurrent::before {
+  background: linear-gradient(
+    to bottom,
+    var(--color-brand-gold) 50%,
+    var(--color-border) 50%
+  );
+}
+
+/* ---- Loading / Error ---- */
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+}
+
+.errorText {
+  font-size: var(--font-size-sm);
+  color: var(--color-red);
+  padding: var(--space-3);
+}

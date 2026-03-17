@@ -1,0 +1,89 @@
+/* ================================================================
+   DeleteConfirmDialog – destructive action confirmation
+   ================================================================ */
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  text-align: center;
+}
+
+/* ---- Warning icon ---- */
+.warningIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background-color: rgba(248, 81, 73, 0.12);
+  color: var(--color-red);
+}
+
+/* ---- Warning text ---- */
+.warningText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+  margin: 0;
+}
+
+/* ---- GitHub hint ---- */
+.githubHint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: rgba(210, 153, 34, 0.1);
+  border: 1px solid rgba(210, 153, 34, 0.3);
+  border-radius: var(--radius-md);
+  color: var(--color-yellow);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  width: 100%;
+}
+
+/* ---- Confirm section ---- */
+.confirmSection {
+  width: 100%;
+  text-align: left;
+}
+
+.confirmLabel {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+/* ---- Footer ---- */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+/* ---- Delete button override ---- */
+.deleteBtn {
+  background-color: var(--color-red) !important;
+  color: #fff !important;
+  border-color: var(--color-red) !important;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-red) 85%, white) !important;
+  box-shadow: 0 0 12px rgba(248, 81, 73, 0.3);
+}
+
+.deleteBtn:active:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-red) 80%, black) !important;
+}
+
+.deleteBtn:disabled {
+  opacity: 0.45;
+}

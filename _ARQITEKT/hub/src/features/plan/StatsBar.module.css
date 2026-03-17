@@ -1,0 +1,90 @@
+/* ================================================================
+   StatsBar – horizontal requirement-type pill counts
+   ================================================================ */
+
+.bar {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: var(--space-2) 0;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-red);
+}
+
+/* ---- Scrollable row ---- */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: var(--space-1);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-bg4) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.row::-webkit-scrollbar {
+  height: 4px;
+}
+
+.row::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.row::-webkit-scrollbar-thumb {
+  background-color: var(--color-surface-bg4);
+  border-radius: var(--radius-full);
+}
+
+/* ---- Individual pill ---- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--color-surface-bg2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast);
+}
+
+.pill:hover {
+  border-color: var(--color-border-strong);
+}
+
+/* ---- Dot ---- */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ---- Value ---- */
+.value {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+}
+
+/* ---- Label ---- */
+.label {
+  color: var(--color-text-secondary);
+}

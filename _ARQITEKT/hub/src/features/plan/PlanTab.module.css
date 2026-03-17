@@ -1,0 +1,81 @@
+/* ================================================================
+   PlanTab – planning view with stats + flow
+   ================================================================ */
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  height: 100%;
+}
+
+/* ---- Stats bar ---- */
+.statsBar {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+}
+
+.statsError {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-red);
+}
+
+.statsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.statPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--color-surface-bg2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+}
+
+.statDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.statValue {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+}
+
+.statLabel {
+  color: var(--color-text-secondary);
+}
+
+/* ---- Flow area ---- */
+.flowArea {
+  flex: 1;
+  display: flex;
+  min-height: 300px;
+}
+
+.flowPlaceholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-bg2);
+}
+
+.placeholderText {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}

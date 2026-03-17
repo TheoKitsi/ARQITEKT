@@ -1,0 +1,46 @@
+name: arqitekt_mobile
+description: "ARQITEKT Mobile Companion — Project browsing, idea capture, AI chat"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Navigation
+  go_router: ^14.8.1
+
+  # Network
+  dio: ^5.8.0+1
+  web_socket_channel: ^3.0.2
+
+  # UI
+  google_fonts: ^6.2.1
+  flutter_markdown: ^0.7.7
+  lucide_icons: ^0.257.0
+
+  # Storage
+  shared_preferences: ^2.5.3
+
+  # Utilities
+  intl: ^0.19.0
+  speech_to_text: ^7.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  riverpod_generator: ^2.6.3
+  build_runner: ^2.4.15
+  json_serializable: ^6.9.4
+  json_annotation: ^4.9.0
+
+flutter:
+  uses-material-design: true

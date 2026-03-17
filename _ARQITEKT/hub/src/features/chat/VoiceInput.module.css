@@ -1,0 +1,76 @@
+/* ================================================================
+   VoiceInput – Web Speech API voice input button
+   ================================================================ */
+
+.voiceBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.voiceBtn:hover {
+  background-color: var(--color-surface-bg3);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+}
+
+.voiceBtn:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: 2px;
+}
+
+/* ---- Recording state ---- */
+.recording {
+  background-color: rgba(248, 81, 73, 0.15);
+  border-color: var(--color-red);
+  color: var(--color-red);
+  animation: recordingPulse 2s ease-in-out infinite;
+}
+
+.recording:hover {
+  background-color: rgba(248, 81, 73, 0.25);
+  color: var(--color-red);
+}
+
+@keyframes recordingPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(248, 81, 73, 0);
+  }
+}
+
+/* ---- Recording dot indicator ---- */
+.recordingDot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-red);
+  animation: dotBlink 1s ease-in-out infinite;
+}
+
+@keyframes dotBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}

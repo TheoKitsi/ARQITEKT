@@ -1,14 +1,10 @@
 {
-  "name": "arqitekt-hub",
-  "version": "1.0.0",
-  "description": "ARQITEKT Framework — Multi-Projekt Hub Dashboard",
+  "name": "arqitekt-root",
   "private": true,
-  "type": "module",
+  "version": "2.0.0",
   "scripts": {
-    "dashboard": "node scripts/dashboard.mjs"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {}
+    "dev": "echo 'Use: cd hub && npm run dev (frontend) + cd server && npm run dev (backend)'",
+    "dev:hub": "cd hub && npm run dev",
+    "dev:server": "cd server && npm run dev"
+  }
 }

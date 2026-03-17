@@ -1,0 +1,126 @@
+/* ================================================================
+   Button – design-token-driven styles
+   ================================================================ */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    opacity var(--transition-fast);
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* ---- Sizes ---- */
+.sm {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+  min-height: 28px;
+}
+
+.md {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-base);
+  min-height: 36px;
+}
+
+.lg {
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-size-lg);
+  min-height: 44px;
+}
+
+/* ---- Variants ---- */
+
+/* Filled (default) */
+.filled {
+  background-color: var(--color-accent);
+  color: #fff;
+}
+.filled:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-accent) 85%, white);
+}
+.filled:active:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-accent) 75%, black);
+}
+
+/* Outlined */
+.outlined {
+  background-color: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+.outlined:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-surface-bg3);
+}
+.outlined:active:not(:disabled) {
+  background-color: var(--color-surface-bg4);
+}
+
+/* Text */
+.text {
+  background-color: transparent;
+  color: var(--color-accent);
+  padding-left: var(--space-2);
+  padding-right: var(--space-2);
+}
+.text:hover:not(:disabled) {
+  background-color: var(--color-surface-bg3);
+}
+.text:active:not(:disabled) {
+  background-color: var(--color-surface-bg4);
+}
+
+/* Gold */
+.gold {
+  background-color: var(--color-brand-gold);
+  color: var(--color-brand-anthracite);
+  font-weight: var(--font-weight-semibold);
+}
+.gold:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-brand-gold) 85%, white);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+}
+.gold:active:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-brand-gold) 80%, #000);
+}
+
+/* ---- States ---- */
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: 2px;
+}
+
+.loading {
+  pointer-events: none;
+}
+
+/* ---- Inner elements ---- */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+}

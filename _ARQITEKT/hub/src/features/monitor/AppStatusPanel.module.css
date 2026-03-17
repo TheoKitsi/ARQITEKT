@@ -1,0 +1,50 @@
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--font-weight-semibold);
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.infoLabel {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  min-width: 60px;
+}
+
+.infoValue {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.browserLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-accent);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.browserLink:hover {
+  color: var(--color-brand-gold);
+  text-decoration: underline;
+}
+
+.hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}

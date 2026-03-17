@@ -1,0 +1,207 @@
+/* ================================================================
+   RequirementsTree – interactive collapsible metamodel hierarchy
+   ================================================================ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  user-select: none;
+}
+
+/* ---- Loading / Empty states ---- */
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-4);
+}
+
+.emptyText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+/* ---- Section divider ---- */
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-1);
+  margin-top: var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sectionLabel::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+/* ---- Tree list ---- */
+.treeList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---- Tree node row ---- */
+.nodeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  padding-right: var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+  border-left: 2px solid transparent;
+}
+
+.nodeRow:hover {
+  background-color: var(--color-surface-bg3);
+}
+
+.nodeRow:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: -2px;
+}
+
+.nodeRowSelected {
+  border-left-color: var(--color-brand-gold);
+  background-color: rgba(255, 215, 0, 0.06);
+}
+
+.nodeRowSelected:hover {
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+/* ---- Chevron toggle ---- */
+.chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+  transition: transform var(--transition-fast);
+}
+
+.chevronExpanded {
+  transform: rotate(90deg);
+}
+
+.chevronHidden {
+  visibility: hidden;
+}
+
+/* ---- Type badge ---- */
+.typeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 18px;
+  padding: 0 var(--space-1);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+/* Type colors */
+.typeBC {
+  background-color: rgba(188, 140, 255, 0.18);
+  color: var(--color-purple);
+}
+
+.typeSOL {
+  background-color: rgba(88, 166, 255, 0.18);
+  color: var(--color-accent);
+}
+
+.typeUS {
+  background-color: rgba(63, 185, 80, 0.18);
+  color: var(--color-green);
+}
+
+.typeCMP {
+  background-color: rgba(210, 153, 34, 0.18);
+  color: var(--color-yellow);
+}
+
+.typeFN {
+  background-color: rgba(219, 109, 40, 0.18);
+  color: var(--color-orange);
+}
+
+.typeCONV {
+  background-color: rgba(88, 166, 255, 0.12);
+  color: var(--color-accent);
+}
+
+.typeCrossCut {
+  background-color: rgba(110, 118, 129, 0.18);
+  color: var(--color-text-tertiary);
+}
+
+/* ---- Node title ---- */
+.nodeTitle {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-tight);
+}
+
+/* ---- Status dot ---- */
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.statusIdea {
+  background-color: var(--color-text-tertiary);
+}
+
+.statusDraft {
+  background-color: var(--color-yellow);
+}
+
+.statusReview {
+  background-color: var(--color-accent);
+}
+
+.statusApproved {
+  background-color: var(--color-green);
+}
+
+.statusImplemented {
+  background-color: var(--color-brand-gold);
+}
+
+/* ---- Error ---- */
+.errorText {
+  font-size: var(--font-size-sm);
+  color: var(--color-red);
+  padding: var(--space-3);
+}

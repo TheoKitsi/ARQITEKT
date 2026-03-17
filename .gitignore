@@ -1,6 +1,12 @@
 .env
 node_modules/
 exports/
+.vite/
+dist/
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
 
 # App code lives in separate repos per project
 */app/

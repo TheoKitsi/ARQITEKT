@@ -1,0 +1,44 @@
+/* ================================================================
+   ChatFab – floating action button (bottom-right)
+   ================================================================ */
+
+.fab {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: 900;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: var(--color-brand-gold);
+  color: var(--color-brand-anthracite);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.fab:hover {
+  transform: scale(1.08);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 20px rgba(255, 215, 0, 0.3);
+  background-color: color-mix(in srgb, var(--color-brand-gold) 90%, white);
+}
+
+.fab:active {
+  transform: scale(0.96);
+}
+
+.fab:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: 3px;
+}

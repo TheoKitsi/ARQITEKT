@@ -1,0 +1,93 @@
+/* ================================================================
+   DevelopTab – full IDE-like split layout
+   ================================================================ */
+
+.tab {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-bg, #0d1117);
+}
+
+/* ---- Left: File Explorer panel ---- */
+.filePanel {
+  width: 240px;
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+  background-color: var(--color-surface-bg2, #161b22);
+
+  /* Thin scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-bg4, #30363d) transparent;
+}
+
+.filePanel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filePanel::-webkit-scrollbar-thumb {
+  background-color: var(--color-surface-bg4, #30363d);
+  border-radius: 3px;
+}
+
+.filePanel::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* ---- Right: Main area (editor + terminal) ---- */
+.mainArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ---- Editor area (fills available space) ---- */
+.editorArea {
+  flex: 1;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+/* ---- Drag handle between editor and terminal ---- */
+.dragHandle {
+  height: 4px;
+  background: var(--color-border);
+  cursor: row-resize;
+  flex-shrink: 0;
+  transition: background-color var(--transition-fast, 120ms) ease;
+  position: relative;
+}
+
+.dragHandle:hover,
+.dragHandle:active {
+  background: var(--color-brand-gold);
+}
+
+.dragHandle:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: -2px;
+  background: var(--color-brand-gold);
+}
+
+/* Larger invisible hit area for easier grabbing */
+.dragHandle::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+}
+
+/* ---- Terminal area ---- */
+.terminalArea {
+  height: 200px;
+  flex-shrink: 0;
+  overflow: hidden;
+}

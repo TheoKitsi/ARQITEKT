@@ -1,0 +1,47 @@
+/* ================================================================
+   Badge – tag / status indicator
+   ================================================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* ---- Variants ---- */
+.default {
+  background-color: var(--color-surface-bg3);
+  color: var(--color-text-secondary);
+}
+
+.success {
+  background-color: rgba(63, 185, 80, 0.15);
+  color: var(--color-green);
+}
+
+.warning {
+  background-color: rgba(210, 153, 34, 0.15);
+  color: var(--color-yellow);
+}
+
+.error {
+  background-color: rgba(248, 81, 73, 0.15);
+  color: var(--color-red);
+}
+
+.info {
+  background-color: rgba(88, 166, 255, 0.15);
+  color: var(--color-accent);
+}
+
+.gold {
+  background-color: rgba(255, 215, 0, 0.15);
+  color: var(--color-brand-gold);
+}

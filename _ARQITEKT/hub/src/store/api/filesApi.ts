@@ -1,0 +1,70 @@
+import { baseApi } from './baseApi';
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
+
+export interface FileEntry {
+  name: string;
+  path: string;
+  type: 'file' | 'directory';
+  size?: number;
+  modifiedAt?: string;
+  children?: FileEntry[];
+}
+
+export interface FileContent {
+  path: string;
+  content: string;
+  language?: string;
+  size: number;
+}
+
+export interface WriteFileRequest {
+  projectId: string;
+  path: string;
+  content: string;
+}
+
+export interface WriteFileResult {
+  success: boolean;
+  path: string;
+  size: number;
+}
+
+/* ------------------------------------------------------------------ */
+/*  API                                                                */
+/* ------------------------------------------------------------------ */
+
+export const filesApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    listFiles: builder.query<FileEntry[], string>({
+      query: (projectId) => `/projects/${projectId}/files`,
+      providesTags: (_result, _error, projectId) => [
+        { type: 'Project', id: `${projectId}-files` },
+      ],
+    }),
+
+    readFile: builder.query<FileContent, { projectId: string; path: string }>({
+      query: ({ projectId, path }) =>
+        `/projects/${projectId}/files/read?path=${encodeURIComponent(path)}`,
+    }),
+
+    writeFile: builder.mutation<WriteFileResult, WriteFileRequest>({
+      query: ({ projectId, ...body }) => ({
+        url: `/projects/${projectId}/files/write`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [
+        { type: 'Project', id: `${projectId}-files` },
+      ],
+    }),
+  }),
+});
+
+export const {
+  useListFilesQuery,
+  useReadFileQuery,
+  useWriteFileMutation,
+} = filesApi;

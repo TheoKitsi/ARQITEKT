@@ -1,0 +1,141 @@
+/* ================================================================
+   ProjectLayout – sidebar + tab bar + content area
+   ================================================================ */
+
+.layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---- Sidebar ---- */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  min-width: 260px;
+  padding: var(--space-4);
+  background-color: var(--color-surface-bg2);
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  gap: var(--space-4);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.backLink:hover {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.projectName {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.treeNav {
+  flex: 1;
+}
+
+.treePlaceholder {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  padding: var(--space-3);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+/* ---- Main ---- */
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ---- Tab bar ---- */
+.tabBar {
+  display: flex;
+  gap: 0;
+  padding: 0 var(--space-5);
+  background-color: var(--color-surface-bg2);
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-bg3);
+  text-decoration: none;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: -2px;
+}
+
+.tabActive {
+  color: var(--color-brand-gold);
+  border-bottom-color: var(--color-brand-gold);
+}
+
+.tabActive:hover {
+  color: var(--color-brand-gold);
+}
+
+/* ---- Content ---- */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5);
+}
+
+/* ---- Center state ---- */
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  flex: 1;
+  padding: var(--space-12);
+}
+
+.error {
+  color: var(--color-red);
+  font-size: var(--font-size-sm);
+}
