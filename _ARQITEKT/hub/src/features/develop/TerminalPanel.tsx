@@ -1,6 +1,6 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Terminal as TerminalIcon, Play, Trash2 } from 'lucide-react';
+import { Terminal as TerminalIcon, Play, Trash2, RefreshCw, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
@@ -14,6 +14,16 @@ import styles from './TerminalPanel.module.css';
 interface TerminalPanelProps {
   projectId: string;
 }
+
+type ConnectionStatus = 'connecting' | 'connected' | 'disconnected';
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                          */
+/* ------------------------------------------------------------------ */
+
+const RECONNECT_BASE_MS = 1000;
+const RECONNECT_MAX_MS = 16_000;
+const HEARTBEAT_INTERVAL_MS = 30_000;
 
 /* ------------------------------------------------------------------ */
 /*  Terminal theme                                                     */
@@ -53,10 +63,163 @@ export function TerminalPanel({ projectId }: TerminalPanelProps) {
   const xtermRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const sessionIdRef = useRef<string | null>(null);
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const heartbeatTimer = useRef<ReturnType<typeof setInterval>>(undefined);
+  const reconnectAttempt = useRef(0);
+  const unmountedRef = useRef(false);
 
-  /* ---- Initialize terminal and WebSocket ---- */
+  const [status, setStatus] = useState<ConnectionStatus>('connecting');
+
+  /* ---- Build WS URL once ---- */
+  const getWsUrl = useCallback(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = import.meta.env.VITE_WS_HOST || window.location.host;
+    return `${protocol}//${host}/ws`;
+  }, []);
+
+  /* ---- Heartbeat ---- */
+  const startHeartbeat = useCallback(() => {
+    clearInterval(heartbeatTimer.current);
+    heartbeatTimer.current = setInterval(() => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: 'ping' }));
+      }
+    }, HEARTBEAT_INTERVAL_MS);
+  }, []);
+
+  const stopHeartbeat = useCallback(() => {
+    clearInterval(heartbeatTimer.current);
+  }, []);
+
+  /* ---- Connect / Reconnect ---- */
+  const connect = useCallback(() => {
+    if (unmountedRef.current) return;
+    const term = xtermRef.current;
+    if (!term) return;
+
+    setStatus('connecting');
+
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(getWsUrl());
+    } catch {
+      term.writeln('\r\n\x1b[33m[Terminal] Failed to connect to WebSocket.\x1b[0m');
+      scheduleReconnect();
+      return;
+    }
+    wsRef.current = ws;
+
+    ws.addEventListener('open', () => {
+      reconnectAttempt.current = 0;
+      startHeartbeat();
+
+      if (sessionIdRef.current) {
+        // Attempt to reattach previous session
+        ws.send(JSON.stringify({
+          type: 'terminal:reattach',
+          payload: {
+            sessionId: sessionIdRef.current,
+            cols: term.cols,
+            rows: term.rows,
+          },
+        }));
+      } else {
+        ws.send(JSON.stringify({
+          type: 'terminal:start',
+          payload: { projectId, cols: term.cols, rows: term.rows },
+        }));
+      }
+    });
+
+    ws.addEventListener('message', (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        switch (msg.type) {
+          case 'terminal:output':
+            if (typeof msg.payload === 'string') term.write(msg.payload);
+            break;
+          case 'terminal:replay':
+            // Scrollback replayed after reconnection
+            if (typeof msg.payload === 'string') {
+              term.write(msg.payload);
+            }
+            break;
+          case 'terminal:ready':
+            setStatus('connected');
+            if (msg.payload?.sessionId) {
+              sessionIdRef.current = msg.payload.sessionId;
+            }
+            if (msg.payload?.reconnected) {
+              term.writeln('\x1b[32m[Terminal] Reconnected.\x1b[0m');
+            } else {
+              term.writeln(`\x1b[32m[Terminal] Connected (PID: ${msg.payload?.pid})\x1b[0m`);
+            }
+            break;
+          case 'terminal:session-expired':
+            // Session no longer exists — start fresh
+            sessionIdRef.current = null;
+            ws.send(JSON.stringify({
+              type: 'terminal:start',
+              payload: { projectId, cols: term.cols, rows: term.rows },
+            }));
+            break;
+          case 'terminal:exit':
+            term.writeln(`\r\n\x1b[90m[Terminal] Process exited (code: ${msg.payload?.exitCode})\x1b[0m`);
+            sessionIdRef.current = null;
+            break;
+          case 'terminal:error':
+            term.writeln(`\r\n\x1b[31m[Terminal] ${msg.payload}\x1b[0m`);
+            break;
+          case 'connected':
+            // Initial handshake — wait for terminal:ready
+            break;
+          case 'pong':
+            break;
+        }
+      } catch {
+        if (typeof event.data === 'string') term.write(event.data);
+      }
+    });
+
+    ws.addEventListener('error', () => {
+      // Will be followed by close
+    });
+
+    ws.addEventListener('close', () => {
+      stopHeartbeat();
+      wsRef.current = null;
+      if (!unmountedRef.current) {
+        setStatus('disconnected');
+        term.writeln('\r\n\x1b[90m[Terminal] Disconnected.\x1b[0m');
+        scheduleReconnect();
+      }
+    });
+
+    function scheduleReconnect() {
+      if (unmountedRef.current) return;
+      const delay = Math.min(RECONNECT_BASE_MS * Math.pow(2, reconnectAttempt.current), RECONNECT_MAX_MS);
+      reconnectAttempt.current++;
+      reconnectTimer.current = setTimeout(() => connect(), delay);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, getWsUrl, startHeartbeat, stopHeartbeat]);
+
+  /* ---- Manual reconnect ---- */
+  const handleReconnect = useCallback(() => {
+    clearTimeout(reconnectTimer.current);
+    reconnectAttempt.current = 0;
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    connect();
+  }, [connect]);
+
+  /* ---- Initialize terminal and connect ---- */
   useEffect(() => {
     if (!terminalRef.current) return;
+    unmountedRef.current = false;
 
     const term = new Terminal({
       theme: termTheme,
@@ -73,102 +236,17 @@ export function TerminalPanel({ projectId }: TerminalPanelProps) {
     term.loadAddon(fitAddon);
     term.open(terminalRef.current);
 
-    // Fit after a short delay to let the DOM settle
     requestAnimationFrame(() => {
-      try {
-        fitAddon.fit();
-      } catch {
-        // Terminal might not be visible yet
-      }
+      try { fitAddon.fit(); } catch { /* not visible yet */ }
     });
 
     xtermRef.current = term;
     fitAddonRef.current = fitAddon;
 
-    /* ---- WebSocket connection ---- */
-    let ws: WebSocket | null = null;
-    try {
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsHost = import.meta.env.VITE_WS_HOST || window.location.host;
-      ws = new WebSocket(`${wsProtocol}//${wsHost}/ws`);
-      wsRef.current = ws;
-
-      ws.addEventListener('open', () => {
-        // Start a PTY session on the server
-        ws?.send(
-          JSON.stringify({
-            type: 'terminal:start',
-            payload: {
-              projectId,
-              cols: term.cols,
-              rows: term.rows,
-            },
-          }),
-        );
-      });
-
-      ws.addEventListener('message', (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          switch (msg.type) {
-            case 'terminal:output':
-              if (typeof msg.payload === 'string') {
-                term.write(msg.payload);
-              }
-              break;
-            case 'terminal:ready':
-              term.writeln(
-                `\x1b[32m[Terminal] Connected (PID: ${msg.payload?.pid})\x1b[0m`,
-              );
-              break;
-            case 'terminal:exit':
-              term.writeln(
-                `\r\n\x1b[90m[Terminal] Process exited (code: ${msg.payload?.exitCode})\x1b[0m`,
-              );
-              break;
-            case 'terminal:error':
-              term.writeln(
-                `\r\n\x1b[31m[Terminal] ${msg.payload}\x1b[0m`,
-              );
-              break;
-            case 'connected':
-              // Initial connection handshake — wait for terminal:ready
-              break;
-          }
-        } catch {
-          // Non-JSON message, write raw
-          if (typeof event.data === 'string') {
-            term.write(event.data);
-          }
-        }
-      });
-
-      ws.addEventListener('error', () => {
-        term.writeln(
-          '\r\n\x1b[33m[Terminal] Connection error. Server may not be running.\x1b[0m',
-        );
-      });
-
-      ws.addEventListener('close', () => {
-        term.writeln(
-          '\r\n\x1b[90m[Terminal] Disconnected.\x1b[0m',
-        );
-      });
-    } catch {
-      term.writeln(
-        '\r\n\x1b[33m[Terminal] Failed to connect to WebSocket.\x1b[0m',
-      );
-    }
-
     /* ---- Send user input to server ---- */
     const onDataDisposable = term.onData((data: string) => {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(
-          JSON.stringify({
-            type: 'terminal:input',
-            payload: data,
-          }),
-        );
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: 'terminal:input', payload: data }));
       }
     });
 
@@ -176,49 +254,43 @@ export function TerminalPanel({ projectId }: TerminalPanelProps) {
     const handleResize = () => {
       try {
         fitAddon.fit();
-        // Notify server of new terminal dimensions
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.send(
-            JSON.stringify({
-              type: 'terminal:resize',
-              payload: { cols: term.cols, rows: term.rows },
-            }),
-          );
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          wsRef.current.send(JSON.stringify({ type: 'terminal:resize', payload: { cols: term.cols, rows: term.rows } }));
         }
-      } catch {
-        // ignore
-      }
+      } catch { /* ignore */ }
     };
 
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(terminalRef.current);
     window.addEventListener('resize', handleResize);
 
+    // Connect WebSocket
+    connect();
+
     /* ---- Cleanup ---- */
     return () => {
+      unmountedRef.current = true;
+      clearTimeout(reconnectTimer.current);
+      clearInterval(heartbeatTimer.current);
       onDataDisposable.dispose();
       window.removeEventListener('resize', handleResize);
       resizeObserver.disconnect();
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'terminal:stop' }));
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: 'terminal:stop' }));
       }
-      ws?.close();
+      wsRef.current?.close();
       wsRef.current = null;
+      sessionIdRef.current = null;
       term.dispose();
       xtermRef.current = null;
       fitAddonRef.current = null;
     };
-  }, [projectId]);
+  }, [projectId, connect]);
 
   /* ---- Run button handler ---- */
   const handleRun = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(
-        JSON.stringify({
-          type: 'terminal:input',
-          payload: 'npm start\r',
-        }),
-      );
+      wsRef.current.send(JSON.stringify({ type: 'terminal:input', payload: 'npm start\r' }));
     }
   }, []);
 
@@ -227,6 +299,8 @@ export function TerminalPanel({ projectId }: TerminalPanelProps) {
     xtermRef.current?.clear();
   }, []);
 
+  const statusColor = status === 'connected' ? '#3fb950' : status === 'connecting' ? '#d29922' : '#f85149';
+
   return (
     <div className={styles.panel}>
       {/* Header */}
@@ -234,29 +308,38 @@ export function TerminalPanel({ projectId }: TerminalPanelProps) {
         <div className={styles.headerLeft}>
           <TerminalIcon size={14} />
           <span className={styles.title}>{t('terminalTitle')}</span>
+          <span className={styles.statusDot} style={{ backgroundColor: statusColor }} title={status} />
         </div>
         <div className={styles.headerRight}>
-          <Button
-            variant="text"
-            size="sm"
-            icon={<Play size={12} />}
-            onClick={handleRun}
-          >
+          {status === 'disconnected' && (
+            <Button variant="text" size="sm" icon={<RefreshCw size={12} />} onClick={handleReconnect}>
+              {t('termReconnect')}
+            </Button>
+          )}
+          <Button variant="text" size="sm" icon={<Play size={12} />} onClick={handleRun}>
             {t('termRun')}
           </Button>
-          <Button
-            variant="text"
-            size="sm"
-            icon={<Trash2 size={12} />}
-            onClick={handleClear}
-          >
+          <Button variant="text" size="sm" icon={<Trash2 size={12} />} onClick={handleClear}>
             {t('termClear')}
           </Button>
         </div>
       </div>
 
       {/* Terminal area */}
-      <div className={styles.terminalContainer} ref={terminalRef} />
+      <div className={styles.terminalContainer}>
+        {status === 'disconnected' && (
+          <div className={styles.disconnectedOverlay}>
+            <span className={styles.disconnectedLabel}>
+              <WifiOff size={16} />
+              {t('termDisconnected')}
+            </span>
+            <Button variant="outlined" size="sm" icon={<RefreshCw size={12} />} onClick={handleReconnect}>
+              {t('termReconnect')}
+            </Button>
+          </div>
+        )}
+        <div ref={terminalRef} style={{ height: '100%' }} />
+      </div>
     </div>
   );
 }

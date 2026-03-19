@@ -103,7 +103,7 @@ export function EditorTabs() {
             </span>
             <span className={styles.filename}>{filename}</span>
             {tab.isDirty && (
-              <span className={styles.modified} aria-label="unsaved">
+              <span className={styles.modified} aria-label={t('unsavedChanges')}>
                 &bull;
               </span>
             )}

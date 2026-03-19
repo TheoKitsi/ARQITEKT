@@ -184,3 +184,57 @@
   color: var(--color-red);
   padding: var(--space-3);
 }
+
+/* ---- Context menu ---- */
+.contextMenu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 160px;
+  padding: var(--space-1) 0;
+  background: var(--color-surface-bg2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  text-align: left;
+}
+
+.menuItem:hover {
+  background: var(--color-surface-bg3);
+}
+
+.menuItemDanger {
+  color: var(--color-red);
+}
+
+.menuDivider {
+  height: 1px;
+  margin: var(--space-1) 0;
+  background: var(--color-border);
+}
+
+/* ---- Inline input (new file / rename) ---- */
+.inlineInput {
+  flex: 1;
+  height: 22px;
+  padding: 0 var(--space-1);
+  border: 1px solid var(--color-brand-gold);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-bg1);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  outline: none;
+}

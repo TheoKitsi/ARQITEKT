@@ -8,12 +8,21 @@ import { resolveProjectById } from './projects.js';
 // Types
 // ---------------------------------------------------------------------------
 
+interface LogEntry {
+  timestamp: number;
+  stream: 'stdout' | 'stderr';
+  text: string;
+}
+
+const MAX_LOG_LINES = 500;
+
 interface RunningApp {
   pid: number;
   port: number;
   projectId: string;
   process: ChildProcess;
   startedAt: number;
+  logs: LogEntry[];
 }
 
 interface StartResult {
@@ -166,7 +175,22 @@ export async function startApp(projectId: string): Promise<StartResult> {
     projectId,
     process: child,
     startedAt: Date.now(),
+    logs: [],
   };
+
+  // Capture stdout/stderr into ring buffer
+  const pushLog = (stream: 'stdout' | 'stderr', data: Buffer) => {
+    const lines = data.toString('utf-8').split('\n').filter(Boolean);
+    for (const text of lines) {
+      entry.logs.push({ timestamp: Date.now(), stream, text });
+    }
+    if (entry.logs.length > MAX_LOG_LINES) {
+      entry.logs.splice(0, entry.logs.length - MAX_LOG_LINES);
+    }
+  };
+
+  child.stdout?.on('data', (d: Buffer) => pushLog('stdout', d));
+  child.stderr?.on('data', (d: Buffer) => pushLog('stderr', d));
 
   runningApps.set(projectId, entry);
 
@@ -228,6 +252,18 @@ export function getAppStatus(projectId: string): StatusResult {
     url: `http://localhost:${entry.port}`,
     uptime: Math.round((Date.now() - entry.startedAt) / 1000),
   };
+}
+
+/**
+ * Return captured log lines for a project's running (or recently-exited) app.
+ */
+export function getAppLogs(projectId: string, since?: number): LogEntry[] {
+  const entry = runningApps.get(projectId);
+  if (!entry) return [];
+  if (since) {
+    return entry.logs.filter((l) => l.timestamp > since);
+  }
+  return entry.logs;
 }
 
 /**

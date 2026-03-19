@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import styles from './Breadcrumb.module.css';
@@ -13,10 +14,11 @@ interface Props {
 }
 
 export function Breadcrumb({ items }: Props) {
+  const { t } = useTranslation();
   if (items.length === 0) return null;
 
   return (
-    <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+    <nav className={styles.breadcrumb} aria-label={t('breadcrumb')}>
       <ol className={styles.list}>
         {items.map((item, i) => {
           const isLast = i === items.length - 1;

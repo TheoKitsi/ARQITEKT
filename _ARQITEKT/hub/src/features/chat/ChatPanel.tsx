@@ -11,7 +11,7 @@ import {
   addMessage,
   type ChatMessage,
 } from '@/store/slices/chatSlice';
-import { useSendMessageMutation } from '@/store/api/chatApi';
+import { streamChat } from '@/store/thunks/streamChat';
 import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { ChatMessages } from './ChatMessages';
@@ -29,8 +29,6 @@ export function ChatPanel() {
   const { showToast } = useToast();
   const { isOpen, messages, model, isLoading } = useAppSelector((s) => s.chat);
   const panelRef = useRef<HTMLElement>(null);
-
-  const [sendMessage] = useSendMessageMutation();
 
   /* ---- Close on Escape ---- */
   useEffect(() => {
@@ -55,9 +53,9 @@ export function ChatPanel() {
     }
   }, [isOpen]);
 
-  /* ---- Send handler ---- */
+  /* ---- Send handler (SSE streaming) ---- */
   const handleSend = useCallback(
-    async (text: string) => {
+    (text: string) => {
       if (!text || isLoading) return;
 
       const userMsg: ChatMessage = {
@@ -68,29 +66,9 @@ export function ChatPanel() {
       };
 
       dispatch(addMessage(userMsg));
-
-      try {
-        const response = await sendMessage({ message: text, model }).unwrap();
-        dispatch(
-          addMessage({
-            id: response.id,
-            role: 'assistant',
-            content: response.content,
-            timestamp: response.timestamp,
-          }),
-        );
-      } catch {
-        dispatch(
-          addMessage({
-            id: `err-${Date.now()}`,
-            role: 'assistant',
-            content: t('errorLoad'),
-            timestamp: Date.now(),
-          }),
-        );
-      }
+      dispatch(streamChat({ message: text, model }));
     },
-    [isLoading, model, dispatch, sendMessage, t],
+    [isLoading, model, dispatch],
   );
 
   /* ---- Save conversation ---- */

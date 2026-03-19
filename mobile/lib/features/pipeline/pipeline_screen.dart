@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../models/pipeline.dart';
@@ -20,7 +21,7 @@ class PipelineScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pipeline'),
+        title: Text(AppLocalizations.of(context)!.pipeline),
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.refreshCw),
@@ -101,7 +102,7 @@ class _PipelineSection extends StatelessWidget {
         _ConfidenceBar(value: pipeline.overallConfidence),
         const SizedBox(height: Tokens.space2),
         Text(
-          '${pipeline.passedCount}/${pipeline.gates.length} Gates passed',
+          AppLocalizations.of(context)!.gatesPassed(pipeline.passedCount, pipeline.gates.length),
           style: TextStyle(
             fontSize: Tokens.fontSm,
             color: Tokens.textSecondary,
@@ -153,7 +154,7 @@ class _GateCard extends StatelessWidget {
         leading: Icon(icon, color: color, size: 20),
         title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(
-          '${gate.confidence.toStringAsFixed(0)}% confidence',
+          AppLocalizations.of(context)!.confidencePercent(gate.confidence.toStringAsFixed(0)),
           style: TextStyle(fontSize: Tokens.fontSm, color: color),
         ),
         trailing: _EvalButton(
@@ -180,7 +181,7 @@ class _GateCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(
                   horizontal: Tokens.space4, vertical: Tokens.space2),
               child: Text(
-                '${gate.gaps.length} gap(s)',
+                AppLocalizations.of(context)!.gapCount(gate.gaps.length),
                 style: TextStyle(
                   fontSize: Tokens.fontSm,
                   color: Tokens.orange,
@@ -208,7 +209,7 @@ class _GateCard extends StatelessWidget {
                   artifactId: gate.gaps.first.artifactId,
                 ),
                 icon: Icon(LucideIcons.messageCircle, size: 16, color: Tokens.gold),
-                label: Text('Probe Gaps', style: TextStyle(color: Tokens.gold)),
+                label: Text(AppLocalizations.of(context)!.probeGaps, style: TextStyle(color: Tokens.gold)),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: Tokens.gold.withValues(alpha: 0.4)),
                 ),
@@ -306,7 +307,7 @@ class _ConfidenceBar extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Overall Confidence',
+            Text(AppLocalizations.of(context)!.overallConfidence,
                 style: TextStyle(
                     fontSize: Tokens.fontSm,
                     color: Tokens.textSecondary,
@@ -347,7 +348,7 @@ class _ConfidenceSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Confidence Breakdown',
+          AppLocalizations.of(context)!.confidenceBreakdown,
           style: TextStyle(
             fontSize: Tokens.fontBase,
             fontWeight: FontWeight.w600,
@@ -474,8 +475,8 @@ class _DriftSection extends StatelessWidget {
       return Card(
         child: ListTile(
           leading: Icon(LucideIcons.shieldCheck, color: Tokens.green),
-          title: const Text('No Drift'),
-          subtitle: const Text('Everything matches the baseline.',
+          title: Text(AppLocalizations.of(context)!.noDrift),
+          subtitle: Text(AppLocalizations.of(context)!.noDriftDetail,
               style: TextStyle(color: Tokens.textSecondary)),
         ),
       );
@@ -485,7 +486,7 @@ class _DriftSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Drift Detected',
+          AppLocalizations.of(context)!.driftDetected,
           style: TextStyle(
             fontSize: Tokens.fontBase,
             fontWeight: FontWeight.w600,
@@ -667,7 +668,7 @@ class _ErrorCard extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: Icon(LucideIcons.alertTriangle, color: Tokens.red),
-        title: const Text('Error'),
+        title: Text(AppLocalizations.of(context)!.error),
         subtitle: Text(message, style: const TextStyle(color: Tokens.textSecondary)),
       ),
     );

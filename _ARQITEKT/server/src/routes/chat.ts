@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { sendChatMessage, listModels, getLLMConfig } from '../services/llm.js';
+import { sendChatMessage, streamChatMessage, listModels, getLLMConfig } from '../services/llm.js';
 import { validate, chatSendSchema } from '../middleware/validation.js';
 import { getProjectPipeline } from '../services/pipeline.js';
 
@@ -82,4 +82,45 @@ chatRouter.get('/models', async (_req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// POST /api/chat/stream — Server-Sent Events streaming endpoint
+chatRouter.post('/stream', validate(chatSendSchema), async (req, res) => {
+  const { message, model, context } = req.body;
+
+  const projectIdMatch = (context ?? '').match(/project[:\s]+(\w+)/i)
+    ?? message.match(/project[:\s]+(\w+)/i);
+  const pipelineContext = await buildPipelineContext(projectIdMatch?.[1]);
+
+  const systemContent = (context ?? '') + pipelineContext;
+
+  const messages = [
+    ...(systemContent
+      ? [{ role: 'system' as const, content: systemContent }]
+      : []),
+    { role: 'user' as const, content: message },
+  ];
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+
+  try {
+    for await (const chunk of streamChatMessage(messages, model)) {
+      if (req.socket.destroyed) break;
+      const payload = JSON.stringify({
+        delta: chunk.delta,
+        model: chunk.model,
+        done: chunk.done,
+      });
+      res.write(`data: ${payload}\n\n`);
+    }
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : 'Stream failed';
+    res.write(`data: ${JSON.stringify({ error: errorMsg, done: true })}\n\n`);
+  }
+
+  res.end();
 });

@@ -5,6 +5,12 @@
   font-weight: var(--font-weight-semibold);
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .filters {
   display: flex;
   gap: var(--space-1);

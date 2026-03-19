@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import {
@@ -9,6 +9,7 @@ import {
   TrendingUp,
   Bug,
   Lightbulb,
+  Download,
 } from 'lucide-react';
 import { useGetFeedbackQuery } from '@/store/api/feedbackApi';
 import { Card } from '@/components/ui/Card';
@@ -48,6 +49,13 @@ export function FeedbackPanel({ onAddFeedback }: FeedbackPanelProps) {
 
   const openCount = items.filter((item) => item.status === 'open').length;
 
+  const handleExport = useCallback(
+    (format: 'csv' | 'json') => {
+      window.open(`/api/projects/${projectId}/feedback/export?format=${format}`, '_blank');
+    },
+    [projectId],
+  );
+
   return (
     <Card>
       <Card.Header>
@@ -60,14 +68,34 @@ export function FeedbackPanel({ onAddFeedback }: FeedbackPanelProps) {
             </Badge>
           )}
         </div>
-        <Button
-          variant="outlined"
-          size="sm"
-          icon={<Plus size={14} />}
-          onClick={onAddFeedback}
-        >
-          {t('monitorAddFeedback')}
-        </Button>
+        <div className={styles.headerActions}>
+          <Button
+            variant="text"
+            size="sm"
+            icon={<Download size={14} />}
+            onClick={() => handleExport('csv')}
+            disabled={items.length === 0}
+          >
+            CSV
+          </Button>
+          <Button
+            variant="text"
+            size="sm"
+            icon={<Download size={14} />}
+            onClick={() => handleExport('json')}
+            disabled={items.length === 0}
+          >
+            JSON
+          </Button>
+          <Button
+            variant="outlined"
+            size="sm"
+            icon={<Plus size={14} />}
+            onClick={onAddFeedback}
+          >
+            {t('monitorAddFeedback')}
+          </Button>
+        </div>
       </Card.Header>
       <Card.Body>
         {/* Filter tabs */}

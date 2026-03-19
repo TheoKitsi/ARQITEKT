@@ -117,6 +117,15 @@ export interface AppStatus {
 
 export type ProjectMode = 'local' | 'external';
 
+export type ProjectRole = 'owner' | 'editor' | 'viewer';
+
+export interface ProjectMember {
+  userId: string;
+  username: string;
+  role: ProjectRole;
+  addedAt: string;
+}
+
 export interface ProjectRegistryEntry {
   id: string;
   name: string;
@@ -125,6 +134,7 @@ export interface ProjectRegistryEntry {
   path: string;
   github?: string;
   description?: string;
+  members?: ProjectMember[];
 }
 
 export interface ProjectsRegistry {

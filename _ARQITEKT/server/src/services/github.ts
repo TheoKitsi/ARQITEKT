@@ -2,7 +2,9 @@ import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { createCipheriv, createDecipheriv, randomBytes, createHash } from 'crypto';
 import { hostname } from 'os';
+import { spawn } from 'child_process';
 import { config } from '../config.js';
+import { createLogger } from './logger.js';
 
 interface GitHubStatus {
   connected: boolean;
@@ -171,4 +173,131 @@ export async function getRepoStatus(
   } catch {
     return { exists: false };
   }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Git push — commit and push changes in a project directory          */
+/* ------------------------------------------------------------------ */
+
+const log = createLogger('github');
+
+function runGit(args: string[], cwd: string): Promise<{ code: number; stdout: string; stderr: string }> {
+  return new Promise((resolve) => {
+    const proc = spawn('git', args, { cwd, shell: true });
+    let stdout = '';
+    let stderr = '';
+    proc.stdout.on('data', (d: Buffer) => { stdout += d.toString(); });
+    proc.stderr.on('data', (d: Buffer) => { stderr += d.toString(); });
+    proc.on('close', (code) => resolve({ code: code ?? 1, stdout, stderr }));
+    proc.on('error', (err) => resolve({ code: 1, stdout: '', stderr: err.message }));
+  });
+}
+
+export interface GitPushResult {
+  success: boolean;
+  message: string;
+  branch?: string;
+  commitSha?: string;
+}
+
+/**
+ * Stage all changes, commit, and push to the configured remote.
+ * Requires git to be installed and the project directory to be a git repo.
+ */
+export async function gitPush(
+  projectPath: string,
+  commitMessage = 'Update from ARQITEKT',
+  branch?: string,
+): Promise<GitPushResult> {
+  // Check if git repo
+  const statusResult = await runGit(['status', '--porcelain'], projectPath);
+  if (statusResult.code !== 0) {
+    return { success: false, message: 'Not a git repository or git not available' };
+  }
+
+  // Detect current branch
+  const branchResult = await runGit(['rev-parse', '--abbrev-ref', 'HEAD'], projectPath);
+  const currentBranch = branchResult.stdout.trim() || 'main';
+  const targetBranch = branch ?? currentBranch;
+
+  // If no changes, nothing to push
+  if (!statusResult.stdout.trim()) {
+    return { success: true, message: 'No changes to commit', branch: targetBranch };
+  }
+
+  // Stage all
+  const addResult = await runGit(['add', '-A'], projectPath);
+  if (addResult.code !== 0) {
+    log.error({ stderr: addResult.stderr }, 'git add failed');
+    return { success: false, message: `git add failed: ${addResult.stderr}` };
+  }
+
+  // Commit
+  const commitResult = await runGit(['commit', '-m', commitMessage], projectPath);
+  if (commitResult.code !== 0) {
+    log.error({ stderr: commitResult.stderr }, 'git commit failed');
+    return { success: false, message: `git commit failed: ${commitResult.stderr}` };
+  }
+
+  // Extract commit SHA
+  const shaResult = await runGit(['rev-parse', '--short', 'HEAD'], projectPath);
+  const commitSha = shaResult.stdout.trim();
+
+  // Push
+  const pushResult = await runGit(['push', 'origin', targetBranch], projectPath);
+  if (pushResult.code !== 0) {
+    log.error({ stderr: pushResult.stderr }, 'git push failed');
+    return { success: false, message: `git push failed: ${pushResult.stderr}`, branch: targetBranch, commitSha };
+  }
+
+  log.info({ branch: targetBranch, commitSha }, 'pushed to remote');
+  return { success: true, message: `Pushed to ${targetBranch}`, branch: targetBranch, commitSha };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Git status — get modified/staged/untracked files for a project     */
+/* ------------------------------------------------------------------ */
+
+export interface GitFileStatus {
+  path: string;
+  status: 'modified' | 'added' | 'deleted' | 'renamed' | 'untracked';
+}
+
+export interface GitStatusResult {
+  isRepo: boolean;
+  branch?: string;
+  files: GitFileStatus[];
+}
+
+export async function gitStatus(projectPath: string): Promise<GitStatusResult> {
+  const branchResult = await runGit(['rev-parse', '--abbrev-ref', 'HEAD'], projectPath);
+  if (branchResult.code !== 0) {
+    return { isRepo: false, files: [] };
+  }
+
+  const branch = branchResult.stdout.trim();
+  const statusResult = await runGit(['status', '--porcelain'], projectPath);
+  if (statusResult.code !== 0) {
+    return { isRepo: true, branch, files: [] };
+  }
+
+  const files: GitFileStatus[] = [];
+  for (const line of statusResult.stdout.split('\n')) {
+    if (!line.trim()) continue;
+    const xy = line.slice(0, 2);
+    const filePath = line.slice(3).trim();
+    if (xy === '??' ) {
+      files.push({ path: filePath, status: 'untracked' });
+    } else if (xy.includes('D')) {
+      files.push({ path: filePath, status: 'deleted' });
+    } else if (xy.includes('R')) {
+      files.push({ path: filePath, status: 'renamed' });
+    } else if (xy.includes('A')) {
+      files.push({ path: filePath, status: 'added' });
+    } else {
+      files.push({ path: filePath, status: 'modified' });
+    }
+  }
+
+  return { isRepo: true, branch, files };
 }

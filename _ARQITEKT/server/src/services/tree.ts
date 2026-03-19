@@ -3,7 +3,10 @@ import { join } from 'path';
 import { parseFrontmatter } from './frontmatter.js';
 import { resolveProjectById } from './projects.js';
 import { fmString } from './requirementHelpers.js';
+import { createLogger } from './logger.js';
 import type { TreeNode, EntityPrefix, RequirementStatus } from '../types/project.js';
+
+const log = createLogger('tree');
 
 /**
  * Build the requirements tree for a project.
@@ -49,7 +52,7 @@ export async function buildTree(projectId: string): Promise<TreeNode[]> {
     nodes.push(bcNode);
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-      console.error('Error reading Business Case:', err);
+      log.error({ err }, 'Error reading Business Case');
     }
   }
 

@@ -202,6 +202,48 @@ export async function getProjectById(projectId: string): Promise<Project | null>
 }
 
 /* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ */
+/*  Starter templates                                                   */
+/* ------------------------------------------------------------------ */
+
+export interface StarterTemplate {
+  id: string;
+  name: string;
+  description: string;
+  artifacts: number;
+}
+
+/**
+ * List available starter templates from template/starters/.
+ */
+export async function listStarterTemplates(): Promise<StarterTemplate[]> {
+  const startersDir = join(config.hubRoot, 'template', 'starters');
+  try {
+    const entries = await readdir(startersDir, { withFileTypes: true });
+    const templates: StarterTemplate[] = [];
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      try {
+        const manifestPath = join(startersDir, entry.name, 'manifest.yaml');
+        const raw = await readFile(manifestPath, 'utf-8');
+        const manifest = parseYaml(raw) as Record<string, unknown>;
+        templates.push({
+          id: String(manifest.id ?? entry.name),
+          name: String(manifest.name ?? entry.name),
+          description: String(manifest.description ?? ''),
+          artifacts: Number(manifest.artifacts ?? 0),
+        });
+      } catch {
+        // Skip directories without valid manifest
+      }
+    }
+    return templates;
+  } catch {
+    return [];
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /*  Create project                                                     */
 /* ------------------------------------------------------------------ */
 
@@ -210,7 +252,8 @@ export async function getProjectById(projectId: string): Promise<Project | null>
  */
 export async function createProject(
   name: string,
-  description?: string
+  description?: string,
+  template?: string
 ): Promise<Project> {
   const entries = await readdir(config.workspaceRoot, { withFileTypes: true });
   const existing = entries
@@ -224,6 +267,18 @@ export async function createProject(
   const templatePath = join(config.hubRoot, 'template');
 
   await cp(templatePath, projectPath, { recursive: true });
+
+  // Overlay starter template requirements if specified
+  if (template) {
+    const starterReqDir = join(config.hubRoot, 'template', 'starters', template, 'requirements');
+    try {
+      await stat(starterReqDir);
+      const targetReqDir = join(projectPath, 'requirements');
+      await cp(starterReqDir, targetReqDir, { recursive: true });
+    } catch {
+      // Starter template not found — continue with blank template
+    }
+  }
 
   // Update project.yaml
   const configPath = join(projectPath, 'config', 'project.yaml');

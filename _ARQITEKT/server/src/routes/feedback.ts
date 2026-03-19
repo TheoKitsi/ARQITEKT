@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listFeedback, createFeedback, deleteFeedback } from '../services/feedback.js';
+import { listFeedback, createFeedback, deleteFeedback, exportFeedbackCsv } from '../services/feedback.js';
 import { validate, createFeedbackSchema } from '../middleware/validation.js';
 
 export const feedbackRouter = Router();
@@ -10,6 +10,29 @@ feedbackRouter.get('/:id/feedback', async (req, res, next) => {
     const projectId = req.params.id as string;
     const items = await listFeedback(projectId);
     res.json({ items, projectId });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/projects/:id/feedback/export?format=csv|json
+feedbackRouter.get('/:id/feedback/export', async (req, res, next) => {
+  try {
+    const projectId = req.params.id as string;
+    const format = req.query.format === 'csv' ? 'csv' : 'json';
+
+    if (format === 'csv') {
+      const csv = await exportFeedbackCsv(projectId);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="feedback-${projectId}.csv"`);
+      res.send(csv);
+      return;
+    }
+
+    const items = await listFeedback(projectId);
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="feedback-${projectId}.json"`);
+    res.json({ items, projectId, exportedAt: new Date().toISOString() });
   } catch (err) {
     next(err);
   }

@@ -3,6 +3,10 @@ import { resolve } from 'path';
 import yaml from 'js-yaml';
 import { config } from '../config.js';
 import type { ChatMessage } from '../types/project.js';
+import { recordUsage, estimateTokens } from './telemetry.js';
+import { createLogger } from './logger.js';
+
+const log = createLogger('llm');
 
 interface LLMProvider {
   provider: string;
@@ -124,6 +128,8 @@ async function callProvider(
     throw new Error(`No API key for provider "${provider.provider}"`);
   }
 
+  const startTime = Date.now();
+
   const response = await fetch(provider.endpoint, {
     method: 'POST',
     headers: {
@@ -147,10 +153,26 @@ async function callProvider(
   const data = (await response.json()) as {
     choices: Array<{ message: { content: string } }>;
     model: string;
+    usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
   };
 
+  const latencyMs = Date.now() - startTime;
+  const content = data.choices[0]?.message.content ?? '';
+  const promptText = messages.map((m) => m.content).join('');
+
+  recordUsage({
+    timestamp: Date.now(),
+    model: data.model ?? useModel,
+    provider: provider.provider,
+    promptTokens: data.usage?.prompt_tokens ?? estimateTokens(promptText),
+    completionTokens: data.usage?.completion_tokens ?? estimateTokens(content),
+    totalTokens: data.usage?.total_tokens ?? (estimateTokens(promptText) + estimateTokens(content)),
+    latencyMs,
+    streaming: false,
+  });
+
   return {
-    content: data.choices[0]?.message.content ?? '',
+    content,
     model: data.model,
   };
 }
@@ -202,7 +224,7 @@ export async function sendChatMessage(
       return await callProvider(provider, trimmed, model);
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));
-      console.error(`LLM provider "${provider.provider}" failed, trying next...`, lastError.message);
+      log.warn({ provider: provider.provider, err: lastError.message }, 'LLM provider failed, trying next');
     }
   }
 
@@ -217,6 +239,109 @@ export async function sendChatMessage(
   };
 }
 
+/**
+ * Stream a chat request from a single provider using SSE (OpenAI-compatible streaming).
+ * Yields delta content chunks as they arrive.
+ */
+async function* streamProvider(
+  provider: LLMProvider,
+  messages: ChatMessage[],
+  modelOverride?: string,
+): AsyncGenerator<{ delta: string; model: string; done: boolean }> {
+  const useModel = modelOverride || provider.model;
+
+  if (!provider.apiKey) {
+    throw new Error(`No API key for provider "${provider.provider}"`);
+  }
+
+  const response = await fetch(provider.endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${provider.apiKey}`,
+    },
+    body: JSON.stringify({
+      model: useModel,
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      max_tokens: provider.maxTokens,
+      temperature: provider.temperature,
+      stream: true,
+    }),
+    signal: AbortSignal.timeout(config.llmTimeout),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`LLM ${provider.provider} failed (${response.status}): ${text}`);
+  }
+
+  if (!response.body) {
+    throw new Error(`LLM ${provider.provider} returned no stream body`);
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  for await (const chunk of response.body as AsyncIterable<Uint8Array>) {
+    buffer += decoder.decode(chunk, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || !trimmed.startsWith('data: ')) continue;
+      const payload = trimmed.slice(6);
+      if (payload === '[DONE]') {
+        yield { delta: '', model: useModel, done: true };
+        return;
+      }
+      try {
+        const parsed = JSON.parse(payload) as {
+          choices: Array<{ delta: { content?: string } }>;
+          model?: string;
+        };
+        const delta = parsed.choices[0]?.delta?.content ?? '';
+        if (delta) {
+          yield { delta, model: parsed.model ?? useModel, done: false };
+        }
+      } catch {
+        // Skip malformed JSON lines
+      }
+    }
+  }
+
+  yield { delta: '', model: useModel, done: true };
+}
+
+/**
+ * Stream a chat response with automatic fallback through the provider chain.
+ * Yields delta content chunks for SSE forwarding.
+ */
+export async function* streamChatMessage(
+  messages: ChatMessage[],
+  model?: string,
+): AsyncGenerator<{ delta: string; model: string; done: boolean }> {
+  const chain = await loadProviderChain();
+  const primary = chain[0];
+  const contextBudget = (primary?.maxTokens ?? 4096) * 2;
+  const trimmed = trimConversation(messages, contextBudget);
+  let lastError: Error | null = null;
+
+  for (const provider of chain) {
+    try {
+      yield* streamProvider(provider, trimmed, model);
+      return;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      log.warn({ provider: provider.provider, err: lastError.message }, 'LLM stream provider failed, trying next');
+    }
+  }
+
+  if (lastError) {
+    throw lastError;
+  }
+}
+
 /** Invalidate cached config (e.g., after config reload). */
 export function resetLLMConfig(): void {
   cachedConfig = null;
@@ -226,14 +351,14 @@ export function resetLLMConfig(): void {
  * List available AI models.
  */
 export async function listModels(): Promise<
-  Array<{ id: string; name: string; provider: string }>
+  Array<{ id: string; name: string; provider: string; contextWindow: number; available: boolean }>
 > {
   return [
-    { id: 'gpt-4o', name: 'GPT-4o', provider: 'GitHub Models' },
-    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'GitHub Models' },
-    { id: 'o3-mini', name: 'o3-mini', provider: 'GitHub Models' },
-    { id: 'claude-sonnet', name: 'Claude Sonnet', provider: 'GitHub Models' },
-    { id: 'DeepSeek-R1', name: 'DeepSeek R1', provider: 'GitHub Models' },
-    { id: 'deepseek-chat', name: 'DeepSeek Chat', provider: 'DeepSeek' },
+    { id: 'gpt-4o', name: 'GPT-4o', provider: 'GitHub Models', contextWindow: 128000, available: true },
+    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'GitHub Models', contextWindow: 128000, available: true },
+    { id: 'o3-mini', name: 'o3-mini', provider: 'GitHub Models', contextWindow: 200000, available: true },
+    { id: 'claude-sonnet', name: 'Claude Sonnet', provider: 'GitHub Models', contextWindow: 200000, available: true },
+    { id: 'DeepSeek-R1', name: 'DeepSeek R1', provider: 'GitHub Models', contextWindow: 64000, available: true },
+    { id: 'deepseek-chat', name: 'DeepSeek Chat', provider: 'DeepSeek', contextWindow: 64000, available: true },
   ];
 }

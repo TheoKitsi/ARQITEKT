@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../services/api_client.dart';
@@ -22,7 +23,7 @@ class FeedbackListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Feedback'),
+        title: Text(AppLocalizations.of(context)!.feedback),
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => Navigator.of(context).pop(),
@@ -36,7 +37,7 @@ class FeedbackListScreen extends ConsumerWidget {
       ),
       body: feedbackAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Fehler: $err')),
+        error: (err, _) => Center(child: Text(AppLocalizations.of(context)!.errorPrefix(err.toString()))),
         data: (items) {
           if (items.isEmpty) {
             return Center(
@@ -46,7 +47,7 @@ class FeedbackListScreen extends ConsumerWidget {
                   Icon(LucideIcons.inbox, size: 48, color: Tokens.textTertiary),
                   const SizedBox(height: Tokens.space4),
                   Text(
-                    'Kein Feedback vorhanden',
+                    AppLocalizations.of(context)!.noFeedback,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: Tokens.textSecondary,
                         ),

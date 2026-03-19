@@ -7,6 +7,7 @@ import { z } from 'zod';
 export const createProjectSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
+  template: z.string().max(50).optional(),
 });
 
 export const importProjectSchema = z.object({
@@ -107,6 +108,19 @@ export const githubPushSchema = z.object({
 export const writeFileSchema = z.object({
   path: z.string().min(1).max(500),
   content: z.string().max(1_000_000),
+});
+
+export const deleteFileSchema = z.object({
+  path: z.string().min(1).max(500),
+});
+
+export const renameFileSchema = z.object({
+  oldPath: z.string().min(1).max(500),
+  newPath: z.string().min(1).max(500),
+});
+
+export const createDirSchema = z.object({
+  path: z.string().min(1).max(500),
 });
 
 /* ------------------------------------------------------------------ */

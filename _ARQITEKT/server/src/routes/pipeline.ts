@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { validate, evaluateGateSchema, overrideGateSchema } from '../middleware/validation.js';
 import { evaluateGate, getProjectPipeline, overrideGate, getAllGaps } from '../services/pipeline.js';
 import { evaluateConfidence, evaluateAllConfidence } from '../services/confidence.js';
+import { recordAudit } from '../services/audit.js';
 import type { GateId } from '../types/project.js';
 
 export const pipelineRouter = Router();
@@ -59,6 +60,7 @@ pipelineRouter.post('/:id/pipeline/gate/:gateId/override', validate(overrideGate
       return;
     }
     const result = await overrideGate(projectId, gateId as GateId, req.body.reason);
+    recordAudit(projectId, 'gate.overridden', req.ip ?? 'unknown', gateId, { reason: req.body.reason }).catch(() => {});
     res.json(result);
   } catch (err) {
     next(err);

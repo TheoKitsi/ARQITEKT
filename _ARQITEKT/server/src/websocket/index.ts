@@ -3,10 +3,13 @@ import type { IncomingMessage } from 'http';
 import { join } from 'path';
 import { config } from '../config.js';
 import { verifyToken } from '../services/auth.js';
+import { createLogger } from '../services/logger.js';
 import {
   createTerminalSession,
+  reattachTerminalSession,
   writeTerminalInput,
   resizeTerminal,
+  detachTerminalSession,
   destroyTerminalSession,
   destroyAllTerminals,
 } from './terminal.js';
@@ -43,6 +46,12 @@ interface TerminalStartPayload {
   rows?: number;
 }
 
+interface TerminalReattachPayload {
+  sessionId: string;
+  cols?: number;
+  rows?: number;
+}
+
 interface TerminalResizePayload {
   cols: number;
   rows: number;
@@ -70,7 +79,9 @@ export function setupWebSocket(wss: WebSocketServer): void {
       }
     }
 
-    console.log('WebSocket client connected');
+    const log = createLogger('websocket');
+
+    log.info('WebSocket client connected');
 
     ws.on('message', (raw: Buffer) => {
       try {
@@ -82,12 +93,13 @@ export function setupWebSocket(wss: WebSocketServer): void {
     });
 
     ws.on('close', () => {
-      destroyTerminalSession(ws);
-      console.log('WebSocket client disconnected');
+      // Detach WS but keep PTY alive for reconnection
+      detachTerminalSession(ws);
+      log.info('WebSocket client disconnected');
     });
 
     ws.on('error', (err) => {
-      console.error('WebSocket error:', err.message);
+      log.error({ err }, 'WebSocket error');
     });
 
     // Send initial connection confirmation
@@ -113,6 +125,19 @@ function handleMessage(ws: WebSocket, message: WSMessage): void {
         cwd = join(config.workspaceRoot, p.projectId);
       }
       createTerminalSession(ws, cwd, p.cols ?? 80, p.rows ?? 24);
+      break;
+    }
+
+    case 'terminal:reattach': {
+      const p = (message.payload ?? {}) as TerminalReattachPayload;
+      if (!p.sessionId || typeof p.sessionId !== 'string') {
+        ws.send(JSON.stringify({ type: 'terminal:error', payload: 'sessionId required' }));
+        return;
+      }
+      const ok = reattachTerminalSession(ws, p.sessionId, p.cols, p.rows);
+      if (!ok) {
+        ws.send(JSON.stringify({ type: 'terminal:session-expired', payload: { sessionId: p.sessionId } }));
+      }
       break;
     }
 

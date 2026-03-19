@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../models/probing.dart';
@@ -193,7 +194,7 @@ class _ProbingSheetState extends ConsumerState<_ProbingSheet> {
             const SizedBox(width: Tokens.space2),
             Expanded(
               child: Text(
-                'Probing: ${widget.artifactId}',
+                AppLocalizations.of(context)!.probingTitle(widget.artifactId),
                 style: const TextStyle(
                   fontSize: Tokens.fontLg,
                   fontWeight: FontWeight.w700,
@@ -251,7 +252,7 @@ class _ProbingSheetState extends ConsumerState<_ProbingSheet> {
       FilledButton.icon(
         onPressed: _startProbing,
         icon: const Icon(LucideIcons.play),
-        label: const Text('Start Probing'),
+        label: Text(AppLocalizations.of(context)!.startProbing),
         style: FilledButton.styleFrom(
           backgroundColor: Tokens.gold,
           foregroundColor: Colors.black,
@@ -268,7 +269,7 @@ class _ProbingSheetState extends ConsumerState<_ProbingSheet> {
       const SizedBox(height: Tokens.space3),
       const Center(
         child: Text(
-          'Agents are analyzing gaps...',
+          AppLocalizations.of(context)!.analyzingGaps,
           style: TextStyle(color: Tokens.textSecondary, fontSize: Tokens.fontSm),
         ),
       ),
@@ -364,7 +365,7 @@ class _ProbingSheetState extends ConsumerState<_ProbingSheet> {
                 height: 16,
                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
               )
-            : const Text('Submit Answer'),
+            : Text(AppLocalizations.of(context)!.submitAnswer),
       ),
 
       // Skip
@@ -373,7 +374,7 @@ class _ProbingSheetState extends ConsumerState<_ProbingSheet> {
         TextField(
           controller: _skipReasonController,
           decoration: InputDecoration(
-            hintText: 'Reason for skipping...',
+            hintText: AppLocalizations.of(context)!.skipReasonHint,
             hintStyle: const TextStyle(color: Tokens.textTertiary),
             filled: true,
             fillColor: Tokens.surfaceBg3,
@@ -390,7 +391,7 @@ class _ProbingSheetState extends ConsumerState<_ProbingSheet> {
         OutlinedButton(
           onPressed: _submitting ? null : () => _skip(q),
           style: OutlinedButton.styleFrom(foregroundColor: Tokens.textSecondary),
-          child: const Text('Skip'),
+          child: Text(AppLocalizations.of(context)!.skip),
         ),
       ],
     ];
@@ -406,7 +407,7 @@ class _ProbingSheetState extends ConsumerState<_ProbingSheet> {
       const SizedBox(height: Tokens.space3),
       const Center(
         child: Text(
-          'Probing Complete',
+          AppLocalizations.of(context)!.probingComplete,
           style: TextStyle(
             fontSize: Tokens.fontLg,
             fontWeight: FontWeight.w700,
@@ -418,7 +419,7 @@ class _ProbingSheetState extends ConsumerState<_ProbingSheet> {
         const SizedBox(height: Tokens.space2),
         Center(
           child: Text(
-            '${_session!.answered} answered, ${_session!.skipped} skipped out of ${_session!.total}',
+            AppLocalizations.of(context)!.probingSummary(_session!.answered, _session!.skipped, _session!.total),
             style: const TextStyle(color: Tokens.textSecondary, fontSize: Tokens.fontSm),
           ),
         ),
@@ -434,7 +435,7 @@ class _ProbingSheetState extends ConsumerState<_ProbingSheet> {
           backgroundColor: Tokens.gold,
           foregroundColor: Colors.black,
         ),
-        child: const Text('Done'),
+        child: Text(AppLocalizations.of(context)!.done),
       ),
     ];
   }

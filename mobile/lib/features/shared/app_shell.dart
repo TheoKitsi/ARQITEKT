@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -16,6 +17,7 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       body: child,
       bottomNavigationBar: NavigationBar(
@@ -30,21 +32,21 @@ class AppShell extends StatelessWidget {
               context.go('/settings');
           }
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(LucideIcons.folderKanban),
-            selectedIcon: Icon(LucideIcons.folderKanban),
-            label: 'Projekte',
+            icon: const Icon(LucideIcons.folderKanban),
+            selectedIcon: const Icon(LucideIcons.folderKanban),
+            label: l.navProjects,
           ),
           NavigationDestination(
-            icon: Icon(LucideIcons.lightbulb),
-            selectedIcon: Icon(LucideIcons.lightbulb),
-            label: 'Erfassen',
+            icon: const Icon(LucideIcons.lightbulb),
+            selectedIcon: const Icon(LucideIcons.lightbulb),
+            label: l.navCapture,
           ),
           NavigationDestination(
-            icon: Icon(LucideIcons.settings),
-            selectedIcon: Icon(LucideIcons.settings),
-            label: 'Einstellungen',
+            icon: const Icon(LucideIcons.settings),
+            selectedIcon: const Icon(LucideIcons.settings),
+            label: l.navSettings,
           ),
         ],
       ),

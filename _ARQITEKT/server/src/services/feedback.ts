@@ -2,7 +2,10 @@ import { readFile, readdir, writeFile, unlink, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { resolveProjectById } from './projects.js';
 import { parseFrontmatter } from './frontmatter.js';
+import { createLogger } from './logger.js';
 import type { FeedbackItem } from '../types/project.js';
+
+const log = createLogger('feedback');
 
 /**
  * Get the feedback directory path for a project.
@@ -24,7 +27,7 @@ export async function listFeedback(projectId: string): Promise<FeedbackItem[]> {
     files = await readdir(dir);
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-      console.error(`Error reading feedback directory for ${projectId}:`, err);
+      log.error({ err, projectId }, 'Error reading feedback directory');
     }
     return items;
   }
@@ -157,6 +160,20 @@ async function readFeedback(projectId: string, fbkId: string): Promise<FeedbackI
     rating: fm.rating != null ? Number(fm.rating) : undefined,
     createdAt: (fm.created as string) || '',
   };
+}
+
+/**
+ * Export feedback items as CSV string.
+ */
+export async function exportFeedbackCsv(projectId: string): Promise<string> {
+  const items = await listFeedback(projectId);
+  const header = 'id,title,status,severity,source,rating,created,description';
+  const rows = items.map((item) => {
+    const desc = (item.description ?? '').replace(/"/g, '""');
+    const title = (item.title ?? '').replace(/"/g, '""');
+    return `"${item.id}","${title}","${item.status}","${item.severity}","${item.source}",${item.rating ?? ''},"${item.createdAt}","${desc}"`;
+  });
+  return [header, ...rows].join('\n');
 }
 
 /**

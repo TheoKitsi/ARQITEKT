@@ -54,7 +54,7 @@ export function HubDashboard() {
             icon={<Sparkles size={16} />}
             onClick={() => navigate('/wizard')}
           >
-            {t('wizStart', 'Von der Idee zur App')}
+            {t('wizStart', 'From Idea to App')}
           </Button>
           <Button
             variant="outlined"

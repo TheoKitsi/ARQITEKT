@@ -2,6 +2,10 @@ import { Router } from 'express';
 import { readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { config } from '../config.js';
+import { getUsageSummary } from '../services/telemetry.js';
+import { reportError } from '../services/errorReporter.js';
+import { createLogger } from '../services/logger.js';
+import { listStarterTemplates } from '../services/projects.js';
 
 export const hubRouter = Router();
 
@@ -124,4 +128,30 @@ hubRouter.get('/health', async (_req, res) => {
     uptime: process.uptime(),
     checks,
   });
+});
+
+// GET /api/hub/llm/usage — LLM token usage summary
+hubRouter.get('/llm/usage', (_req, res) => {
+  const since = _req.query.since ? Number(_req.query.since) : undefined;
+  const summary = getUsageSummary(since);
+  res.json(summary);
+});
+
+// GET /api/hub/templates — list available starter templates
+hubRouter.get('/templates', async (_req, res, next) => {
+  try {
+    const templates = await listStarterTemplates();
+    res.json(templates);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/hub/error-report — receive client-side error reports
+const errorLog = createLogger('hub:errors');
+hubRouter.post('/error-report', (req, res) => {
+  const { message, source, line, column, stack, type } = req.body ?? {};
+  errorLog.warn({ message, source, line, column, type }, 'Client error report');
+  reportError(new Error(String(message ?? 'Unknown client error')), { source, line, column, stack, type });
+  res.status(204).end();
 });

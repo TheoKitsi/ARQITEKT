@@ -34,6 +34,10 @@ function providerVariant(provider: string) {
   }
 }
 
+function formatContextWindow(tokens: number): string {
+  return tokens >= 1000 ? `${Math.round(tokens / 1000)}k ctx` : `${tokens} ctx`;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
@@ -70,7 +74,7 @@ export function ModelSelector() {
         >
           {availableModels.map((model) => (
             <option key={model.id} value={model.id} disabled={!model.available}>
-              {model.name} ({model.provider})
+              {model.name} ({model.provider}) — {formatContextWindow(model.contextWindow)}
             </option>
           ))}
         </select>
@@ -82,6 +86,11 @@ export function ModelSelector() {
             <Badge variant={providerVariant(selectedModel.provider)}>
               {selectedModel.provider}
             </Badge>
+          )}
+          {selectedModel && (
+            <span className={styles.contextInfo}>
+              {formatContextWindow(selectedModel.contextWindow)}
+            </span>
           )}
         </div>
       </div>

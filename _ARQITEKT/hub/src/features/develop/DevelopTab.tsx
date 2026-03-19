@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useAppDispatch } from '@/store/hooks';
 import { openTab } from '@/store/slices/editorSlice';
@@ -50,6 +51,7 @@ const DEFAULT_TERMINAL_HEIGHT = 200;
 /* ------------------------------------------------------------------ */
 
 export function DevelopTab() {
+  const { t } = useTranslation();
   const { projectId } = useParams<{ projectId: string }>();
   const dispatch = useAppDispatch();
 
@@ -149,7 +151,7 @@ export function DevelopTab() {
           onMouseDown={handleDragStart}
           role="separator"
           aria-orientation="horizontal"
-          aria-label="Resize terminal"
+          aria-label={t('resizeTerminal')}
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'ArrowUp') {

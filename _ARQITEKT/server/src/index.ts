@@ -7,6 +7,7 @@ import { WebSocketServer } from 'ws';
 import { config } from './config.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { apiRateLimit, aiRateLimit } from './middleware/rateLimit.js';
+import { requestId } from './middleware/requestId.js';
 import { requireAuth } from './middleware/auth.js';
 import { authRouter } from './routes/auth.js';
 import { projectsRouter } from './routes/projects.js';
@@ -22,13 +23,16 @@ import { pipelineRouter } from './routes/pipeline.js';
 import { probingRouter } from './routes/probing.js';
 import { baselineRouter } from './routes/baseline.js';
 import { notificationsRouter } from './routes/notifications.js';
+import { auditRouter } from './routes/audit.js';
 import { setupWebSocket, destroyAllTerminals } from './websocket/index.js';
 import { registerBroadcast } from './services/notifications.js';
 import { stopAllApps } from './services/appManager.js';
+import { logger } from './services/logger.js';
+import { initErrorReporting, reportError } from './services/errorReporter.js';
 
 // Safety check: fail fast if auth is enabled but JWT secret is the default
 if (config.authEnabled && config.jwtSecret === 'arqitekt-local-dev-secret-not-for-production') {
-  console.error('FATAL: AUTH_ENABLED=true but JWT_SECRET is the default. Set a secure JWT_SECRET in .env');
+  logger.fatal('AUTH_ENABLED=true but JWT_SECRET is the default. Set a secure JWT_SECRET in .env');
   process.exit(1);
 }
 
@@ -52,6 +56,9 @@ app.use(cors({ origin: config.corsOrigins, credentials: true }));
 app.use(express.json({ limit: config.bodyLimit }));
 app.use(cookieParser());
 
+// Request ID + structured request logging
+app.use(requestId);
+
 // Rate limiting
 app.use('/api', apiRateLimit);
 app.use('/api/chat', aiRateLimit);
@@ -74,6 +81,7 @@ app.use('/api/projects', pipelineRouter);
 app.use('/api/projects', probingRouter);
 app.use('/api/projects', baselineRouter);
 app.use('/api/projects', notificationsRouter);
+app.use('/api/projects', auditRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/github', githubRouter);
 app.use('/api/hub', hubRouter);
@@ -100,23 +108,26 @@ registerBroadcast((type, payload) => {
 
 // Start server
 server.listen(config.port, () => {
-  console.log(`ARQITEKT Server running on http://localhost:${config.port}`);
-  console.log(`WebSocket available on ws://localhost:${config.port}/ws`);
+  logger.info({ port: config.port }, `ARQITEKT Server running on http://localhost:${config.port}`);
+  logger.info({ port: config.port }, `WebSocket available on ws://localhost:${config.port}/ws`);
+  initErrorReporting().catch(() => {});
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down...');
+  logger.info('SIGTERM received, shutting down...');
   destroyAllTerminals();
   stopAllApps();
   server.close(() => process.exit(0));
 });
 
 process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled Rejection:', reason);
+  logger.error({ reason }, 'Unhandled Rejection');
+  reportError(reason, { type: 'unhandledRejection' });
 });
 
 process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
+  logger.fatal({ err: error }, 'Uncaught Exception');
+  reportError(error, { type: 'uncaughtException' });
   process.exit(1);
 });

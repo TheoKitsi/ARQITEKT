@@ -19,6 +19,7 @@ export interface ProjectConfig {
   description?: string;
   lifecycle: LifecycleStage;
   github?: string;
+  url?: string;
   tags?: string[];
   branding?: ProjectBranding;
 }
@@ -49,6 +50,7 @@ export interface ImportProjectRequest {
 export interface CreateProjectRequest {
   name: string;
   description?: string;
+  template?: string;
 }
 
 export interface RenameProjectRequest {
@@ -78,6 +80,47 @@ export interface RegistryResponse {
 export interface UpdateRegistryEntryRequest {
   id: string;
   updates: Partial<Omit<RegistryEntry, 'id'>>;
+}
+
+export type ProjectRole = 'owner' | 'editor' | 'viewer';
+
+export interface ProjectMember {
+  userId: string;
+  username: string;
+  role: ProjectRole;
+  addedAt: string;
+}
+
+export interface AddMemberRequest {
+  projectId: string;
+  userId: string;
+  username: string;
+  role: ProjectRole;
+}
+
+export interface UpdateMemberRoleRequest {
+  projectId: string;
+  userId: string;
+  role: ProjectRole;
+}
+
+export interface RemoveMemberRequest {
+  projectId: string;
+  userId: string;
+}
+
+export interface ProjectInvite {
+  token: string;
+  projectId: string;
+  role: ProjectRole;
+  createdBy: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface CreateInviteRequest {
+  projectId: string;
+  role: ProjectRole;
 }
 
 /* ------------------------------------------------------------------ */
@@ -167,6 +210,72 @@ export const projectsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Registry', { type: 'Project', id: 'LIST' }],
     }),
+
+    /* ---- Member management ---- */
+
+    getMembers: builder.query<{ members: ProjectMember[] }, string>({
+      query: (projectId) => `/projects/${projectId}/members`,
+      providesTags: (_result, _error, projectId) => [{ type: 'Project', id: `${projectId}-members` }],
+    }),
+
+    addMember: builder.mutation<ProjectMember, AddMemberRequest>({
+      query: ({ projectId, ...body }) => ({
+        url: `/projects/${projectId}/members`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [{ type: 'Project', id: `${projectId}-members` }],
+    }),
+
+    updateMemberRole: builder.mutation<ProjectMember, UpdateMemberRoleRequest>({
+      query: ({ projectId, userId, role }) => ({
+        url: `/projects/${projectId}/members/${userId}`,
+        method: 'PUT',
+        body: { role },
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [{ type: 'Project', id: `${projectId}-members` }],
+    }),
+
+    removeMember: builder.mutation<void, RemoveMemberRequest>({
+      query: ({ projectId, userId }) => ({
+        url: `/projects/${projectId}/members/${userId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [{ type: 'Project', id: `${projectId}-members` }],
+    }),
+
+    /* ---- Invitations ---- */
+
+    getInvites: builder.query<{ invites: ProjectInvite[] }, string>({
+      query: (projectId) => `/projects/${projectId}/invites`,
+      providesTags: (_result, _error, projectId) => [{ type: 'Project', id: `${projectId}-invites` }],
+    }),
+
+    createInvite: builder.mutation<ProjectInvite, CreateInviteRequest>({
+      query: ({ projectId, role }) => ({
+        url: `/projects/${projectId}/invites`,
+        method: 'POST',
+        body: { role },
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [{ type: 'Project', id: `${projectId}-invites` }],
+    }),
+
+    revokeInvite: builder.mutation<void, { projectId: string; token: string }>({
+      query: ({ projectId, token }) => ({
+        url: `/projects/${projectId}/invites/${token}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [{ type: 'Project', id: `${projectId}-invites` }],
+    }),
+
+    acceptInvite: builder.mutation<{ projectId: string; role: ProjectRole }, { token: string }>({
+      query: (body) => ({
+        url: '/projects/invite/accept',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [{ type: 'Project', id: 'LIST' }],
+    }),
   }),
 });
 
@@ -180,4 +289,12 @@ export const {
   useRenameProjectMutation,
   useGetRegistryQuery,
   useUpdateRegistryEntryMutation,
+  useGetMembersQuery,
+  useAddMemberMutation,
+  useUpdateMemberRoleMutation,
+  useRemoveMemberMutation,
+  useGetInvitesQuery,
+  useCreateInviteMutation,
+  useRevokeInviteMutation,
+  useAcceptInviteMutation,
 } = projectsApi;

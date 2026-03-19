@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { setBaseline, getBaseline, checkDrift } from '../services/baseline.js';
 import { buildMatrix, findOrphans, impactAnalysis } from '../services/traceability.js';
+import { recordAudit } from '../services/audit.js';
 
 export const baselineRouter = Router();
 
@@ -12,6 +13,7 @@ export const baselineRouter = Router();
 baselineRouter.post('/:id/baseline', async (req, res, next) => {
   try {
     const baseline = await setBaseline(req.params.id);
+    recordAudit(req.params.id, 'baseline.created', req.ip ?? 'unknown', undefined, { artifacts: baseline.artifacts?.length }).catch(() => {});
     res.json(baseline);
   } catch (err) {
     next(err);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../models/project.dart';
 import '../../../theme/tokens.dart';
@@ -116,7 +117,7 @@ class ProjectCard extends StatelessWidget {
                   _StatChip('FN', project.stats.fn),
                   const Spacer(),
                   Text(
-                    '${project.stats.total} Artefakte',
+                    AppLocalizations.of(context)!.artifactCount(project.stats.total),
                     style: TextStyle(
                       fontSize: Tokens.fontXs,
                       color: Tokens.textTertiary,

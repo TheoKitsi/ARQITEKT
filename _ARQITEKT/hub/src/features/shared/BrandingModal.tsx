@@ -184,7 +184,7 @@ export function BrandingModal({ isOpen, onClose, projectId }: BrandingModalProps
 
           {/* Preview */}
           <div className={styles.field}>
-            <label className={styles.label}>Preview</label>
+            <label className={styles.label}>{t('preview')}</label>
             <div
               className={styles.preview}
               style={{

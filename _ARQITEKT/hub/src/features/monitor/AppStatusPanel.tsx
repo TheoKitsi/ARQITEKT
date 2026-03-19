@@ -43,7 +43,7 @@ export function AppStatusPanel() {
           <div className={styles.details}>
             {running && port && (
               <div className={styles.info}>
-                <span className={styles.infoLabel}>Port</span>
+                <span className={styles.infoLabel}>{t('port')}</span>
                 <span className={styles.infoValue}>{port}</span>
               </div>
             )}

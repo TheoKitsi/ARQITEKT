@@ -140,11 +140,11 @@ export function GateDetail({ gate, projectId, onClose }: GateDetailProps) {
             <span className={styles.metaLabel}>{gate.to}</span>
           </div>
           <div className={styles.metaItem}>
-            <span className={styles.metaLabel}>Confidence:</span>
+            <span className={styles.metaLabel}>{t('confidence')}:</span>
             <ConfidenceBadge score={gate.confidence} />
           </div>
           <div className={styles.metaItem}>
-            <span className={styles.metaLabel}>Checks:</span>
+            <span className={styles.metaLabel}>{t('checks')}:</span>
             <span className={styles.metaValue}>{passedChecks}/{totalChecks}</span>
           </div>
         </div>
@@ -154,7 +154,7 @@ export function GateDetail({ gate, projectId, onClose }: GateDetailProps) {
           {/* Checks section */}
           {gate.checks.length > 0 && (
             <section>
-              <h3 className={styles.sectionTitle}>Checks</h3>
+              <h3 className={styles.sectionTitle}>{t('checks')}</h3>
               <div className={styles.checkList}>
                 {gate.checks.map((check) => (
                   <CheckRow key={check.id} check={check} />
@@ -167,7 +167,7 @@ export function GateDetail({ gate, projectId, onClose }: GateDetailProps) {
           {unresolvedGaps.length > 0 && (
             <section>
               <h3 className={styles.sectionTitle}>
-                Gaps ({unresolvedGaps.length})
+                {t('gaps')} ({unresolvedGaps.length})
               </h3>
               <div className={styles.gapList}>
                 {unresolvedGaps.map((gap) => (
@@ -180,7 +180,7 @@ export function GateDetail({ gate, projectId, onClose }: GateDetailProps) {
           {/* Override reason */}
           {gate.overrideReason && (
             <section>
-              <h3 className={styles.sectionTitle}>Override Reason</h3>
+              <h3 className={styles.sectionTitle}>{t('overrideReason')}</h3>
               <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
                 {gate.overrideReason}
               </p>
@@ -197,17 +197,17 @@ export function GateDetail({ gate, projectId, onClose }: GateDetailProps) {
               icon={<AlertTriangle size={14} />}
               onClick={() => setShowOverride(true)}
             >
-              Override
+              {t('override')}
             </Button>
           )}
           {showOverride && (
             <div className={styles.overrideSection}>
               <Input
-                label="Override reason"
+                label={t('overrideReasonLabel')}
                 inputSize="sm"
                 value={overrideReason}
                 onChange={(e) => setOverrideReason(e.target.value)}
-                placeholder="Explain why this gate should be overridden..."
+                placeholder={t('overridePlaceholder')}
                 className={styles.overrideInput}
               />
               <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
@@ -218,10 +218,10 @@ export function GateDetail({ gate, projectId, onClose }: GateDetailProps) {
                   loading={isOverriding}
                   disabled={!overrideReason.trim()}
                 >
-                  Confirm Override
+                  {t('confirmOverride')}
                 </Button>
                 <Button variant="text" size="sm" onClick={() => setShowOverride(false)}>
-                  Cancel
+                  {t('cancel')}
                 </Button>
               </div>
             </div>

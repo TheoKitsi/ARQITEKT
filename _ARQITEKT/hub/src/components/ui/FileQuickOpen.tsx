@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { File, Search } from 'lucide-react';
 import { useListFilesQuery, type FileEntry } from '@/store/api/filesApi';
@@ -43,6 +44,7 @@ interface Props {
 }
 
 export function FileQuickOpen({ onSelect }: Props) {
+  const { t } = useTranslation();
   const { projectId } = useParams<{ projectId: string }>();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -125,14 +127,14 @@ export function FileQuickOpen({ onSelect }: Props) {
 
   return (
     <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && setOpen(false)}>
-      <div className={styles.dialog} role="dialog" aria-label="Quick Open">
+      <div className={styles.dialog} role="dialog" aria-label={t('quickOpen')}>
         <div className={styles.searchWrap}>
           <Search size={16} className={styles.searchIcon} />
           <input
             ref={inputRef}
             className={styles.input}
             type="text"
-            placeholder="Search files by name..."
+            placeholder={t('searchFiles')}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -149,7 +151,7 @@ export function FileQuickOpen({ onSelect }: Props) {
 
         <ul id="quickopen-list" ref={listRef} className={styles.list} role="listbox">
           {filtered.length === 0 && (
-            <li className={styles.empty}>No matching files</li>
+            <li className={styles.empty}>{t('noMatchingFiles')}</li>
           )}
           {filtered.map((path, idx) => {
             const name = path.split('/').pop() ?? path;

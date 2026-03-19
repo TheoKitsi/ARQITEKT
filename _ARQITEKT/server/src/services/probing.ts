@@ -6,6 +6,9 @@ import { sendChatMessage } from './llm.js';
 import { buildTree } from './requirements.js';
 import { evaluateGate } from './pipeline.js';
 import { parseFrontmatter } from './frontmatter.js';
+import { createLogger } from './logger.js';
+
+const log = createLogger('probing');
 import type {
   AgentType, GateId, ProbingQuestion, ProbingOption,
   RiskLevel, TreeNode, Gap,
@@ -223,7 +226,7 @@ export async function startProbing(
       }
     }
   } catch (err) {
-    console.error(`LLM gap analysis failed for ${artifactId}:`, err instanceof Error ? err.message : err);
+    log.error({ err: err instanceof Error ? err.message : err, artifactId }, 'LLM gap analysis failed');
     // Proceed with structural gaps only
   }
 
@@ -237,7 +240,7 @@ export async function startProbing(
       const q = await generateQuestion(projectId, artifactId, gap);
       questions.push(q);
     } catch (err) {
-      console.error(`LLM question generation failed for gap "${gap.description}":`, err instanceof Error ? err.message : err);
+      log.error({ err: err instanceof Error ? err.message : err, gap: gap.description }, 'LLM question generation failed');
       // If LLM fails for one question, create a structural fallback
       questions.push(createFallbackQuestion(gap, artifactId));
     }

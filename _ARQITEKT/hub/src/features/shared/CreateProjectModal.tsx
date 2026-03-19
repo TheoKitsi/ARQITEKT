@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import { useCreateProjectMutation } from '@/store/api/projectsApi';
+import { useGetStarterTemplatesQuery } from '@/store/api/hubApi';
 import styles from './CreateProjectModal.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -29,14 +30,17 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [template, setTemplate] = useState('');
   const [nameError, setNameError] = useState('');
 
   const [createProject, { isLoading }] = useCreateProjectMutation();
+  const { data: templates } = useGetStarterTemplatesQuery();
 
   /* ---- Reset form on close ---- */
   const handleClose = useCallback(() => {
     setName('');
     setDescription('');
+    setTemplate('');
     setNameError('');
     onClose();
   }, [onClose]);
@@ -61,6 +65,7 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
         const project = await createProject({
           name: name.trim(),
           description: description.trim(),
+          ...(template && { template }),
         }).unwrap();
 
         showToast(`${t('projects')}: ${project.config.name}`, 'success');
@@ -109,6 +114,26 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
           required
           autoFocus
         />
+        {templates && templates.length > 0 && (
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="create-template">
+              {t('starterTemplate')}
+            </label>
+            <select
+              id="create-template"
+              className={styles.select}
+              value={template}
+              onChange={(e) => setTemplate(e.target.value)}
+            >
+              <option value="">{t('blankProject')}</option>
+              {templates.map((tpl) => (
+                <option key={tpl.id} value={tpl.id}>
+                  {tpl.name} ({tpl.artifacts} {t('artifacts')})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className={styles.field}>
           <label className={styles.label} htmlFor="create-desc">
             {t('descOptional')}

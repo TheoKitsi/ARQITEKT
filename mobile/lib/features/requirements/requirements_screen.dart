@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -16,7 +17,7 @@ class RequirementsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Requirements'),
+        title: Text(AppLocalizations.of(context)!.requirements),
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => context.pop(),
@@ -34,16 +35,16 @@ class RequirementsScreen extends ConsumerWidget {
               const SizedBox(height: Tokens.space4),
               FilledButton(
                 onPressed: () => ref.invalidate(requirementsTreeProvider(projectId)),
-                child: const Text('Erneut versuchen'),
+                child: Text(AppLocalizations.of(context)!.retry),
               ),
             ],
           ),
         ),
         data: (tree) {
           if (tree.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
-                'Keine Requirements vorhanden',
+                AppLocalizations.of(context)!.noRequirements,
                 style: TextStyle(color: Tokens.textSecondary),
               ),
             );

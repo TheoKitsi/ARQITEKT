@@ -1,9 +1,14 @@
 import { spawn } from 'child_process';
 import { dirname, join } from 'path';
 import { mkdir, stat, writeFile } from 'fs/promises';
-import { resolveProjectById } from './projects.js';
+import { resolveProjectById, getProjectById } from './projects.js';
 import { buildTree } from './requirements.js';
 import type { TreeNode } from '../types/project.js';
+
+interface Branding {
+  primary: string;
+  secondary: string;
+}
 
 interface ScaffoldResult {
   success: boolean;
@@ -128,15 +133,15 @@ next-env.d.ts
 `;
 }
 
-function genGlobalsCSS(): string {
+function genGlobalsCSS(brand: Branding): string {
   return `:root {
   --color-bg: #0d1117;
   --color-bg2: #161b22;
   --color-text-primary: #e6edf3;
   --color-text-secondary: #8b949e;
   --color-text-tertiary: #6e7681;
-  --color-brand-gold: #FFD700;
-  --color-brand-anthracite: #1F1F1F;
+  --color-brand-gold: ${brand.primary};
+  --color-brand-anthracite: ${brand.secondary};
   --color-border: #30363d;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -446,6 +451,15 @@ export async function scaffoldProject(
   const tree = await buildTree(projectId);
   logs.push(`Requirements tree loaded: ${tree.length} top-level node(s)`);
 
+  // ------------------------------------------------------------------
+  // Load branding from project config
+  // ------------------------------------------------------------------
+  const project = await getProjectById(projectId);
+  const brand: Branding = {
+    primary: project?.config.branding?.primaryColor ?? '#FFD700',
+    secondary: project?.config.branding?.secondaryColor ?? '#1F1F1F',
+  };
+
   // Identify BC and SOL nodes
   const bcNode = tree.find((n) => n.type === 'BC') ?? null;
   const solNodes: TreeNode[] = bcNode
@@ -479,7 +493,7 @@ export async function scaffoldProject(
   // ------------------------------------------------------------------
   // Global styles
   // ------------------------------------------------------------------
-  await write(join(srcPath, 'app', 'globals.css'), genGlobalsCSS());
+  await write(join(srcPath, 'app', 'globals.css'), genGlobalsCSS(brand));
 
   // ------------------------------------------------------------------
   // Root layout (with nav linking to all SOLs)

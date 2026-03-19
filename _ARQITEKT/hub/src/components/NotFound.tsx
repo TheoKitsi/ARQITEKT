@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export function NotFound() {
+  const { t } = useTranslation();
   return (
     <div style={{
       display: 'flex',
@@ -13,7 +15,7 @@ export function NotFound() {
       color: '#e0e0e0',
     }}>
       <h1 style={{ color: '#FFD700', fontSize: '3rem', marginBottom: '0.5rem' }}>404</h1>
-      <p style={{ marginBottom: '1.5rem', fontSize: '1.125rem' }}>Page not found</p>
+      <p style={{ marginBottom: '1.5rem', fontSize: '1.125rem' }}>{t('pageNotFound')}</p>
       <Link
         to="/"
         style={{
@@ -26,7 +28,7 @@ export function NotFound() {
           fontSize: '0.875rem',
         }}
       >
-        Back to Dashboard
+        {t('backToDashboard')}
       </Link>
     </div>
   );

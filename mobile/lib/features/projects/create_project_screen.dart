@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -50,7 +51,7 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorPrefix(e.toString()))),
         );
       }
     } finally {
@@ -60,9 +61,10 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Neues Projekt'),
+        title: Text(l.newProject),
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => context.pop(),
@@ -77,16 +79,16 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Projektname',
-                  hintText: 'z.B. Social App',
+                decoration: InputDecoration(
+                  labelText: l.projectName,
+                  hintText: l.projectNameHint,
                   prefixIcon: Icon(LucideIcons.folder),
                 ),
                 autofocus: true,
                 textCapitalization: TextCapitalization.words,
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) {
-                    return 'Name ist erforderlich';
+                    return l.nameRequired;
                   }
                   return null;
                 },
@@ -94,9 +96,9 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
               const SizedBox(height: Tokens.space4),
               TextFormField(
                 controller: _descController,
-                decoration: const InputDecoration(
-                  labelText: 'Beschreibung (optional)',
-                  hintText: 'Kurze Projektbeschreibung',
+                decoration: InputDecoration(
+                  labelText: l.descriptionOptional,
+                  hintText: l.descriptionHint,
                   prefixIcon: Icon(LucideIcons.alignLeft),
                 ),
                 maxLines: 3,
@@ -111,7 +113,7 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(LucideIcons.plus, size: 18),
-                label: Text(_loading ? 'Erstelle...' : 'Projekt erstellen'),
+                label: Text(_loading ? l.creating : l.createProject),
               ),
             ],
           ),

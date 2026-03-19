@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -86,7 +87,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('KI Chat'),
+        title: Text(AppLocalizations.of(context)!.aiChat),
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => Navigator.of(context).pop(),
@@ -142,8 +143,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       minLines: 1,
                       textInputAction: TextInputAction.send,
                       onSubmitted: (_) => _send(),
-                      decoration: const InputDecoration(
-                        hintText: 'Nachricht eingeben...',
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)!.chatHint,
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
@@ -187,15 +188,15 @@ class _EmptyChat extends StatelessWidget {
           Icon(LucideIcons.messageSquare, size: 64, color: Tokens.textTertiary),
           const SizedBox(height: Tokens.space4),
           Text(
-            'KI-Assistent',
+            AppLocalizations.of(context)!.aiAssistant,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Tokens.textSecondary,
                 ),
           ),
           const SizedBox(height: Tokens.space2),
-          const Text(
-            'Stelle Fragen zu deinem Projekt',
-            style: TextStyle(color: Tokens.textTertiary),
+          Text(
+            AppLocalizations.of(context)!.askAboutProject,
+            style: const TextStyle(color: Tokens.textTertiary),
           ),
         ],
       ),

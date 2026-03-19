@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -12,10 +13,11 @@ class ProjectsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final projectsAsync = ref.watch(projectsProvider);
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ARQITEKT'),
+        title: Text(l.appTitle),
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.refreshCw),
@@ -38,14 +40,14 @@ class ProjectsScreen extends ConsumerWidget {
                   Icon(LucideIcons.folderOpen, size: 64, color: Tokens.textTertiary),
                   const SizedBox(height: Tokens.space4),
                   Text(
-                    'Keine Projekte',
+                    l.noProjects,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: Tokens.textSecondary,
                         ),
                   ),
                   const SizedBox(height: Tokens.space2),
                   Text(
-                    'Erstelle Projekte im Hub Dashboard',
+                    l.noProjectsHint,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Tokens.textTertiary,
                         ),
@@ -101,7 +103,7 @@ class _ErrorView extends StatelessWidget {
             const Icon(LucideIcons.wifiOff, size: 48, color: Tokens.red),
             const SizedBox(height: Tokens.space4),
             Text(
-              'Verbindung fehlgeschlagen',
+              AppLocalizations.of(context)!.connectionFailed,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: Tokens.space2),
@@ -116,7 +118,7 @@ class _ErrorView extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(LucideIcons.refreshCw, size: 16),
-              label: const Text('Erneut versuchen'),
+              label: Text(AppLocalizations.of(context)!.retry),
             ),
           ],
         ),

@@ -1,0 +1,80 @@
+.panel {
+  margin-top: var(--space-2);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.branchBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-surface-0);
+}
+
+.cleanBadge {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-success);
+  padding: 2px 6px;
+}
+
+.noRepo {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.fileList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: var(--font-size-xs);
+  font-family: var(--font-mono, monospace);
+}
+
+.fileRow {
+  display: flex;
+  gap: var(--space-2);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.fileRow:hover {
+  background: var(--color-surface-2);
+}
+
+.statusTag {
+  font-weight: 600;
+  min-width: 18px;
+  text-align: center;
+}
+
+.statusTag[data-status='modified'] { color: #e5c07b; }
+.statusTag[data-status='added']    { color: #98c379; }
+.statusTag[data-status='deleted']  { color: #e06c75; }
+.statusTag[data-status='renamed']  { color: #61afef; }
+.statusTag[data-status='untracked'] { color: var(--color-text-tertiary); }
+
+.filePath {
+  color: var(--color-text-secondary);
+}
+
+.summary {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-2);
+}

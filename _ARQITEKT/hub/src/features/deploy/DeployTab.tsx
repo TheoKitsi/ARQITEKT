@@ -13,7 +13,6 @@ import {
   Upload,
   GitBranch,
   FileText,
-  GitPullRequest,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -24,7 +23,10 @@ import {
   useCodegenMutation,
   useGithubPushMutation,
   useExportIssuesMutation,
+  useBuildDeployMutation,
+  useGithubActionsMutation,
 } from '@/store/api/deployApi';
+import { RepoStatusPanel } from './RepoStatusPanel';
 import styles from './DeployTab.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -38,6 +40,8 @@ export function DeployTab() {
   const [codegen, { isLoading: generating }] = useCodegenMutation();
   const [githubPush] = useGithubPushMutation();
   const [exportIssues, { isLoading: exporting }] = useExportIssuesMutation();
+  const [buildDeploy, { isLoading: building }] = useBuildDeployMutation();
+  const [githubActions, { isLoading: settingUpCI }] = useGithubActionsMutation();
 
   const [showCodegenModal, setShowCodegenModal] = useState(false);
   const [codegenModel, setCodegenModel] = useState('gpt-4o');
@@ -95,6 +99,40 @@ export function DeployTab() {
     }
   };
 
+  const handleBuild = async () => {
+    if (!projectId) return;
+    try {
+      const result = await buildDeploy(projectId).unwrap();
+      setLogs([
+        result.message ?? 'Build complete',
+        `Framework: ${result.framework}`,
+        `Duration: ${(result.durationMs / 1000).toFixed(1)}s`,
+        '',
+        result.output,
+      ]);
+      setShowLogs(true);
+    } catch (err: any) {
+      const data = err?.data;
+      setLogs([
+        `Build failed: ${data?.message ?? err?.message ?? String(err)}`,
+        ...(data?.output ? ['', data.output] : []),
+      ]);
+      setShowLogs(true);
+    }
+  };
+
+  const handleGithubActions = async () => {
+    if (!projectId) return;
+    try {
+      const result = await githubActions(projectId).unwrap();
+      setLogs([result.message, `File: ${result.filePath}`]);
+      setShowLogs(true);
+    } catch (err) {
+      setLogs([`Error: ${err instanceof Error ? err.message : String(err)}`]);
+      setShowLogs(true);
+    }
+  };
+
   return (
     <div className={styles.tab}>
       {/* Build & Scaffold */}
@@ -129,6 +167,8 @@ export function DeployTab() {
               description={t('deployBuildDeployDesc')}
               buttonLabel={t('deployBuildDeployBtn')}
               variant="gold"
+              onClick={handleBuild}
+              loading={building}
             />
           </div>
         </Card.Body>
@@ -155,6 +195,8 @@ export function DeployTab() {
               title={t('deployCICDTitle')}
               description={t('deployCICDDesc')}
               buttonLabel={t('deploySetupActions')}
+              onClick={handleGithubActions}
+              loading={settingUpCI}
             />
             <ActionTile
               icon={<Upload size={20} />}
@@ -191,13 +233,8 @@ export function DeployTab() {
               buttonLabel={t('deployPushBtn')}
               onClick={handlePush}
             />
-            <ActionTile
-              icon={<GitPullRequest size={20} />}
-              title={t('ghRepoStatus')}
-              description={t('ghRepoNoConfig')}
-              buttonLabel={t('ghConnectBtn', 'Connect')}
-            />
           </div>
+          <RepoStatusPanel />
         </Card.Body>
       </Card>
 
@@ -221,7 +258,7 @@ export function DeployTab() {
       </Modal>
 
       {/* Logs Modal */}
-      <Modal isOpen={showLogs} onClose={() => setShowLogs(false)} title="Output">
+      <Modal isOpen={showLogs} onClose={() => setShowLogs(false)} title={t('output')}>
         <pre style={{
           maxHeight: '400px',
           overflow: 'auto',

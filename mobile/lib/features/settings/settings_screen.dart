@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../providers/settings_provider.dart';
@@ -45,7 +46,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Verbunden! Hub v$_hubVersion'),
+            content: Text(AppLocalizations.of(context)!.connectedHub(_hubVersion!)),
             backgroundColor: Tokens.green,
           ),
         );
@@ -54,7 +55,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Verbindung fehlgeschlagen: $e'),
+            content: Text(AppLocalizations.of(context)!.connectionFailedDetail(e.toString())),
             backgroundColor: Tokens.red,
           ),
         );
@@ -70,7 +71,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     await ref.read(settingsProvider.notifier).setHubUrl(url);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gespeichert!')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.saved)),
       );
     }
   }
@@ -79,15 +80,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final settingsAsync = ref.watch(settingsProvider);
     final settings = settingsAsync.valueOrNull ?? const AppSettings();
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Einstellungen')),
+      appBar: AppBar(title: Text(l.settings)),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.space4),
         children: [
           // Hub Connection section
           Text(
-            'Hub Verbindung',
+            l.hubConnection,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Tokens.gold,
                 ),
@@ -97,9 +99,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           TextField(
             controller: _urlController,
             decoration: InputDecoration(
-              labelText: 'Hub URL',
+              labelText: l.hubUrl,
               prefixIcon: const Icon(LucideIcons.link),
-              hintText: 'http://localhost:3334',
+              hintText: l.hubUrlHint,
               suffixIcon: _testing
                   ? const Padding(
                       padding: EdgeInsets.all(12),
@@ -112,7 +114,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   : IconButton(
                       icon: const Icon(LucideIcons.zap),
                       onPressed: _testConnection,
-                      tooltip: 'Verbindung testen',
+                      tooltip: l.testConnection,
                     ),
             ),
           ),
@@ -137,14 +139,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           FilledButton.icon(
             onPressed: _save,
             icon: const Icon(LucideIcons.save, size: 18),
-            label: const Text('Speichern'),
+            label: Text(l.save),
           ),
 
           const SizedBox(height: Tokens.space8),
 
           // Language section
           Text(
-            'Sprache',
+            l.language,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Tokens.gold,
                 ),
@@ -155,7 +157,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Column(
               children: [
                 RadioListTile<String>(
-                  title: const Text('Deutsch'),
+                  title: Text(l.german),
                   value: 'de',
                   groupValue: settings.language,
                   onChanged: (v) => ref.read(settingsProvider.notifier).setLanguage(v!),
@@ -163,7 +165,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const Divider(height: 1),
                 RadioListTile<String>(
-                  title: const Text('English'),
+                  title: Text(l.english),
                   value: 'en',
                   groupValue: settings.language,
                   onChanged: (v) => ref.read(settingsProvider.notifier).setLanguage(v!),
@@ -177,7 +179,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           // About section
           Text(
-            'Info',
+            l.info,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Tokens.gold,
                 ),
@@ -195,16 +197,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const Icon(LucideIcons.shield, color: Tokens.gold),
                       const SizedBox(width: Tokens.space3),
                       Text(
-                        'ARQITEKT Mobile v1.0.0',
+                        l.appVersion,
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                     ],
                   ),
                   const SizedBox(height: Tokens.space3),
-                  const Text(
-                    'KI-powered Requirements Engineering Framework\n'
-                    'Von der Idee zur Applikation.',
-                    style: TextStyle(color: Tokens.textSecondary),
+                  Text(
+                    l.appDescription,
+                    style: const TextStyle(color: Tokens.textSecondary),
                   ),
                 ],
               ),

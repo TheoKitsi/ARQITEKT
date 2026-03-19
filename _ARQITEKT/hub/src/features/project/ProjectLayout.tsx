@@ -75,7 +75,7 @@ export function ProjectLayout() {
 
         <SearchBox projectId={projectId!} />
 
-        <nav className={styles.treeNav} aria-label="Requirements">
+        <nav className={styles.treeNav} aria-label={t('requirements')}>
           <RequirementsTree projectId={projectId!} />
         </nav>
 
@@ -98,7 +98,7 @@ export function ProjectLayout() {
         />
 
         {/* Tab bar */}
-        <nav className={styles.tabBar} aria-label="Project tabs">
+        <nav className={styles.tabBar} aria-label={t('projectTabs')}>
           {tabs.map((tab) => (
             <NavLink
               key={tab.to}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -40,7 +41,7 @@ class _RequirementDetailScreenState
           children: [
             Padding(
               padding: const EdgeInsets.all(Tokens.space4),
-              child: Text('Status setzen',
+              child: Text(AppLocalizations.of(context)!.setStatus,
                   style: Theme.of(ctx).textTheme.titleMedium),
             ),
             ...nextStatuses.map((s) => ListTile(
@@ -70,7 +71,7 @@ class _RequirementDetailScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorPrefix(e.toString()))),
         );
       }
     } finally {
@@ -94,7 +95,7 @@ class _RequirementDetailScreenState
       ),
       body: detailAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Fehler: $err')),
+        error: (err, _) => Center(child: Text(AppLocalizations.of(context)!.errorPrefix(err.toString()))),
         data: (detail) {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(Tokens.space4),
@@ -159,7 +160,7 @@ class _RequirementDetailScreenState
                 MarkdownBody(
                   data: detail.body.isNotEmpty
                       ? detail.body
-                      : '_Kein Inhalt vorhanden._',
+                      : AppLocalizations.of(context)!.noContent,
                   styleSheet: MarkdownStyleSheet(
                     p: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           height: 1.6,

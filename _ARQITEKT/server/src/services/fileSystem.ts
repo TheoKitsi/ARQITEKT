@@ -1,5 +1,5 @@
-import { readFile, readdir, writeFile, mkdir, realpath, stat } from 'fs/promises';
-import { join, extname, resolve } from 'path';
+import { readFile, readdir, writeFile, mkdir, realpath, stat, rename, rm } from 'fs/promises';
+import { join, extname, resolve, dirname } from 'path';
 import { config } from '../config.js';
 import { resolveProjectById } from './projects.js';
 
@@ -141,4 +141,41 @@ export async function writeProjectFile(
   const dir = fullPath.substring(0, fullPath.lastIndexOf('/') > 0 ? fullPath.lastIndexOf('/') : fullPath.lastIndexOf('\\'));
   await mkdir(dir, { recursive: true });
   await writeFile(fullPath, content, 'utf-8');
+}
+
+/**
+ * Delete a file or directory from a project.
+ */
+export async function deleteProjectFile(
+  projectId: string,
+  filePath: string
+): Promise<void> {
+  const fullPath = await assertSafePath(projectId, filePath);
+  const info = await stat(fullPath);
+  await rm(fullPath, { recursive: info.isDirectory() });
+}
+
+/**
+ * Rename (move) a file or directory within a project.
+ */
+export async function renameProjectFile(
+  projectId: string,
+  oldPath: string,
+  newPath: string
+): Promise<void> {
+  const fullOld = await assertSafePath(projectId, oldPath);
+  const fullNew = await assertSafePath(projectId, newPath);
+  await mkdir(dirname(fullNew), { recursive: true });
+  await rename(fullOld, fullNew);
+}
+
+/**
+ * Create a directory in a project.
+ */
+export async function createProjectDirectory(
+  projectId: string,
+  dirPath: string
+): Promise<void> {
+  const fullPath = await assertSafePath(projectId, dirPath);
+  await mkdir(fullPath, { recursive: true });
 }

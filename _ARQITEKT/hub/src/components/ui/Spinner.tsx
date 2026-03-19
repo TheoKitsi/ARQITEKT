@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 /* ------------------------------------------------------------------ */
 /*  Spinner – CSS-only loading indicator                               */
 /* ------------------------------------------------------------------ */
@@ -16,6 +18,7 @@ export interface SpinnerProps {
 }
 
 export function Spinner({ size = 'md', className }: SpinnerProps) {
+  const { t } = useTranslation();
   const px = sizeMap[size];
   const border = Math.max(2, Math.round(px / 8));
 
@@ -23,7 +26,7 @@ export function Spinner({ size = 'md', className }: SpinnerProps) {
     <span
       className={className}
       role="status"
-      aria-label="Loading"
+      aria-label={t('loading')}
       style={{
         display: 'inline-block',
         width: px,

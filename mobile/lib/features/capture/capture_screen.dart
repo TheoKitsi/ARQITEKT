@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../providers/projects_provider.dart';
@@ -47,13 +48,13 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
         _titleController.clear();
         _descController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Idee erfasst!')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.ideaCaptured)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorPrefix(e.toString()))),
         );
       }
     } finally {
@@ -64,9 +65,10 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   @override
   Widget build(BuildContext context) {
     final projectsAsync = ref.watch(projectsProvider);
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Idee erfassen')),
+      appBar: AppBar(title: Text(l.captureIdea)),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -77,12 +79,12 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
             // Project selector
             projectsAsync.when(
               loading: () => const LinearProgressIndicator(),
-              error: (_, __) => const Text('Projekte laden fehlgeschlagen'),
+              error: (_, __) => Text(l.loadProjectsFailed),
               data: (projects) {
                 return DropdownButtonFormField<String>(
                   value: _selectedProjectId,
-                  decoration: const InputDecoration(
-                    labelText: 'Projekt',
+                  decoration: InputDecoration(
+                    labelText: l.project,
                     prefixIcon: Icon(LucideIcons.folderKanban),
                   ),
                   items: projects
@@ -101,11 +103,11 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
             // Title
             TextFormField(
               controller: _titleController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Titel erforderlich' : null,
-              decoration: const InputDecoration(
-                labelText: 'Titel',
-                prefixIcon: Icon(LucideIcons.lightbulb),
-                hintText: 'Beschreibe deine Idee kurz...',
+              validator: (v) => (v == null || v.trim().isEmpty) ? l.titleRequired : null,
+              decoration: InputDecoration(
+                labelText: l.title,
+                prefixIcon: const Icon(LucideIcons.lightbulb),
+                hintText: l.titleHint,
               ),
             ),
 
@@ -115,9 +117,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
             TextField(
               controller: _descController,
               maxLines: 5,
-              decoration: const InputDecoration(
-                labelText: 'Beschreibung (optional)',
-                hintText: 'Details, Kontext, Screenshots...',
+              decoration: InputDecoration(
+                labelText: l.descriptionOptional,
+                hintText: l.detailsHint,
                 alignLabelWithHint: true,
               ),
             ),
@@ -126,7 +128,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
 
             // Severity selector
             Text(
-              'Typ',
+              l.type,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: Tokens.textSecondary,
                   ),
@@ -136,28 +138,28 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
               spacing: Tokens.space2,
               children: [
                 _SeverityChip(
-                  label: 'Wunsch',
+                  label: l.typeWish,
                   value: 'wish',
                   selected: _severity == 'wish',
                   color: Tokens.accent,
                   onTap: () => setState(() => _severity = 'wish'),
                 ),
                 _SeverityChip(
-                  label: 'Verbesserung',
+                  label: l.typeImprovement,
                   value: 'improvement',
                   selected: _severity == 'improvement',
                   color: Tokens.green,
                   onTap: () => setState(() => _severity = 'improvement'),
                 ),
                 _SeverityChip(
-                  label: 'Bug',
+                  label: l.typeBug,
                   value: 'bug',
                   selected: _severity == 'bug',
                   color: Tokens.orange,
                   onTap: () => setState(() => _severity = 'bug'),
                 ),
                 _SeverityChip(
-                  label: 'Kritisch',
+                  label: l.typeCritical,
                   value: 'critical',
                   selected: _severity == 'critical',
                   color: Tokens.red,
@@ -178,7 +180,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(LucideIcons.plus),
-              label: const Text('Idee erfassen'),
+              label: Text(l.captureIdea),
             ),
           ],
         ),

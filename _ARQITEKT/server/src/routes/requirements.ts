@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { buildTree, getStats, getReadiness, validateProject, setRequirementStatus } from '../services/requirements.js';
+import { importRequirementsCsv } from '../services/importService.js';
 import { validate, validateQuery, setStatusSchema, searchQuerySchema, nextUsIdQuerySchema } from '../middleware/validation.js';
+import { recordAudit } from '../services/audit.js';
+import { requireRole } from '../middleware/rbac.js';
 
 export const requirementsRouter = Router();
 
@@ -45,10 +48,12 @@ requirementsRouter.post('/:id/validate', async (req, res, next) => {
 });
 
 // PUT /api/projects/:id/set-status
-requirementsRouter.put('/:id/set-status', validate(setStatusSchema), async (req, res, next) => {
+requirementsRouter.put('/:id/set-status', requireRole('editor'), validate(setStatusSchema), async (req, res, next) => {
   try {
     const { artifactId, status } = req.body;
     await setRequirementStatus(req.params.id as string, artifactId, status);
+    // Audit: fire-and-forget
+    recordAudit(req.params.id as string, 'requirement.status_changed', req.ip ?? 'unknown', artifactId, { status }).catch(() => {});
     res.json({ success: true, artifactId, status });
   } catch (err) {
     next(err);
@@ -122,6 +127,30 @@ requirementsRouter.get('/:id/bc-summary', async (req, res, next) => {
       readiness: readiness.authored,
       tree,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/projects/:id/import-csv — bulk import requirements from CSV
+requirementsRouter.post('/:id/import-csv', requireRole('editor'), async (req, res, next) => {
+  try {
+    const projectId = req.params.id as string;
+    const csv = req.body?.csv;
+    if (!csv || typeof csv !== 'string') {
+      res.status(400).json({ error: 'Missing "csv" field in request body' });
+      return;
+    }
+    const result = await importRequirementsCsv(projectId, csv);
+    recordAudit(projectId, 'requirement.created', req.ip ?? 'unknown', undefined, {
+      action: 'csv-import',
+      imported: result.filesCreated.length,
+    }).catch(() => {});
+    if (!result.success) {
+      res.status(207).json(result);
+      return;
+    }
+    res.json(result);
   } catch (err) {
     next(err);
   }

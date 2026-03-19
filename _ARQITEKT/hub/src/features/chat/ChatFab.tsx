@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { MessageCircle } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { toggleChat } from '@/store/slices/chatSlice';
@@ -8,6 +9,7 @@ import styles from './ChatFab.module.css';
 /* ------------------------------------------------------------------ */
 
 export function ChatFab() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const isOpen = useAppSelector((s) => s.chat.isOpen);
 
@@ -18,7 +20,7 @@ export function ChatFab() {
     <button
       className={styles.fab}
       onClick={() => dispatch(toggleChat())}
-      aria-label="Open Chat"
+      aria-label={t('openChat')}
       type="button"
     >
       <MessageCircle size={22} />

@@ -26,6 +26,34 @@ export interface InstallUpdateResult {
   requiresRestart: boolean;
 }
 
+export interface LlmUsageEntry {
+  timestamp: number;
+  model: string;
+  provider: string;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  latencyMs: number;
+  streaming: boolean;
+}
+
+export interface StarterTemplate {
+  id: string;
+  name: string;
+  description: string;
+  artifacts: number;
+}
+
+export interface LlmUsageSummary {
+  totalCalls: number;
+  totalPromptTokens: number;
+  totalCompletionTokens: number;
+  totalTokens: number;
+  avgLatencyMs: number;
+  byModel: Record<string, { calls: number; tokens: number }>;
+  recentEntries: LlmUsageEntry[];
+}
+
 /* ------------------------------------------------------------------ */
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
@@ -49,6 +77,15 @@ export const hubApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Hub'],
     }),
+
+    getLlmUsage: builder.query<LlmUsageSummary, void>({
+      query: () => '/hub/llm/usage',
+    }),
+
+    getStarterTemplates: builder.query<StarterTemplate[], void>({
+      query: () => '/hub/templates',
+      providesTags: ['Hub'],
+    }),
   }),
 });
 
@@ -56,4 +93,6 @@ export const {
   useGetHubVersionQuery,
   useCheckUpdateQuery,
   useInstallUpdateMutation,
+  useGetLlmUsageQuery,
+  useGetStarterTemplatesQuery,
 } = hubApi;

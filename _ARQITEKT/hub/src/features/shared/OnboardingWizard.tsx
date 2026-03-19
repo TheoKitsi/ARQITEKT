@@ -104,6 +104,16 @@ function makeId(): number {
   return nextMsgId++;
 }
 
+/** Infer a starter template from the platform description. */
+function inferTemplate(platform: string): string | undefined {
+  const lower = platform.toLowerCase();
+  if (/android|ios|mobile|flutter|react.native/i.test(lower)) return 'mobile-app';
+  if (/api|backend|saas|service|server/i.test(lower)) return 'saas-api';
+  if (/shop|store|e.?commerce|checkout|cart/i.test(lower)) return 'e-commerce';
+  if (/web|spa|dashboard|browser|react|vue|angular/i.test(lower)) return 'spa';
+  return undefined;
+}
+
 function getPhaseGreeting(phase: number): string {
   switch (phase) {
     case 1:
@@ -324,18 +334,20 @@ export function OnboardingWizard() {
         const isConfirm = /^(ja|yes|ok|jep|sicher|klar|los|machen|erstellen)/i.test(trimmed);
         if (isConfirm) {
           setIsThinking(true);
+          const inferredTemplate = inferTemplate(d.platform);
           try {
             const project = await createProject({
               name: d.projectName || 'Neues Projekt',
               description: d.idea,
+              ...(inferredTemplate && { template: inferredTemplate }),
             }).unwrap();
             showToast(
-              `${t('wizCreated', 'Projekt erstellt')}: ${project.config.name}`,
+              `${t('wizCreated', 'Project created')}: ${project.config.name}`,
               'success',
             );
             navigate(`/projects/${project.id}/plan`);
           } catch {
-            showToast(t('errorLoad', 'Fehler beim Erstellen'), 'error');
+            showToast(t('errorLoad', 'Failed to load data.'), 'error');
             setIsThinking(false);
           }
           return;
@@ -385,18 +397,20 @@ export function OnboardingWizard() {
 
         /* Handle control tokens */
         if (hasCreateProject) {
+          const inferredTemplate = inferTemplate(d.platform);
           try {
             const project = await createProject({
               name: d.projectName || 'Neues Projekt',
               description: d.idea,
+              ...(inferredTemplate && { template: inferredTemplate }),
             }).unwrap();
             showToast(
-              `${t('wizCreated', 'Projekt erstellt')}: ${project.config.name}`,
+              `${t('wizCreated', 'Project created')}: ${project.config.name}`,
               'success',
             );
             navigate(`/projects/${project.id}/plan`);
           } catch {
-            showToast(t('errorLoad', 'Fehler beim Erstellen'), 'error');
+            showToast(t('errorLoad', 'Failed to load data.'), 'error');
           }
         } else if (hasNextPhase && currentPhase < TOTAL_PHASES) {
           advancePhase(currentPhase + 1);
@@ -478,7 +492,7 @@ export function OnboardingWizard() {
     /* Check browser support */
     const Ctor = getSpeechRecognitionConstructor();
     if (!Ctor) {
-      showToast(t('voiceNotSupported', 'Spracheingabe nicht unterstuetzt'), 'warning');
+      showToast(t('voiceNotSupported', 'Voice input not supported in this browser'), 'warning');
       return;
     }
 
@@ -506,7 +520,7 @@ export function OnboardingWizard() {
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       if (event.error !== 'aborted' && event.error !== 'no-speech') {
-        showToast(`${t('voiceError', 'Sprachfehler: ')}${event.error}`, 'error');
+        showToast(`${t('voiceError', 'Voice error: ')}${event.error}`, 'error');
       }
       setIsListening(false);
       recognitionRef.current = null;
@@ -526,7 +540,7 @@ export function OnboardingWizard() {
       recognitionRef.current = recognition;
       setIsListening(true);
     } catch {
-      showToast(t('voiceNotSupported', 'Spracheingabe nicht unterstuetzt'), 'warning');
+      showToast(t('voiceNotSupported', 'Voice input not supported in this browser'), 'warning');
     }
   }, [isListening, showToast, t, stopSpeaking]);
 
@@ -589,8 +603,8 @@ export function OnboardingWizard() {
               type="button"
               className={styles.iconBtn}
               onClick={handleRestart}
-              aria-label={t('wizRestart', 'Neu starten')}
-              title={t('wizRestart', 'Neu starten')}
+              aria-label={t('wizRestart', 'Start over')}
+              title={t('wizRestart', 'Start over')}
             >
               <RotateCcw size={18} />
             </button>
@@ -601,8 +615,8 @@ export function OnboardingWizard() {
             type="button"
             className={styles.iconBtn}
             onClick={handleClose}
-            aria-label={t('wizClose', 'Abbrechen')}
-            title={t('wizClose', 'Abbrechen')}
+            aria-label={t('wizClose', 'Cancel')}
+            title={t('wizClose', 'Cancel')}
           >
             <X size={20} />
           </button>
@@ -685,7 +699,7 @@ export function OnboardingWizard() {
             {isListening && (
               <div className={styles.listeningBadge}>
                 <span className={styles.listeningPulse} />
-                {t('wizListening', 'Ich hoere zu...')}
+                {t('wizListening', 'Listening...')}
               </div>
             )}
 
@@ -695,7 +709,7 @@ export function OnboardingWizard() {
                 className={styles.textInput}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder={t('wizTypePlaceholder', 'Nachricht eingeben...')}
+                placeholder={t('wizTypePlaceholder', 'Type your message...')}
                 disabled={isBusy}
                 autoFocus
               />
@@ -710,8 +724,8 @@ export function OnboardingWizard() {
                 disabled={isBusy}
                 aria-label={
                   isListening
-                    ? t('wizStopRecording', 'Aufnahme stoppen')
-                    : t('wizStartRecording', 'Spracheingabe starten')
+                    ? t('wizStopRecording', 'Stop recording')
+                    : t('wizStartRecording', 'Start voice input')
                 }
               >
                 {isListening ? <MicOff size={24} /> : <Mic size={24} />}
@@ -722,7 +736,7 @@ export function OnboardingWizard() {
                 type="submit"
                 className={styles.sendBtn}
                 disabled={!inputText.trim() || isBusy}
-                aria-label={t('wizSend', 'Senden')}
+                aria-label={t('wizSend', 'Send')}
               >
                 <Send size={18} />
               </button>
@@ -738,7 +752,7 @@ export function OnboardingWizard() {
                   disabled={isBusy}
                 >
                   <ArrowLeft size={14} />
-                  {t('wizBack', 'Zurueck')}
+                  {t('wizBack', 'Back')}
                 </button>
               )}
               {phase < TOTAL_PHASES && (
@@ -748,7 +762,7 @@ export function OnboardingWizard() {
                   onClick={handleSkip}
                   disabled={isBusy}
                 >
-                  {t('wizNext', 'Weiter')}
+                  {t('wizNext', 'Next')}
                   <ArrowRight size={14} />
                 </button>
               )}

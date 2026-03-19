@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Play, ExternalLink } from 'lucide-react';
+import { Play, ExternalLink, Globe } from 'lucide-react';
 import type { Project } from '@/store/api/projectsApi';
-import { useAppStartMutation } from '@/store/api/deployApi';
+import { useAppStartMutation, useAppStatusQuery } from '@/store/api/deployApi';
 import { Badge, type LifecycleStage } from '@/components/ui/Badge';
 import styles from './ProjectCard.module.css';
 
@@ -20,6 +20,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const lifecycle: LifecycleStage = project.config.lifecycle;
   const [startApp, { isLoading: starting }] = useAppStartMutation();
 
+  // Poll app status for running apps to get real port
+  const showAction = lifecycle === 'built' || lifecycle === 'building' || lifecycle === 'running' || lifecycle === 'deployed';
+  const { data: appStatus } = useAppStatusQuery(project.id, {
+    skip: !showAction,
+    pollingInterval: lifecycle === 'running' ? 10_000 : undefined,
+  });
+
   const handleClick = () => {
     navigate(`/projects/${project.id}`);
   };
@@ -36,7 +43,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
     if (lifecycle === 'built' || lifecycle === 'building') {
       startApp(project.id);
     } else if (lifecycle === 'running') {
-      window.open(`http://localhost:${project.config.github ? 3000 : 8080}`, '_blank', 'noopener');
+      const port = appStatus?.port ?? 8080;
+      window.open(`http://localhost:${port}`, '_blank', 'noopener');
+    } else if (lifecycle === 'deployed' && project.config.url) {
+      window.open(project.config.url, '_blank', 'noopener');
     }
   };
 
@@ -69,19 +79,34 @@ export function ProjectCard({ project }: ProjectCardProps) {
       </div>
 
       {/* Action button */}
-      {(lifecycle === 'built' || lifecycle === 'building' || lifecycle === 'running') && (
-        <button
-          className={`${styles.actionBtn} ${lifecycle === 'running' ? styles.actionRunning : styles.actionPlay}`}
-          onClick={handleAction}
-          disabled={starting}
-          aria-label={lifecycle === 'running' ? t('openApp') : t('runApp')}
-        >
-          {lifecycle === 'running' ? (
-            <><ExternalLink size={14} /> {t('openApp')}</>
-          ) : (
-            <><Play size={14} /> {starting ? t('starting') : t('runApp')}</>
+      {showAction && (
+        <div className={styles.actionRow}>
+          {appStatus?.running && appStatus.port && (
+            <span className={styles.portBadge}>:{appStatus.port}</span>
           )}
-        </button>
+          <button
+            className={`${styles.actionBtn} ${
+              lifecycle === 'running' ? styles.actionRunning
+                : lifecycle === 'deployed' ? styles.actionDeployed
+                : styles.actionPlay
+            }`}
+            onClick={handleAction}
+            disabled={starting || (lifecycle === 'deployed' && !project.config.url)}
+            aria-label={
+              lifecycle === 'running' ? t('openApp')
+                : lifecycle === 'deployed' ? t('viewLive', 'View Live')
+                : t('runApp')
+            }
+          >
+            {lifecycle === 'running' ? (
+              <><ExternalLink size={14} /> {t('openApp')}</>
+            ) : lifecycle === 'deployed' ? (
+              <><Globe size={14} /> {t('viewLive', 'View Live')}</>
+            ) : (
+              <><Play size={14} /> {starting ? t('starting') : t('runApp')}</>
+            )}
+          </button>
+        </div>
       )}
     </article>
   );

@@ -60,6 +60,39 @@ export const filesApi = baseApi.injectEndpoints({
         { type: 'Project', id: `${projectId}-files` },
       ],
     }),
+
+    deleteFile: builder.mutation<{ success: boolean }, { projectId: string; path: string }>({
+      query: ({ projectId, path }) => ({
+        url: `/projects/${projectId}/files`,
+        method: 'DELETE',
+        body: { path },
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [
+        { type: 'Project', id: `${projectId}-files` },
+      ],
+    }),
+
+    renameFile: builder.mutation<{ success: boolean; path: string }, { projectId: string; oldPath: string; newPath: string }>({
+      query: ({ projectId, oldPath, newPath }) => ({
+        url: `/projects/${projectId}/files/rename`,
+        method: 'PATCH',
+        body: { oldPath, newPath },
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [
+        { type: 'Project', id: `${projectId}-files` },
+      ],
+    }),
+
+    createDirectory: builder.mutation<{ success: boolean; path: string }, { projectId: string; path: string }>({
+      query: ({ projectId, path }) => ({
+        url: `/projects/${projectId}/files/mkdir`,
+        method: 'POST',
+        body: { path },
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [
+        { type: 'Project', id: `${projectId}-files` },
+      ],
+    }),
   }),
 });
 
@@ -67,4 +100,7 @@ export const {
   useListFilesQuery,
   useReadFileQuery,
   useWriteFileMutation,
+  useDeleteFileMutation,
+  useRenameFileMutation,
+  useCreateDirectoryMutation,
 } = filesApi;

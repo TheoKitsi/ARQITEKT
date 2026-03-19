@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -19,7 +20,7 @@ class ProjectDetailScreen extends ConsumerWidget {
       ),
       error: (err, _) => Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text('Fehler: $err')),
+        body: Center(child: Text(AppLocalizations.of(context)!.errorPrefix(err.toString()))),
       ),
       data: (project) {
         final config = project.config;
@@ -93,29 +94,36 @@ class ProjectDetailScreen extends ConsumerWidget {
               // Action tiles
               _ActionTile(
                 icon: LucideIcons.gitBranch,
-                title: 'Requirements',
-                subtitle: '${project.stats.total} Artefakte',
+                title: AppLocalizations.of(context)!.requirements,
+                subtitle: AppLocalizations.of(context)!.artifactCount(project.stats.total),
                 onTap: () => context.push('/projects/$projectId/requirements'),
               ),
               const SizedBox(height: Tokens.space2),
               _ActionTile(
                 icon: LucideIcons.messageSquare,
-                title: 'KI Chat',
-                subtitle: 'Projektbezogener KI-Assistent',
+                title: AppLocalizations.of(context)!.aiChat,
+                subtitle: AppLocalizations.of(context)!.aiChatSubtitle,
                 onTap: () => context.push('/projects/$projectId/chat'),
               ),
               const SizedBox(height: Tokens.space2),
               _ActionTile(
                 icon: LucideIcons.shield,
-                title: 'Pipeline',
-                subtitle: 'Gates, Confidence & Drift',
+                title: AppLocalizations.of(context)!.pipeline,
+                subtitle: AppLocalizations.of(context)!.pipelineSubtitle,
                 onTap: () => context.push('/projects/$projectId/pipeline'),
               ),
               const SizedBox(height: Tokens.space2),
               _ActionTile(
+                icon: LucideIcons.gitBranch,
+                title: AppLocalizations.of(context)!.traceability,
+                subtitle: AppLocalizations.of(context)!.traceabilitySubtitle,
+                onTap: () => context.push('/projects/$projectId/traceability'),
+              ),
+              const SizedBox(height: Tokens.space2),
+              _ActionTile(
                 icon: LucideIcons.messageSquarePlus,
-                title: 'Feedback',
-                subtitle: 'Feedback & Bug-Reports',
+                title: AppLocalizations.of(context)!.feedback,
+                subtitle: AppLocalizations.of(context)!.feedbackSubtitle,
                 onTap: () => context.push('/projects/$projectId/feedback'),
               ),
             ],

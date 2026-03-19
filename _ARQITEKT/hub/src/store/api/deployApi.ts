@@ -79,6 +79,31 @@ export interface StoreBuildResult {
   errors?: string[];
 }
 
+export interface BuildDeployResult {
+  success: boolean;
+  framework: string;
+  output: string;
+  durationMs: number;
+  message?: string;
+}
+
+export interface CiCdResult {
+  success: boolean;
+  filePath: string;
+  message: string;
+}
+
+export interface GitFileStatus {
+  path: string;
+  status: 'modified' | 'added' | 'deleted' | 'renamed' | 'untracked';
+}
+
+export interface GitStatusResult {
+  isRepo: boolean;
+  branch?: string;
+  files: GitFileStatus[];
+}
+
 /* ------------------------------------------------------------------ */
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
@@ -125,6 +150,14 @@ export const deployApi = baseApi.injectEndpoints({
       query: (projectId) => `/projects/${projectId}/app/status`,
     }),
 
+    appLogs: builder.query<
+      { logs: Array<{ timestamp: number; stream: 'stdout' | 'stderr'; text: string }> },
+      { projectId: string; since?: number }
+    >({
+      query: ({ projectId, since }) =>
+        `/projects/${projectId}/app/logs${since ? `?since=${since}` : ''}`,
+    }),
+
     githubPush: builder.mutation<GitHubPushResult, GitHubPushRequest>({
       query: ({ projectId, ...body }) => ({
         url: `/projects/${projectId}/github-push`,
@@ -155,6 +188,24 @@ export const deployApi = baseApi.injectEndpoints({
         method: 'POST',
       }),
     }),
+
+    buildDeploy: builder.mutation<BuildDeployResult, string>({
+      query: (projectId) => ({
+        url: `/projects/${projectId}/build-deploy`,
+        method: 'POST',
+      }),
+    }),
+
+    githubActions: builder.mutation<CiCdResult, string>({
+      query: (projectId) => ({
+        url: `/projects/${projectId}/github-actions`,
+        method: 'POST',
+      }),
+    }),
+
+    gitStatus: builder.query<GitStatusResult, string>({
+      query: (projectId) => `/projects/${projectId}/git/status`,
+    }),
   }),
 });
 
@@ -164,8 +215,12 @@ export const {
   useAppStartMutation,
   useAppStopMutation,
   useAppStatusQuery,
+  useAppLogsQuery,
   useGithubPushMutation,
   useExportIssuesMutation,
   useStoreConfigureMutation,
   useStoreBuildMutation,
+  useBuildDeployMutation,
+  useGithubActionsMutation,
+  useGitStatusQuery,
 } = deployApi;

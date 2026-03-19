@@ -9,6 +9,7 @@ import {
   upsertUser,
   getUser,
 } from '../services/auth.js';
+import { getOidcAuthUrl, exchangeOidcCode, fetchOidcUser } from '../services/oidc.js';
 
 export const authRouter = Router();
 
@@ -141,4 +142,59 @@ authRouter.post('/logout', (_req, res) => {
   res.clearCookie('arqitekt_token', { path: '/' });
   res.clearCookie('arqitekt_refresh', { path: '/api/auth/refresh' });
   res.json({ success: true });
+});
+
+/* ------------------------------------------------------------------ */
+/*  OIDC/SSO routes                                                    */
+/* ------------------------------------------------------------------ */
+
+// GET /api/auth/oidc — Redirect to OIDC provider
+authRouter.get('/oidc', async (_req, res, next) => {
+  try {
+    if (!config.authEnabled || !config.oidcEnabled) {
+      res.status(404).json({ error: 'OIDC authentication is not enabled' });
+      return;
+    }
+    if (!config.oidcIssuer || !config.oidcClientId) {
+      res.status(500).json({ error: 'OIDC provider not configured' });
+      return;
+    }
+    const state = randomUUID();
+    const url = await getOidcAuthUrl(state);
+    res.redirect(url);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/auth/oidc/callback — OIDC callback
+authRouter.get('/oidc/callback', async (req, res, next) => {
+  try {
+    const code = req.query.code as string | undefined;
+    if (!code) {
+      res.status(400).json({ error: 'Missing code parameter' });
+      return;
+    }
+
+    const { accessToken } = await exchangeOidcCode(code);
+    const profile = await fetchOidcUser(accessToken);
+    await upsertUser(profile, accessToken);
+
+    const { token, refreshToken } = signTokens(profile);
+
+    res.cookie('arqitekt_token', token, COOKIE_OPTIONS);
+    res.cookie('arqitekt_refresh', refreshToken, REFRESH_COOKIE_OPTIONS);
+
+    res.redirect(config.publicUrl);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/auth/providers — List available auth providers
+authRouter.get('/providers', (_req, res) => {
+  const providers: string[] = [];
+  if (config.githubClientId) providers.push('github');
+  if (config.oidcEnabled && config.oidcIssuer) providers.push('oidc');
+  res.json({ authEnabled: config.authEnabled, providers });
 });

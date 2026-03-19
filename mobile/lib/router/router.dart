@@ -10,6 +10,7 @@ import '../features/capture/capture_screen.dart';
 import '../features/feedback/feedback_list_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/pipeline/pipeline_screen.dart';
+import '../features/traceability/traceability_screen.dart';
 import '../features/shared/app_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -92,6 +93,14 @@ final router = GoRouter(
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return PipelineScreen(projectId: id);
+      },
+    ),
+    GoRoute(
+      path: '/projects/:id/traceability',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return TraceabilityScreen(projectId: id);
       },
     ),
   ],

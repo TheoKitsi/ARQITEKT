@@ -162,13 +162,13 @@ export function EditProjectModal({ isOpen, onClose, projectId }: EditProjectModa
             />
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Tags</label>
+            <label className={styles.label}>{t('tags')}</label>
             <div className={styles.tagInputRow}>
               <Input
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleTagKeyDown}
-                placeholder="Add tag..."
+                placeholder={t('addTag')}
                 inputSize="sm"
                 icon={<Tag size={14} />}
               />

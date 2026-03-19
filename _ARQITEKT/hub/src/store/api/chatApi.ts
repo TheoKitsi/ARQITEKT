@@ -66,7 +66,7 @@ export const chatApi = baseApi.injectEndpoints({
     }),
 
     getModels: builder.query<AIModel[], void>({
-      query: () => '/ai/models',
+      query: () => '/chat/models',
     }),
   }),
 });

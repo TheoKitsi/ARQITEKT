@@ -41,6 +41,13 @@ const chatSlice = createSlice({
       state.messages.push(action.payload);
     },
 
+    updateMessage(state, action: PayloadAction<{ id: string; content: string }>) {
+      const msg = state.messages.find((m) => m.id === action.payload.id);
+      if (msg) {
+        msg.content = action.payload.content;
+      }
+    },
+
     setModel(state, action: PayloadAction<string>) {
       state.model = action.payload;
     },
@@ -55,7 +62,7 @@ const chatSlice = createSlice({
   },
 });
 
-export const { toggleChat, addMessage, setModel, setLoading, clearMessages } =
+export const { toggleChat, addMessage, updateMessage, setModel, setLoading, clearMessages } =
   chatSlice.actions;
 
 export const chatReducer = chatSlice.reducer;

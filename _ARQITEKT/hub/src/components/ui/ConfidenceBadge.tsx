@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from './ConfidenceBadge.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -47,6 +48,7 @@ export function ConfidenceBadge({
   onClick,
   className,
 }: ConfidenceBadgeProps) {
+  const { t } = useTranslation();
   const [showTooltip, setShowTooltip] = useState(false);
 
   const handleMouseEnter = useCallback(() => {
@@ -82,7 +84,7 @@ export function ConfidenceBadge({
       onKeyDown={onClick ? (e) => { if (e.key === 'Enter') onClick(); } : undefined}
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
-      aria-label={`Confidence: ${formatScore(score)}`}
+      aria-label={t('confidenceLabel', { score: formatScore(score) })}
     >
       {formatScore(score)}
     </span>
@@ -107,11 +109,12 @@ export function ConfidenceBadge({
 /* ------------------------------------------------------------------ */
 
 function ConfidenceTooltip({ breakdown }: { breakdown: ConfidenceBreakdown }) {
+  const { t } = useTranslation();
   const rows: { label: string; value: number }[] = [
-    { label: 'Structural', value: breakdown.structural },
-    { label: 'Semantic', value: breakdown.semantic },
-    { label: 'Consistency', value: breakdown.consistency },
-    { label: 'Boundary', value: breakdown.boundary },
+    { label: t('structural'), value: breakdown.structural },
+    { label: t('semantic'), value: breakdown.semantic },
+    { label: t('consistency'), value: breakdown.consistency },
+    { label: t('boundary'), value: breakdown.boundary },
   ];
 
   return (

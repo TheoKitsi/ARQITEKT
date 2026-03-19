@@ -227,6 +227,20 @@ export const requirementsApi = baseApi.injectEndpoints({
         method: 'POST',
       }),
     }),
+
+    importCsv: builder.mutation<
+      { success: boolean; filesCreated: string[]; errors: string[]; totalRows: number },
+      { projectId: string; csv: string }
+    >({
+      query: ({ projectId, csv }) => ({
+        url: `/projects/${projectId}/import-csv`,
+        method: 'POST',
+        body: { csv },
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [
+        { type: 'Requirements', id: projectId },
+      ],
+    }),
   }),
 });
 
@@ -243,4 +257,5 @@ export const {
   useCreateSolutionMutation,
   useCreateUserStoryMutation,
   useValidateProjectMutation,
+  useImportCsvMutation,
 } = requirementsApi;

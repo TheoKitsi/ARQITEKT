@@ -33,6 +33,21 @@ export const config = {
   githubClientSecret: process.env.GITHUB_CLIENT_SECRET || '',
   githubCallbackUrl: process.env.GITHUB_CALLBACK_URL || 'http://localhost:3334/api/auth/github/callback',
 
+  // Generic OIDC provider (optional alternative to GitHub OAuth)
+  oidcEnabled: process.env.OIDC_ENABLED === 'true',
+  oidcIssuer: process.env.OIDC_ISSUER || '',
+  oidcClientId: process.env.OIDC_CLIENT_ID || '',
+  oidcClientSecret: process.env.OIDC_CLIENT_SECRET || '',
+  oidcCallbackUrl: process.env.OIDC_CALLBACK_URL || 'http://localhost:3334/api/auth/oidc/callback',
+  oidcScopes: process.env.OIDC_SCOPES || 'openid profile email',
+
+  // SMTP email (optional — for notification emails)
+  smtpHost: process.env.SMTP_HOST || '',
+  smtpPort: parseInt(process.env.SMTP_PORT || '587', 10),
+  smtpUser: process.env.SMTP_USER || '',
+  smtpPass: process.env.SMTP_PASS || '',
+  smtpFrom: process.env.SMTP_FROM || 'ARQITEKT <noreply@arqitekt.dev>',
+
   // Public URL (for redirects after OAuth)
   publicUrl: process.env.PUBLIC_URL || 'http://localhost:5173',
 } as const;

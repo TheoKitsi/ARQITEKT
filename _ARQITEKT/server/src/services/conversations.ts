@@ -2,7 +2,10 @@ import { readFile, readdir, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { resolveProjectById } from './projects.js';
 import { parseFrontmatter } from './frontmatter.js';
+import { createLogger } from './logger.js';
 import type { ChatMessage } from '../types/project.js';
+
+const log = createLogger('conversations');
 
 export interface Conversation {
   id: string;
@@ -84,7 +87,7 @@ export async function listConversations(projectId: string): Promise<Conversation
     files = await readdir(dirPath);
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-      console.error(`Error reading conversations directory for ${projectId}:`, err);
+      log.error({ err, projectId }, 'Error reading conversations directory');
     }
     return conversations;
   }

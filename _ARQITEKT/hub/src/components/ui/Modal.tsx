@@ -4,6 +4,7 @@ import {
   useRef,
   useCallback,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import styles from './Modal.module.css';
 
@@ -24,6 +25,7 @@ export interface ModalProps {
 /* ------------------------------------------------------------------ */
 
 export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) {
+  const { t } = useTranslation();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
@@ -79,7 +81,7 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
           <button
             className={styles.closeBtn}
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('close')}
             type="button"
           >
             <X size={18} />

@@ -6,6 +6,7 @@ import {
   useReducer,
   type ReactNode,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle, AlertTriangle, Info, XCircle, X } from 'lucide-react';
 import styles from './Toast.module.css';
 
@@ -85,6 +86,7 @@ const iconMap: Record<ToastType, ReactNode> = {
 /* ------------------------------------------------------------------ */
 
 export function Toast({ children }: { children?: ReactNode }) {
+  const { t } = useTranslation();
   const [state, dispatch] = useReducer(toastReducer, { toasts: [] });
 
   const showToast = useCallback(
@@ -123,7 +125,7 @@ export function Toast({ children }: { children?: ReactNode }) {
             <button
               className={styles.dismiss}
               onClick={() => dismiss(toast.id)}
-              aria-label="Dismiss"
+              aria-label={t('dismiss')}
               type="button"
             >
               <X size={14} />

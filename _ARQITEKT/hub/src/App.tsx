@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from '@/features/shared/Header';
 import { HubDashboard } from '@/features/hub/HubDashboard';
@@ -8,6 +9,7 @@ import { ChatFab } from '@/features/chat/ChatFab';
 import { ChatPanel } from '@/features/chat/ChatPanel';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { Toast } from '@/components/ui/Toast';
+import OfflineBanner from '@/components/ui/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { NotFound } from '@/components/NotFound';
 import { Spinner } from '@/components/ui/Spinner';
@@ -23,11 +25,12 @@ function TabFallback() {
 }
 
 export default function App() {
+  const { t } = useTranslation();
   return (
     <ErrorBoundary>
       <Toast>
         <RequireAuth>
-          <a href="#main-content" className="skip-link">Skip to content</a>
+          <a href="#main-content" className="skip-link">{t('skipToContent')}</a>
           <Header />
           <main id="main-content">
             <Routes>
@@ -46,6 +49,7 @@ export default function App() {
           <ChatFab />
           <ChatPanel />
           <CommandPalette />
+          <OfflineBanner />
         </RequireAuth>
       </Toast>
     </ErrorBoundary>

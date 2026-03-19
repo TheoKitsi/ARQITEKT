@@ -1,0 +1,95 @@
+# ARQITEKT — Production Docker Compose with HTTPS
+#
+# Usage:
+#   1. Copy .env.compose.example to .env and fill in values
+#   2. Run initial cert: docker compose -f docker-compose.prod.yml run --rm certbot
+#   3. Start: docker compose -f docker-compose.prod.yml up -d
+#   4. Renew certs: docker compose -f docker-compose.prod.yml run --rm certbot renew
+
+services:
+  server:
+    build:
+      context: ./_ARQITEKT/server
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      - NODE_ENV=production
+      - WORKSPACE_ROOT=/workspace
+      - HUB_ROOT=/app
+      - CORS_ORIGINS=https://${DOMAIN:-localhost}
+    volumes:
+      - .:/workspace
+      - ./_ARQITEKT/config:/app/config
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3334/api/hub/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    networks:
+      - arqitekt
+
+  hub:
+    build:
+      context: ./_ARQITEKT/hub
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./_ARQITEKT/nginx/nginx-ssl.conf:/etc/nginx/templates/default.conf.template:ro
+      - certbot-www:/var/www/certbot:ro
+      - certbot-certs:/etc/letsencrypt:ro
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    depends_on:
+      server:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    networks:
+      - arqitekt
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - certbot-www:/var/www/certbot
+      - certbot-certs:/etc/letsencrypt
+    command: >-
+      certonly --webroot
+      --webroot-path=/var/www/certbot
+      --email ${CERTBOT_EMAIL:-admin@example.com}
+      --agree-tos --no-eff-email
+      -d ${DOMAIN:-localhost}
+    profiles:
+      - certbot
+
+volumes:
+  certbot-www:
+  certbot-certs:
+
+networks:
+  arqitekt:
+    driver: bridge

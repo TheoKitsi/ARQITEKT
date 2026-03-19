@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Bell, Check, CheckCheck, Trash2 } from 'lucide-react';
 import {
   useGetNotificationsQuery,
@@ -31,6 +32,7 @@ interface Props {
 }
 
 export function NotificationBell({ projectId }: Props) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -63,7 +65,7 @@ export function NotificationBell({ projectId }: Props) {
       <button
         className={styles.bell}
         onClick={() => setOpen((prev) => !prev)}
-        aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ''}`}
+        aria-label={`${t('notifications')}${unread > 0 ? ` (${unread})` : ''}`}
         type="button"
       >
         <Bell size={16} />
@@ -73,7 +75,7 @@ export function NotificationBell({ projectId }: Props) {
       {open && (
         <div className={styles.dropdown}>
           <div className={styles.header}>
-            <span className={styles.title}>Notifications</span>
+            <span className={styles.title}>{t('notifications')}</span>
             {unread > 0 && (
               <button
                 className={styles.markAll}
@@ -81,14 +83,14 @@ export function NotificationBell({ projectId }: Props) {
                 type="button"
               >
                 <CheckCheck size={14} />
-                Mark all read
+                {t('markAllRead')}
               </button>
             )}
           </div>
 
           <div className={styles.list}>
             {(!listData?.items || listData.items.length === 0) ? (
-              <div className={styles.empty}>No notifications</div>
+              <div className={styles.empty}>{t('noNotifications')}</div>
             ) : (
               listData.items.map((n) => (
                 <div
@@ -115,7 +117,7 @@ export function NotificationBell({ projectId }: Props) {
                           e.stopPropagation();
                           markRead({ projectId, notificationId: n.id });
                         }}
-                        aria-label="Mark as read"
+                        aria-label={t('markAsRead')}
                         type="button"
                       >
                         <Check size={12} />
@@ -127,7 +129,7 @@ export function NotificationBell({ projectId }: Props) {
                         e.stopPropagation();
                         deleteNotif({ projectId, notificationId: n.id });
                       }}
-                      aria-label="Delete"
+                      aria-label={t('deleteBtn')}
                       type="button"
                     >
                       <Trash2 size={12} />
