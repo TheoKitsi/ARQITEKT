@@ -111,6 +111,13 @@ class ProjectDetailScreen extends ConsumerWidget {
                 subtitle: 'Gates, Confidence & Drift',
                 onTap: () => context.push('/projects/$projectId/pipeline'),
               ),
+              const SizedBox(height: Tokens.space2),
+              _ActionTile(
+                icon: LucideIcons.messageSquarePlus,
+                title: 'Feedback',
+                subtitle: 'Feedback & Bug-Reports',
+                onTap: () => context.push('/projects/$projectId/feedback'),
+              ),
             ],
           ),
         );

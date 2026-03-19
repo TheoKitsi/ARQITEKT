@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { readFile } from 'fs/promises';
+import { readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { config } from '../config.js';
 
@@ -88,4 +88,40 @@ hubRouter.post('/update/install', async (_req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// GET /api/hub/health — comprehensive health check
+hubRouter.get('/health', async (_req, res) => {
+  const checks: Record<string, { status: string; detail?: string }> = {};
+
+  // 1. File system: can we read the workspace?
+  try {
+    await access(config.workspaceRoot);
+    checks.filesystem = { status: 'ok' };
+  } catch {
+    checks.filesystem = { status: 'degraded', detail: 'Workspace root not accessible' };
+  }
+
+  // 2. Config: can we read projects.yaml?
+  try {
+    await readFile(join(config.hubRoot, 'config', 'projects.yaml'), 'utf-8');
+    checks.config = { status: 'ok' };
+  } catch {
+    checks.config = { status: 'degraded', detail: 'projects.yaml not found' };
+  }
+
+  // 3. LLM: is the primary LLM configured?
+  const llmKey = process.env.ARQITEKT_LLM_KEY || process.env.GITHUB_TOKEN;
+  checks.llm = llmKey
+    ? { status: 'ok' }
+    : { status: 'degraded', detail: 'No LLM API key configured (ARQITEKT_LLM_KEY or GITHUB_TOKEN)' };
+
+  const allOk = Object.values(checks).every((c) => c.status === 'ok');
+  const statusCode = allOk ? 200 : 207; // 207 Multi-Status for partial health
+
+  res.status(statusCode).json({
+    status: allOk ? 'healthy' : 'degraded',
+    uptime: process.uptime(),
+    checks,
+  });
 });

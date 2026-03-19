@@ -26,6 +26,17 @@ class ApiClient {
     return res.data as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> createProject({
+    required String name,
+    String? description,
+  }) async {
+    final res = await _dio.post('/projects', data: {
+      'name': name,
+      if (description != null) 'description': description,
+    });
+    return res.data as Map<String, dynamic>;
+  }
+
   // ── Requirements ─────────────────────────────────────────────────
   Future<List<dynamic>> getRequirementsTree(String projectId) async {
     final res = await _dio.get('/projects/$projectId/requirements/tree');
@@ -34,6 +45,18 @@ class ApiClient {
 
   Future<Map<String, dynamic>> getRequirement(String projectId, String artifactId) async {
     final res = await _dio.get('/projects/$projectId/requirements/$artifactId');
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> setRequirementStatus(
+    String projectId, {
+    required String artifactId,
+    required String status,
+  }) async {
+    final res = await _dio.put('/projects/$projectId/set-status', data: {
+      'artifactId': artifactId,
+      'status': status,
+    });
     return res.data as Map<String, dynamic>;
   }
 
@@ -68,6 +91,12 @@ class ApiClient {
   }
 
   // ── Feedback ─────────────────────────────────────────────────────
+  Future<List<dynamic>> getFeedbackList(String projectId) async {
+    final res = await _dio.get('/projects/$projectId/feedback');
+    final data = res.data as Map<String, dynamic>;
+    return data['items'] as List<dynamic>? ?? [];
+  }
+
   Future<Map<String, dynamic>> createFeedback(
     String projectId, {
     required String title,
@@ -123,6 +152,56 @@ class ApiClient {
 
   Future<Map<String, dynamic>> getOrphans(String projectId) async {
     final res = await _dio.get('/projects/$projectId/traceability/orphans');
+    return res.data as Map<String, dynamic>;
+  }
+
+  // ── Probing ──────────────────────────────────────────────────────
+  Future<Map<String, dynamic>> startProbing(
+    String projectId, {
+    required String artifactId,
+  }) async {
+    final res = await _dio.post('/projects/$projectId/probing/analyze', data: {
+      'artifactId': artifactId,
+    });
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> getProbingQuestions(
+    String projectId, {
+    String? artifactId,
+  }) async {
+    final res = await _dio.get(
+      '/projects/$projectId/probing/questions',
+      queryParameters: {if (artifactId != null) 'artifactId': artifactId},
+    );
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> answerProbingQuestion(
+    String projectId, {
+    required String artifactId,
+    required String questionId,
+    required String answer,
+  }) async {
+    final res = await _dio.post('/projects/$projectId/probing/answer', data: {
+      'artifactId': artifactId,
+      'questionId': questionId,
+      'answer': answer,
+    });
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> skipProbingQuestion(
+    String projectId, {
+    required String artifactId,
+    required String questionId,
+    required String reason,
+  }) async {
+    final res = await _dio.post('/projects/$projectId/probing/skip', data: {
+      'artifactId': artifactId,
+      'questionId': questionId,
+      'reason': reason,
+    });
     return res.data as Map<String, dynamic>;
   }
 }

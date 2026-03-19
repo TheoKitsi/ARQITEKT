@@ -1,48 +1,79 @@
-# ARQITEKT — Framework Hub
+# ARQITEKT Hub
 
-> KI-gestütztes Requirements Engineering Framework
+**Dashboard + API Server for the ARQITEKT Framework** | **Dashboard + API-Server fuer das ARQITEKT-Framework**
 
-## Quick Start
+---
+
+## EN: Hub Architecture
+
+The Hub provides a web dashboard and REST API for managing ARQITEKT projects.
+
+### Components
+
+| Component | Path | Port | Technology |
+|-----------|------|------|-----------|
+| Frontend | `hub/` | 5173 (dev) | Vite + React 19 + TypeScript |
+| Backend | `server/` | 3334 | Express.js + TypeScript |
+| UI Catalogue | `ui-catalogue/` | — | Design tokens + component templates |
+| Project Template | `template/` | — | Metamodel, agents, validation scripts |
+
+### Commands
 
 ```bash
-npm run dashboard    # Dashboard starten → http://localhost:3333
+# Frontend
+cd hub && npm install && npm run dev    # Dev server on :5173
+cd hub && npm run build                 # Production build
+cd hub && npm test                      # Vitest unit tests
+cd hub && npx playwright test           # E2E tests
+
+# Backend
+cd server && npm install && npm run dev # Dev server on :3334
+cd server && npm test                   # Vitest backend tests
 ```
 
-Oder einfach `start.cmd` im übergeordneten Verzeichnis doppelklicken.
+### API Endpoints (40+)
 
-## Was ist ARQITEKT?
+| Group | Example Endpoints |
+|-------|------------------|
+| Projects | GET/POST `/api/projects`, GET `/api/projects/:id` |
+| Requirements | GET `/api/projects/:id/requirements/tree`, PUT `/api/projects/:id/set-status` |
+| Pipeline | GET `/api/projects/:id/pipeline`, POST `/api/projects/:id/pipeline/gate` |
+| Probing | POST `/api/projects/:id/probing/analyze`, `/probing/question`, `/probing/answer` |
+| Baseline | POST `/api/projects/:id/baseline`, GET `/api/projects/:id/drift` |
+| Traceability | GET `/api/projects/:id/traceability`, `/traceability/orphans` |
+| Chat | POST `/api/chat/send`, GET `/api/chat/models` |
+| Feedback | GET/POST `/api/projects/:id/feedback` |
+| Deploy | POST `/api/projects/:id/scaffold`, `/codegen`, `/export/issues`, `/github/push` |
+| Hub | GET `/api/hub/health`, `/api/hub/version`, `/api/hub/update/check` |
 
-ARQITEKT ist ein Framework das **Requirements Engineering** mit **VS Code Copilot Agent Mode** kombiniert. Statt leere Dokumente zu befüllen, führen KI-Agents durch den gesamten Prozess:
+### Configuration
 
-1. **@discover** — Interview → Business Case
-2. **@architect** — Business Case → Requirement-Hierarchie (SOL → US → CMP → FN)
-3. **@review** — Qualitätsprüfung aller Requirements
-4. **@export** — Export in Jira, Code-Scaffold, Tree
+| File | Purpose |
+|------|---------|
+| `config/llm.yaml` | LLM provider, model, fallback chain |
+| `config/projects.yaml` | Registered projects (mode: internal/external) |
+| `config/update.yaml` | Update channel settings |
+| `template/config/metamodel.yaml` | Requirements hierarchy, gates, validation rules |
+| `template/config/agents.yaml` | AI probing agent personas |
 
-## Projektstruktur
+---
 
+## DE: Hub-Architektur
+
+Der Hub bietet ein Web-Dashboard und eine REST-API zur Verwaltung von ARQITEKT-Projekten.
+
+### Befehle
+
+```bash
+# Frontend
+cd hub && npm install && npm run dev    # Dev-Server auf :5173
+cd hub && npm run build                 # Produktions-Build
+
+# Backend
+cd server && npm install && npm run dev # Dev-Server auf :3334
 ```
-ARQITEKT/                    ← Workspace Root
-├── start.cmd                ← Doppelklick-Launcher
-├── _ARQITEKT/               ← Dieses Framework (Hub)
-│   ├── scripts/dashboard.mjs
-│   └── template/            ← Blueprint für neue Projekte
-├── 001_SOCIAL/              ← Projekt 1
-├── 002_NextProject/         ← Projekt 2
-└── ...
-```
 
-## Dashboard
+### Konfiguration
 
-Das Hub-Dashboard (Port 3333) zeigt alle Projekte und erlaubt:
+LLM-Einstellungen in `config/llm.yaml`. API-Key wird ueber Umgebungsvariablen geladen (siehe `.env.compose.example` im Root).
 
-- **Neues Projekt erstellen** — Template wird kopiert und konfiguriert
-- **Projekt im Dashboard anzeigen** — Requirement-Tree, Stats, Validierung
-- **Projekt in VS Code öffnen** — Copilot Agents sofort verfügbar
-- **Projekt löschen** — Mit Bestätigung
-
-## Side-by-Side Workflow
-
-1. Dashboard links im Browser oder VS Code Simple Browser
-2. Copilot Chat rechts (`Ctrl+Shift+I`)
-3. Prompts per Klick kopieren → in Chat einfügen → ausführen

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../features/projects/projects_screen.dart';
 import '../features/projects/project_detail_screen.dart';
+import '../features/projects/create_project_screen.dart';
 import '../features/requirements/requirements_screen.dart';
 import '../features/requirements/requirement_detail_screen.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/capture/capture_screen.dart';
+import '../features/feedback/feedback_list_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/pipeline/pipeline_screen.dart';
 import '../features/shared/app_shell.dart';
@@ -36,11 +38,24 @@ final router = GoRouter(
       ],
     ),
     GoRoute(
+      path: '/projects/new',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const CreateProjectScreen(),
+    ),
+    GoRoute(
       path: '/projects/:id',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return ProjectDetailScreen(projectId: id);
+      },
+    ),
+    GoRoute(
+      path: '/projects/:id/feedback',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return FeedbackListScreen(projectId: id);
       },
     ),
     GoRoute(

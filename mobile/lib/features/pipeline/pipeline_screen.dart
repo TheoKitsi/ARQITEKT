@@ -5,6 +5,7 @@ import '../../models/pipeline.dart';
 import '../../providers/pipeline_provider.dart';
 import '../../services/api_client.dart';
 import '../../theme/tokens.dart';
+import 'probing_sheet.dart';
 
 /// Full pipeline overview for a project: gate status, confidence, drift.
 class PipelineScreen extends ConsumerWidget {
@@ -15,6 +16,7 @@ class PipelineScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pipelineAsync = ref.watch(pipelineProvider(projectId));
     final driftAsync = ref.watch(driftProvider(projectId));
+    final confidenceAsync = ref.watch(confidenceProvider(projectId));
 
     return Scaffold(
       appBar: AppBar(
@@ -25,6 +27,7 @@ class PipelineScreen extends ConsumerWidget {
             onPressed: () {
               ref.invalidate(pipelineProvider(projectId));
               ref.invalidate(driftProvider(projectId));
+              ref.invalidate(confidenceProvider(projectId));
             },
           ),
         ],
@@ -41,6 +44,16 @@ class PipelineScreen extends ConsumerWidget {
               projectId: projectId,
               ref: ref,
             ),
+          ),
+
+          const SizedBox(height: Tokens.space4),
+
+          // ── Confidence Breakdown ──
+          confidenceAsync.when(
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (scores) =>
+                scores.isNotEmpty ? _ConfidenceSection(scores: scores) : const SizedBox.shrink(),
           ),
 
           const SizedBox(height: Tokens.space4),
@@ -185,6 +198,22 @@ class _GateCard extends StatelessWidget {
                       style: TextStyle(
                           fontSize: Tokens.fontXs, color: Tokens.textTertiary)),
                 )),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Tokens.space4, vertical: Tokens.space2),
+              child: OutlinedButton.icon(
+                onPressed: () => showProbingSheet(
+                  context,
+                  projectId: projectId,
+                  artifactId: gate.gaps.first.artifactId,
+                ),
+                icon: Icon(LucideIcons.messageCircle, size: 16, color: Tokens.gold),
+                label: Text('Probe Gaps', style: TextStyle(color: Tokens.gold)),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Tokens.gold.withValues(alpha: 0.4)),
+                ),
+              ),
+            ),
           ],
         ],
       ),
@@ -300,6 +329,133 @@ class _ConfidenceBar extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+//  Confidence Breakdown Section
+// ─────────────────────────────────────────────────────────────────────
+
+class _ConfidenceSection extends StatelessWidget {
+  final List<ConfidenceScore> scores;
+  const _ConfidenceSection({required this.scores});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Confidence Breakdown',
+          style: TextStyle(
+            fontSize: Tokens.fontBase,
+            fontWeight: FontWeight.w600,
+            color: Tokens.textPrimary,
+          ),
+        ),
+        const SizedBox(height: Tokens.space2),
+        ...scores.map((s) => Card(
+              margin: const EdgeInsets.only(bottom: Tokens.space2),
+              child: Padding(
+                padding: const EdgeInsets.all(Tokens.space3),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          s.artifactId,
+                          style: const TextStyle(
+                            fontFamily: 'JetBrains Mono',
+                            fontSize: Tokens.fontSm,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '${s.overall.toStringAsFixed(0)}%',
+                          style: TextStyle(
+                            fontSize: Tokens.fontBase,
+                            fontWeight: FontWeight.w700,
+                            color: _scoreColor(s.overall),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: Tokens.space2),
+                    _DimensionBar(label: 'Structural', value: s.structural, weight: '30%'),
+                    _DimensionBar(label: 'Semantic', value: s.semantic, weight: '30%'),
+                    _DimensionBar(label: 'Consistency', value: s.consistency, weight: '20%'),
+                    _DimensionBar(label: 'Boundary', value: s.boundary, weight: '20%'),
+                  ],
+                ),
+              ),
+            )),
+      ],
+    );
+  }
+
+  Color _scoreColor(double v) {
+    if (v >= 90) return Tokens.gold;
+    if (v >= 70) return Tokens.green;
+    if (v >= 50) return Tokens.yellow;
+    return Tokens.red;
+  }
+}
+
+class _DimensionBar extends StatelessWidget {
+  final String label;
+  final double value;
+  final String weight;
+
+  const _DimensionBar({
+    required this.label,
+    required this.value,
+    required this.weight,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = value >= 70
+        ? Tokens.green
+        : value >= 50
+            ? Tokens.yellow
+            : Tokens.red;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(
+              label,
+              style: TextStyle(fontSize: Tokens.fontXs, color: Tokens.textSecondary),
+            ),
+          ),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(Tokens.radiusSm),
+              child: LinearProgressIndicator(
+                value: value / 100,
+                minHeight: 6,
+                backgroundColor: Tokens.surfaceBg3,
+                valueColor: AlwaysStoppedAnimation(color),
+              ),
+            ),
+          ),
+          const SizedBox(width: Tokens.space2),
+          SizedBox(
+            width: 40,
+            child: Text(
+              '${value.toStringAsFixed(0)}%',
+              textAlign: TextAlign.right,
+              style: TextStyle(fontSize: Tokens.fontXs, color: Tokens.textSecondary),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

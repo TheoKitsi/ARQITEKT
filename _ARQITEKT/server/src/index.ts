@@ -21,7 +21,9 @@ import { conversationsRouter } from './routes/conversations.js';
 import { pipelineRouter } from './routes/pipeline.js';
 import { probingRouter } from './routes/probing.js';
 import { baselineRouter } from './routes/baseline.js';
+import { notificationsRouter } from './routes/notifications.js';
 import { setupWebSocket, destroyAllTerminals } from './websocket/index.js';
+import { registerBroadcast } from './services/notifications.js';
 import { stopAllApps } from './services/appManager.js';
 
 // Safety check: fail fast if auth is enabled but JWT secret is the default
@@ -71,6 +73,7 @@ app.use('/api/projects', conversationsRouter);
 app.use('/api/projects', pipelineRouter);
 app.use('/api/projects', probingRouter);
 app.use('/api/projects', baselineRouter);
+app.use('/api/projects', notificationsRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/github', githubRouter);
 app.use('/api/hub', hubRouter);
@@ -86,6 +89,14 @@ app.use(errorHandler);
 // WebSocket
 const wss = new WebSocketServer({ server, path: '/ws' });
 setupWebSocket(wss);
+
+// Register notification broadcast so services can push to all WS clients
+registerBroadcast((type, payload) => {
+  const msg = JSON.stringify({ type, payload });
+  for (const client of wss.clients) {
+    if (client.readyState === 1) client.send(msg);
+  }
+});
 
 // Start server
 server.listen(config.port, () => {

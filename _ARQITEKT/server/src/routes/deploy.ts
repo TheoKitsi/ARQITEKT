@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { scaffoldProject } from '../services/scaffold.js';
 import { generateCode } from '../services/codegen.js';
 import { startApp, stopApp, getAppStatus } from '../services/appManager.js';
+import { exportRequirements } from '../services/export.js';
 import { validate, scaffoldSchema, codegenSchema, githubPushSchema } from '../middleware/validation.js';
 
 export const deployRouter = Router();
@@ -64,8 +65,23 @@ deployRouter.post('/:id/github-push', validate(githubPushSchema), async (_req, r
 });
 
 // POST /api/projects/:id/github-export
-deployRouter.post('/:id/github-export', async (_req, res) => {
-  return res.status(501).json({ error: 'Not implemented', message: 'Issues export not yet implemented in v2' });
+deployRouter.post('/:id/github-export', async (req, res, next) => {
+  try {
+    const projectId = req.params.id as string;
+    const format = (req.body?.format === 'csv' ? 'csv' : req.body?.format === 'json' ? 'json' : 'github') as 'github' | 'json' | 'csv';
+    const result = await exportRequirements(projectId, format);
+
+    if (format === 'csv' && typeof result === 'string') {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="requirements-${projectId}.csv"`);
+      res.send(result);
+      return;
+    }
+
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 });
 
 // POST /api/projects/:id/store/configure

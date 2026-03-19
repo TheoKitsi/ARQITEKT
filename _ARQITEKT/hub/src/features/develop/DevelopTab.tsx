@@ -5,6 +5,7 @@ import { openTab } from '@/store/slices/editorSlice';
 import { FileExplorer } from './FileExplorer';
 import { EditorArea } from './EditorArea';
 import { TerminalPanel } from './TerminalPanel';
+import { FileQuickOpen } from '@/components/ui/FileQuickOpen';
 import styles from './DevelopTab.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -125,6 +126,9 @@ export function DevelopTab() {
 
   return (
     <div className={styles.tab}>
+      {/* Ctrl+P quickopen */}
+      <FileQuickOpen onSelect={handleFileSelect} />
+
       {/* Left: File Explorer */}
       {filePanelOpen && (
         <aside className={styles.filePanel}>

@@ -74,6 +74,12 @@ class ProjectsScreen extends ConsumerWidget {
           );
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/projects/new'),
+        backgroundColor: Tokens.gold,
+        foregroundColor: Tokens.anthracite,
+        child: const Icon(LucideIcons.plus),
+      ),
     );
   }
 }

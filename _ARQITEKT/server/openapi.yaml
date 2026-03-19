@@ -1,0 +1,851 @@
+openapi: 3.1.0
+info:
+  title: ARQITEKT Server API
+  version: 2.0.0
+  description: |
+    API for the ARQITEKT Requirements Engineering Framework.
+    All `/api/projects/*` endpoints require authentication when AUTH_ENABLED=true.
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3334
+    description: Local development
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Projects
+  - name: Requirements
+  - name: Deploy
+  - name: Feedback
+  - name: Files
+  - name: Conversations
+  - name: Pipeline
+  - name: Probing
+  - name: Baseline
+  - name: Notifications
+  - name: Chat
+  - name: GitHub
+  - name: Hub
+
+paths:
+  # ── Health ──────────────────────────────────────────────────────────
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  version: { type: string, example: '2.0.0' }
+                  authEnabled: { type: boolean }
+
+  # ── Auth ────────────────────────────────────────────────────────────
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Auth status probe
+      responses:
+        '200':
+          description: Current auth state
+  /api/auth/github:
+    get:
+      tags: [Auth]
+      summary: Redirect to GitHub OAuth
+      responses:
+        '302':
+          description: Redirect
+  /api/auth/github/callback:
+    get:
+      tags: [Auth]
+      summary: OAuth callback
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '302':
+          description: Redirect with cookies set
+  /api/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      responses:
+        '200':
+          description: New token issued
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Clear auth cookies
+      responses:
+        '200':
+          description: Logged out
+
+  # ── Projects ────────────────────────────────────────────────────────
+  /api/projects:
+    get:
+      tags: [Projects]
+      summary: List all projects
+      responses:
+        '200':
+          description: Project list
+    post:
+      tags: [Projects]
+      summary: Create a new project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                description: { type: string }
+                lifecycle: { type: string }
+      responses:
+        '201':
+          description: Created
+  /api/projects/import:
+    post:
+      tags: [Projects]
+      summary: Import project from existing path
+      responses:
+        '201':
+          description: Imported
+  /api/projects/registry:
+    get:
+      tags: [Projects]
+      summary: Get project registry
+      responses:
+        '200':
+          description: Registry entries
+  /api/projects/registry/{id}:
+    put:
+      tags: [Projects]
+      summary: Update registry entry
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Updated
+  /api/projects/{id}:
+    get:
+      tags: [Projects]
+      summary: Get project by ID
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Project data
+    delete:
+      tags: [Projects]
+      summary: Delete project
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Deleted
+  /api/projects/{id}/meta:
+    put:
+      tags: [Projects]
+      summary: Update project metadata
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Updated
+  /api/projects/{id}/rename:
+    put:
+      tags: [Projects]
+      summary: Rename project
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Renamed
+  /api/projects/{id}/lifecycle:
+    get:
+      tags: [Projects]
+      summary: Get lifecycle stage
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Current lifecycle
+    post:
+      tags: [Projects]
+      summary: Set lifecycle stage
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Updated
+
+  # ── Requirements ────────────────────────────────────────────────────
+  /api/projects/{id}/tree:
+    get:
+      tags: [Requirements]
+      summary: Full requirements tree
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Hierarchical tree
+  /api/projects/{id}/stats:
+    get:
+      tags: [Requirements]
+      summary: Artifact count statistics
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Stats object
+  /api/projects/{id}/readiness:
+    get:
+      tags: [Requirements]
+      summary: Readiness scores
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Readiness data
+  /api/projects/{id}/validate:
+    post:
+      tags: [Requirements]
+      summary: Run validation rules V-001 to V-020
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Validation results
+  /api/projects/{id}/set-status:
+    put:
+      tags: [Requirements]
+      summary: Set artifact status (forward-only)
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [artifactId, status]
+              properties:
+                artifactId: { type: string }
+                status: { type: string, enum: [idea, draft, review, approved, implemented] }
+      responses:
+        '200':
+          description: Updated
+  /api/projects/{id}/search:
+    get:
+      tags: [Requirements]
+      summary: Search requirements
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: q
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Search results
+  /api/projects/{id}/bc-summary:
+    get:
+      tags: [Requirements]
+      summary: Business case summary
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: BC summary
+
+  # ── Deploy ──────────────────────────────────────────────────────────
+  /api/projects/{id}/scaffold:
+    post:
+      tags: [Deploy]
+      summary: Scaffold project structure
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                force: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Scaffold result
+  /api/projects/{id}/codegen:
+    post:
+      tags: [Deploy]
+      summary: Generate code via LLM
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [model]
+              properties:
+                model: { type: string }
+      responses:
+        '200':
+          description: Generated code
+  /api/projects/{id}/app/start:
+    post:
+      tags: [Deploy]
+      summary: Start project app
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: App started
+  /api/projects/{id}/app/stop:
+    post:
+      tags: [Deploy]
+      summary: Stop project app
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: App stopped
+  /api/projects/{id}/app/status:
+    get:
+      tags: [Deploy]
+      summary: Get app running status
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Status object
+  /api/projects/{id}/github-export:
+    post:
+      tags: [Deploy]
+      summary: Export requirements (github/json/csv)
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                format: { type: string, enum: [github, json, csv], default: github }
+      responses:
+        '200':
+          description: Export data
+
+  # ── Feedback ────────────────────────────────────────────────────────
+  /api/projects/{id}/feedback:
+    get:
+      tags: [Feedback]
+      summary: List feedback items
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Feedback list
+    post:
+      tags: [Feedback]
+      summary: Create feedback
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content: { type: string }
+                nodeId: { type: string }
+                author: { type: string }
+      responses:
+        '201':
+          description: Created
+  /api/projects/{id}/feedback/{fbkId}:
+    delete:
+      tags: [Feedback]
+      summary: Delete feedback
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: fbkId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Deleted
+
+  # ── Files ───────────────────────────────────────────────────────────
+  /api/projects/{id}/files:
+    get:
+      tags: [Files]
+      summary: List project files
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: path
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: File tree
+  /api/projects/{id}/files/read:
+    get:
+      tags: [Files]
+      summary: Read a file
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: path
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: File content
+  /api/projects/{id}/files/write:
+    post:
+      tags: [Files]
+      summary: Write a file
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [path, content]
+              properties:
+                path: { type: string }
+                content: { type: string }
+      responses:
+        '200':
+          description: Write result
+
+  # ── Conversations ───────────────────────────────────────────────────
+  /api/projects/{id}/conversations:
+    get:
+      tags: [Conversations]
+      summary: List conversations
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Conversation list
+    post:
+      tags: [Conversations]
+      summary: Save conversation
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '201':
+          description: Saved
+  /api/projects/{id}/conversations/{convId}:
+    get:
+      tags: [Conversations]
+      summary: Read conversation
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: convId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Conversation data
+
+  # ── Pipeline ────────────────────────────────────────────────────────
+  /api/projects/{id}/pipeline:
+    get:
+      tags: [Pipeline]
+      summary: Full pipeline status with all gates
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Pipeline status
+  /api/projects/{id}/pipeline/gate/{gateId}:
+    post:
+      tags: [Pipeline]
+      summary: Evaluate a specific gate
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: gateId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Gate result
+  /api/projects/{id}/pipeline/gate/{gateId}/override:
+    post:
+      tags: [Pipeline]
+      summary: Manual gate override
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: gateId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Overridden
+  /api/projects/{id}/pipeline/confidence:
+    get:
+      tags: [Pipeline]
+      summary: All artifact confidence scores
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Confidence scores
+  /api/projects/{id}/pipeline/confidence/{artifactId}:
+    post:
+      tags: [Pipeline]
+      summary: Evaluate single artifact confidence
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: artifactId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Confidence score
+  /api/projects/{id}/pipeline/gaps:
+    get:
+      tags: [Pipeline]
+      summary: All gaps across pipeline
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Gaps list
+
+  # ── Probing ─────────────────────────────────────────────────────────
+  /api/projects/{id}/probing/analyze:
+    post:
+      tags: [Probing]
+      summary: Start probing analysis
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [artifactId]
+              properties:
+                artifactId: { type: string }
+      responses:
+        '200':
+          description: Probing session started
+  /api/projects/{id}/probing/questions:
+    get:
+      tags: [Probing]
+      summary: Get probing questions
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: artifactId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Questions list
+  /api/projects/{id}/probing/answer:
+    post:
+      tags: [Probing]
+      summary: Answer a probing question
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [artifactId, questionId, answer]
+              properties:
+                artifactId: { type: string }
+                questionId: { type: string }
+                answer: { type: string }
+      responses:
+        '200':
+          description: Answer processed
+  /api/projects/{id}/probing/skip:
+    post:
+      tags: [Probing]
+      summary: Skip a probing question
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [artifactId, questionId, reason]
+              properties:
+                artifactId: { type: string }
+                questionId: { type: string }
+                reason: { type: string }
+      responses:
+        '200':
+          description: Question skipped
+  /api/projects/{id}/probing/gaps:
+    post:
+      tags: [Probing]
+      summary: Get raw gaps without generating questions
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Gap list
+
+  # ── Baseline & Traceability ─────────────────────────────────────────
+  /api/projects/{id}/baseline:
+    post:
+      tags: [Baseline]
+      summary: Create baseline snapshot
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '201':
+          description: Baseline created
+    get:
+      tags: [Baseline]
+      summary: Get current baseline
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Baseline data
+  /api/projects/{id}/drift:
+    get:
+      tags: [Baseline]
+      summary: Check drift against baseline
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Drift report
+  /api/projects/{id}/traceability:
+    get:
+      tags: [Baseline]
+      summary: Full traceability matrix
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Traceability matrix
+  /api/projects/{id}/traceability/orphans:
+    get:
+      tags: [Baseline]
+      summary: Find orphaned artifacts
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Orphans list
+  /api/projects/{id}/traceability/impact/{artifactId}:
+    get:
+      tags: [Baseline]
+      summary: Impact analysis for artifact
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: artifactId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Impact analysis
+
+  # ── Notifications ───────────────────────────────────────────────────
+  /api/projects/{id}/notifications:
+    get:
+      tags: [Notifications]
+      summary: List notifications
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: unreadOnly
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: Notifications list
+  /api/projects/{id}/notifications/unread-count:
+    get:
+      tags: [Notifications]
+      summary: Get unread count
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Unread count
+  /api/projects/{id}/notifications/{nid}/read:
+    patch:
+      tags: [Notifications]
+      summary: Mark notification as read
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: nid
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Marked
+  /api/projects/{id}/notifications/mark-all-read:
+    post:
+      tags: [Notifications]
+      summary: Mark all read
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: All marked
+  /api/projects/{id}/notifications/{nid}:
+    delete:
+      tags: [Notifications]
+      summary: Delete notification
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - name: nid
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Deleted
+
+  # ── Chat / LLM ─────────────────────────────────────────────────────
+  /api/chat/config:
+    get:
+      tags: [Chat]
+      summary: Get LLM configuration status
+      responses:
+        '200':
+          description: Config info
+  /api/chat/send:
+    post:
+      tags: [Chat]
+      summary: Send chat message (pipeline-aware)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message: { type: string }
+                projectId: { type: string }
+                context: { type: object }
+      responses:
+        '200':
+          description: Chat response
+  /api/chat/models:
+    get:
+      tags: [Chat]
+      summary: List available LLM models
+      responses:
+        '200':
+          description: Model list
+
+  # ── GitHub ──────────────────────────────────────────────────────────
+  /api/github/status:
+    get:
+      tags: [GitHub]
+      summary: Get GitHub connection status
+      responses:
+        '200':
+          description: Connection status
+  /api/github/connect:
+    post:
+      tags: [GitHub]
+      summary: Connect with GitHub token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string }
+      responses:
+        '200':
+          description: Connected
+  /api/github/disconnect:
+    post:
+      tags: [GitHub]
+      summary: Disconnect GitHub
+      responses:
+        '200':
+          description: Disconnected
+  /api/github/repo/{owner}/{repo}:
+    get:
+      tags: [GitHub]
+      summary: Get repository status
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema: { type: string }
+        - name: repo
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Repository info
+
+  # ── Hub ─────────────────────────────────────────────────────────────
+  /api/hub/version:
+    get:
+      tags: [Hub]
+      summary: Get version, root path, uptime
+      responses:
+        '200':
+          description: Version info
+  /api/hub/update/check:
+    get:
+      tags: [Hub]
+      summary: Check for updates
+      responses:
+        '200':
+          description: Update info
+  /api/hub/health:
+    get:
+      tags: [Hub]
+      summary: Comprehensive health check
+      responses:
+        '200':
+          description: Health status
+
+components:
+  parameters:
+    projectId:
+      name: id
+      in: path
+      required: true
+      description: Project ID
+      schema:
+        type: string

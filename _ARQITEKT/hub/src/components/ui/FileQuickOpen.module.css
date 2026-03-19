@@ -1,0 +1,106 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  padding-top: 15vh;
+}
+
+.dialog {
+  width: 560px;
+  max-height: 400px;
+  border-radius: var(--radius-md, 8px);
+  background-color: var(--color-surface-bg2, #161b22);
+  border: 1px solid var(--color-border-default, #30363d);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.searchWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border-default, #30363d);
+}
+
+.searchIcon {
+  color: var(--color-text-tertiary, #6e7681);
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--color-text-primary, #e6edf3);
+}
+
+.input::placeholder {
+  color: var(--color-text-tertiary, #6e7681);
+}
+
+.kbd {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm, 6px);
+  background-color: var(--color-surface-bg3, #21262d);
+  color: var(--color-text-tertiary, #6e7681);
+  border: 1px solid var(--color-border-default, #30363d);
+}
+
+.list {
+  overflow-y: auto;
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--color-text-tertiary, #6e7681);
+  font-size: 13px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.item:hover,
+.active {
+  background-color: var(--color-surface-bg3, #21262d);
+}
+
+.fileIcon {
+  color: var(--color-text-tertiary, #6e7681);
+  flex-shrink: 0;
+}
+
+.fileName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary, #e6edf3);
+}
+
+.fileDir {
+  font-size: 12px;
+  color: var(--color-text-tertiary, #6e7681);
+  margin-left: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}

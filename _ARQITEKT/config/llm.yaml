@@ -20,3 +20,20 @@ llm:
   api_key_env: ARQITEKT_LLM_KEY
   temperature: 0.7
   max_tokens: 4096
+
+  # Fallback chain — tried in order if primary fails (429/500/timeout)
+  # Each fallback inherits temperature and max_tokens from the primary config
+  # unless overridden.
+  fallback:
+    - provider: github
+      endpoint: https://models.inference.ai.azure.com/chat/completions
+      model: gpt-4o
+      api_key_env: GITHUB_TOKEN
+    # - provider: openai
+    #   endpoint: https://api.openai.com/v1/chat/completions
+    #   model: gpt-4o
+    #   api_key_env: OPENAI_API_KEY
+    # - provider: ollama
+    #   endpoint: http://localhost:11434/v1/chat/completions
+    #   model: llama3.1
+    #   api_key_env: OLLAMA_KEY

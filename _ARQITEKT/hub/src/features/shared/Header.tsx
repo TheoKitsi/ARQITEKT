@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useMatch } from 'react-router-dom';
 import { Github, Globe, LogOut, Sun, Moon, ArrowUpCircle } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { setLanguage, toggleTheme, type Language } from '@/store/slices/uiSlice';
@@ -8,6 +8,7 @@ import { useGetGithubStatusQuery } from '@/store/api/githubApi';
 import { useGetAuthStatusQuery, useLogoutMutation } from '@/store/api/authApi';
 import { useCheckUpdateQuery } from '@/store/api/hubApi';
 import { Button } from '@/components/ui/Button';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 import { GitHubSetupModal } from './GitHubSetupModal';
 import styles from './Header.module.css';
 
@@ -25,6 +26,8 @@ export function Header() {
   const { data: updateInfo } = useCheckUpdateQuery(undefined, { pollingInterval: 3600000 });
   const [logout] = useLogoutMutation();
   const [showGithubSetup, setShowGithubSetup] = useState(false);
+  const projectMatch = useMatch('/projects/:projectId/*');
+  const activeProjectId = projectMatch?.params.projectId;
 
   const toggleLang = () => {
     const next: Language = language === 'de' ? 'en' : 'de';
@@ -49,6 +52,9 @@ export function Header() {
 
       {/* Right: actions */}
       <div className={styles.actions}>
+        {/* Notification bell (visible when inside a project) */}
+        {activeProjectId && <NotificationBell projectId={activeProjectId} />}
+
         {/* Update available banner */}
         {updateInfo?.updateAvailable && (
           <a
