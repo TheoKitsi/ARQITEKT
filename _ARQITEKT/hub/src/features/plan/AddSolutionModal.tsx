@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Zap } from 'lucide-react';
 import { useCreateSolutionMutation } from '@/store/api/requirementsApi';
+import { useGetNextSolIdQuery } from '@/store/api/requirementsApi';
 import { useToast } from '@/components/ui/Toast';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
@@ -37,6 +38,7 @@ export function AddSolutionModal({
   const [notes, setNotes] = useState('');
 
   const [createSolution, { isLoading }] = useCreateSolutionMutation();
+  const { data: nextId } = useGetNextSolIdQuery(projectId, { skip: !isOpen });
 
   /* ---- Reset state on close ---- */
   const handleClose = useCallback(() => {
@@ -129,7 +131,7 @@ export function AddSolutionModal({
       {/* Title input */}
       <div className={styles.field}>
         <Input
-          label={t('solTitleLabel')}
+          label={`${t('solTitleLabel')}${nextId?.nextId ? ` (${nextId.nextId})` : ''}`}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={handleKeyDown}

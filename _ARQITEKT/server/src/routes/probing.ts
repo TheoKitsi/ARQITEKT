@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { validate, analyzeGapsSchema, answerQuestionSchema, skipQuestionSchema } from '../middleware/validation.js';
 import { startProbing, analyzeGaps, processAnswer, processSkip } from '../services/probing.js';
+import { requireRole } from '../middleware/rbac.js';
 import type { ProbingQuestion } from '../types/project.js';
 
 export const probingRouter = Router();
@@ -20,7 +21,7 @@ function sessionKey(projectId: string, artifactId: string): string {
 /* ------------------------------------------------------------------ */
 
 // POST /api/projects/:id/probing/analyze
-probingRouter.post('/:id/probing/analyze', validate(analyzeGapsSchema), async (req, res, next) => {
+probingRouter.post('/:id/probing/analyze', requireRole('editor'), validate(analyzeGapsSchema), async (req, res, next) => {
   try {
     const projectId = req.params.id as string;
     const { artifactId } = req.body;
@@ -165,7 +166,7 @@ probingRouter.post('/:id/probing/skip', validate(skipQuestionSchema), async (req
 /* ------------------------------------------------------------------ */
 
 // POST /api/projects/:id/probing/gaps
-probingRouter.post('/:id/probing/gaps', validate(analyzeGapsSchema), async (req, res, next) => {
+probingRouter.post('/:id/probing/gaps', requireRole('editor'), validate(analyzeGapsSchema), async (req, res, next) => {
   try {
     const projectId = req.params.id as string;
     const { artifactId } = req.body;

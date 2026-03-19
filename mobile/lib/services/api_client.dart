@@ -86,7 +86,36 @@ class ApiClient {
   }
 
   Future<Map<String, dynamic>> getChatConfig(String projectId) async {
-    final res = await _dio.get('/projects/$projectId/chat/config');
+    final res = await _dio.get('/chat/config');
+    return res.data as Map<String, dynamic>;
+  }
+
+  // ── Conversations ────────────────────────────────────────────────
+  Future<List<dynamic>> listConversations(String projectId) async {
+    final res = await _dio.get('/projects/$projectId/conversations');
+    final data = res.data;
+    if (data is List) return data;
+    if (data is Map<String, dynamic>) return data['conversations'] as List<dynamic>? ?? [];
+    return [];
+  }
+
+  Future<Map<String, dynamic>> saveConversation(
+    String projectId, {
+    required String title,
+    required List<Map<String, String>> messages,
+  }) async {
+    final res = await _dio.post('/projects/$projectId/conversations', data: {
+      'title': title,
+      'messages': messages,
+    });
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> getConversation(
+    String projectId,
+    String conversationId,
+  ) async {
+    final res = await _dio.get('/projects/$projectId/conversations/$conversationId');
     return res.data as Map<String, dynamic>;
   }
 

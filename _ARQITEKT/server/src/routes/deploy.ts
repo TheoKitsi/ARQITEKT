@@ -8,7 +8,7 @@ import { resolveProjectById } from '../services/projects.js';
 import { buildProject } from '../services/buildService.js';
 import { generateGithubActions } from '../services/cicd.js';
 import { recordAudit } from '../services/audit.js';
-import { validate, scaffoldSchema, codegenSchema, githubPushSchema } from '../middleware/validation.js';
+import { validate, scaffoldSchema, codegenSchema, githubPushSchema, githubExportSchema } from '../middleware/validation.js';
 import { requireRole } from '../middleware/rbac.js';
 
 export const deployRouter = Router();
@@ -38,7 +38,7 @@ deployRouter.post('/:id/codegen', requireRole('editor'), validate(codegenSchema)
 });
 
 // POST /api/projects/:id/app/start
-deployRouter.post('/:id/app/start', async (req, res, next) => {
+deployRouter.post('/:id/app/start', requireRole('editor'), async (req, res, next) => {
   try {
     const result = await startApp(req.params.id as string);
     res.json(result);
@@ -48,7 +48,7 @@ deployRouter.post('/:id/app/start', async (req, res, next) => {
 });
 
 // POST /api/projects/:id/app/stop
-deployRouter.post('/:id/app/stop', async (req, res, next) => {
+deployRouter.post('/:id/app/stop', requireRole('editor'), async (req, res, next) => {
   try {
     const result = await stopApp(req.params.id as string);
     res.json(result);
@@ -109,7 +109,7 @@ deployRouter.get('/:id/git/status', async (req, res, next) => {
 });
 
 // POST /api/projects/:id/github-export
-deployRouter.post('/:id/github-export', requireRole('editor'), async (req, res, next) => {
+deployRouter.post('/:id/github-export', requireRole('editor'), validate(githubExportSchema), async (req, res, next) => {
   try {
     const projectId = req.params.id as string;
     const format = (req.body?.format === 'csv' ? 'csv' : req.body?.format === 'json' ? 'json' : 'github') as 'github' | 'json' | 'csv';

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { listProjects, createProject, deleteProject, importProject, updateProjectMeta, renameProject, getLifecycle, setLifecycle, getRegistry, updateRegistryEntry, getProjectById } from '../services/projects.js';
 import { createInvite, acceptInvite, listInvites, revokeInvite } from '../services/invites.js';
-import { validate, createProjectSchema, importProjectSchema, updateMetaSchema, renameProjectSchema, lifecycleSchema, updateRegistryEntrySchema } from '../middleware/validation.js';
+import { validate, createProjectSchema, importProjectSchema, updateMetaSchema, renameProjectSchema, lifecycleSchema, updateRegistryEntrySchema, addMemberSchema, updateMemberRoleSchema, createInviteSchema } from '../middleware/validation.js';
 import { requireRole } from '../middleware/rbac.js';
 import type { ProjectMember, ProjectRole } from '../types/project.js';
 
@@ -178,18 +178,9 @@ projectsRouter.get('/:id/members', async (req, res, next) => {
 });
 
 // POST /api/projects/:id/members  — add a member (owner only)
-projectsRouter.post('/:id/members', requireRole('owner'), async (req, res, next) => {
+projectsRouter.post('/:id/members', requireRole('owner'), validate(addMemberSchema), async (req, res, next) => {
   try {
     const { userId, username, role } = req.body as { userId: string; username: string; role: ProjectRole };
-    if (!userId || !username || !role) {
-      res.status(400).json({ error: 'userId, username, and role are required' });
-      return;
-    }
-    const validRoles: ProjectRole[] = ['owner', 'editor', 'viewer'];
-    if (!validRoles.includes(role)) {
-      res.status(400).json({ error: `role must be one of: ${validRoles.join(', ')}` });
-      return;
-    }
 
     const registry = await getRegistry();
     const project = registry.find((p) => p.id === req.params.id);
@@ -214,14 +205,9 @@ projectsRouter.post('/:id/members', requireRole('owner'), async (req, res, next)
 });
 
 // PUT /api/projects/:id/members/:userId  — update member role (owner only)
-projectsRouter.put('/:id/members/:userId', requireRole('owner'), async (req, res, next) => {
+projectsRouter.put('/:id/members/:userId', requireRole('owner'), validate(updateMemberRoleSchema), async (req, res, next) => {
   try {
     const { role } = req.body as { role: ProjectRole };
-    const validRoles: ProjectRole[] = ['owner', 'editor', 'viewer'];
-    if (!role || !validRoles.includes(role)) {
-      res.status(400).json({ error: `role must be one of: ${validRoles.join(', ')}` });
-      return;
-    }
 
     const registry = await getRegistry();
     const project = registry.find((p) => p.id === req.params.id);
@@ -275,14 +261,9 @@ projectsRouter.delete('/:id/members/:userId', requireRole('owner'), async (req, 
 /* ------------------------------------------------------------------ */
 
 // POST /api/projects/:id/invites  — create an invite (owner only)
-projectsRouter.post('/:id/invites', requireRole('owner'), async (req, res, next) => {
+projectsRouter.post('/:id/invites', requireRole('owner'), validate(createInviteSchema), async (req, res, next) => {
   try {
-    const { role } = req.body as { role?: ProjectRole };
-    const validRoles: ProjectRole[] = ['owner', 'editor', 'viewer'];
-    if (!role || !validRoles.includes(role)) {
-      res.status(400).json({ error: `role must be one of: ${validRoles.join(', ')}` });
-      return;
-    }
+    const { role } = req.body as { role: ProjectRole };
     const createdBy = req.user?.username ?? 'unknown';
     const invite = await createInvite(req.params.id as string, role, createdBy);
     res.status(201).json(invite);

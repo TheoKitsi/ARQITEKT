@@ -16,7 +16,7 @@ import type {
 
 let gateDefinitions: GateDefinition[] | null = null;
 
-async function loadGateDefinitions(): Promise<GateDefinition[]> {
+export async function loadGateDefinitions(): Promise<GateDefinition[]> {
   if (gateDefinitions) return gateDefinitions;
 
   const metamodelPath = join(config.hubRoot, 'template', 'config', 'metamodel.yaml');

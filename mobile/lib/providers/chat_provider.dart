@@ -53,4 +53,28 @@ class ChatMessagesNotifier extends StateNotifier<List<ChatMessage>> {
   }
 
   void clear() => state = [];
+
+  /// Save the current conversation to the server.
+  Future<void> saveConversation(String title) async {
+    if (state.isEmpty) return;
+    final api = _ref.read(apiClientProvider);
+    final messages = state
+        .map((m) => {'role': m.role, 'content': m.content})
+        .toList();
+    await api.saveConversation(_projectId, title: title, messages: messages);
+  }
+
+  /// Load a saved conversation from the server.
+  Future<void> loadConversation(String conversationId) async {
+    final api = _ref.read(apiClientProvider);
+    final data = await api.getConversation(_projectId, conversationId);
+    final messages = (data['messages'] as List<dynamic>?)
+        ?.map((m) => ChatMessage(
+              role: (m as Map<String, dynamic>)['role'] as String? ?? 'user',
+              content: m['content'] as String? ?? '',
+              timestamp: DateTime.now(),
+            ))
+        .toList() ?? [];
+    state = messages;
+  }
 }

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { setBaseline, getBaseline, checkDrift } from '../services/baseline.js';
 import { buildMatrix, findOrphans, impactAnalysis } from '../services/traceability.js';
 import { recordAudit } from '../services/audit.js';
+import { requireRole } from '../middleware/rbac.js';
 
 export const baselineRouter = Router();
 
@@ -10,10 +11,10 @@ export const baselineRouter = Router();
 /* ------------------------------------------------------------------ */
 
 // POST /api/projects/:id/baseline — snapshot current state
-baselineRouter.post('/:id/baseline', async (req, res, next) => {
+baselineRouter.post('/:id/baseline', requireRole('editor'), async (req, res, next) => {
   try {
-    const baseline = await setBaseline(req.params.id);
-    recordAudit(req.params.id, 'baseline.created', req.ip ?? 'unknown', undefined, { artifacts: baseline.artifacts?.length }).catch(() => {});
+    const baseline = await setBaseline(req.params.id as string);
+    recordAudit(req.params.id as string, 'baseline.created', req.ip ?? 'unknown', undefined, { artifacts: baseline.artifacts?.length }).catch(() => {});
     res.json(baseline);
   } catch (err) {
     next(err);

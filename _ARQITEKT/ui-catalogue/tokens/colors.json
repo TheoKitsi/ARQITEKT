@@ -26,6 +26,14 @@
     "border": {
       "default": { "value": "#30363d", "type": "color" },
       "strong": { "value": "#484f58", "type": "color" }
+    },
+    "artifact": {
+      "bc": { "value": "#a371f7", "type": "color", "description": "Business Case — purple" },
+      "sol": { "value": "#58a6ff", "type": "color", "description": "Solution — blue" },
+      "us": { "value": "#3fb950", "type": "color", "description": "User Story — green" },
+      "cmp": { "value": "#d29922", "type": "color", "description": "Component — yellow" },
+      "fn": { "value": "#db6d28", "type": "color", "description": "Function — orange" },
+      "secondary": { "value": "#8b949e", "type": "color", "description": "INF/ADR/NTF — secondary gray" }
     }
   }
 }

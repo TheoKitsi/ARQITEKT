@@ -27,6 +27,14 @@
   --color-red: #f85149;
   --color-purple: #bc8cff;
 
+  /* Artifact types */
+  --color-artifact-bc: #a371f7;
+  --color-artifact-sol: #58a6ff;
+  --color-artifact-us: #3fb950;
+  --color-artifact-cmp: #d29922;
+  --color-artifact-fn: #db6d28;
+  --color-artifact-secondary: #8b949e;
+
   /* Borders */
   --color-border: #30363d;
   --color-border-strong: #484f58;

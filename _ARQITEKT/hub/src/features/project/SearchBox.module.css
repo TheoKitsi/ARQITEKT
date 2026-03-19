@@ -78,6 +78,63 @@
   background-color: var(--color-surface-bg3);
 }
 
+/* ================================================================
+   Dropdown results
+   ================================================================ */
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: var(--space-1);
+  max-height: 240px;
+  overflow-y: auto;
+  background-color: var(--color-surface-bg2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 50;
+}
+
+.dropdownMsg {
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.resultItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.resultItem:hover {
+  background-color: var(--color-surface-bg3);
+}
+
+.resultType {
+  flex-shrink: 0;
+  padding: 1px var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-accent);
+  background-color: var(--color-surface-bg4);
+  border-radius: var(--radius-sm);
+}
+
+.resultTitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .clearBtn:focus-visible {
   outline: 2px solid var(--color-brand-gold);
   outline-offset: -2px;

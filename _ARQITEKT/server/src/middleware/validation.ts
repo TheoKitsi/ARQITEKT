@@ -92,6 +92,7 @@ export const scaffoldSchema = z.object({
 });
 
 export const codegenSchema = z.object({
+  model: z.string().max(100).optional(),
   scope: z.string().max(100).optional(),
   options: z.record(z.unknown()).optional(),
 });
@@ -154,6 +155,32 @@ export const updateRegistryEntrySchema = z.object({
   path: z.string().min(1).max(500).optional(),
   github: z.string().max(200).optional(),
   description: z.string().max(500).optional(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  Member & invite schemas                                            */
+/* ------------------------------------------------------------------ */
+
+export const addMemberSchema = z.object({
+  userId: z.string().min(1).max(100),
+  username: z.string().min(1).max(100),
+  role: z.enum(['owner', 'editor', 'viewer']),
+});
+
+export const updateMemberRoleSchema = z.object({
+  role: z.enum(['owner', 'editor', 'viewer']),
+});
+
+export const createInviteSchema = z.object({
+  role: z.enum(['owner', 'editor', 'viewer']),
+});
+
+/* ------------------------------------------------------------------ */
+/*  Export schemas                                                     */
+/* ------------------------------------------------------------------ */
+
+export const githubExportSchema = z.object({
+  format: z.enum(['github', 'json', 'csv']).optional(),
 });
 
 /* ------------------------------------------------------------------ */

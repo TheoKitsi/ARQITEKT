@@ -149,9 +149,13 @@ hubRouter.get('/templates', async (_req, res, next) => {
 
 // POST /api/hub/error-report — receive client-side error reports
 const errorLog = createLogger('hub:errors');
-hubRouter.post('/error-report', (req, res) => {
-  const { message, source, line, column, stack, type } = req.body ?? {};
-  errorLog.warn({ message, source, line, column, type }, 'Client error report');
-  reportError(new Error(String(message ?? 'Unknown client error')), { source, line, column, stack, type });
-  res.status(204).end();
+hubRouter.post('/error-report', (req, res, next) => {
+  try {
+    const { message, source, line, column, stack, type } = req.body ?? {};
+    errorLog.warn({ message, source, line, column, type }, 'Client error report');
+    reportError(new Error(String(message ?? 'Unknown client error')), { source, line, column, stack, type });
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
 });

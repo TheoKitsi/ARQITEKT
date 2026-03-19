@@ -28,14 +28,14 @@ interface StatPillDef {
 /* ------------------------------------------------------------------ */
 
 const PILL_DEFS: StatPillDef[] = [
-  { statKey: 'bc',  labelKey: 'statBC',  color: '#a371f7' },
-  { statKey: 'sol', labelKey: 'statSOL', color: '#58a6ff' },
-  { statKey: 'us',  labelKey: 'statUS',  color: '#3fb950' },
-  { statKey: 'cmp', labelKey: 'statCMP', color: '#d29922' },
-  { statKey: 'fn',  labelKey: 'statFN',  color: '#db6d28' },
-  { statKey: 'inf', labelKey: 'statINF', color: '#8b949e' },
-  { statKey: 'adr', labelKey: 'statADR', color: '#8b949e' },
-  { statKey: 'ntf', labelKey: 'statNTF', color: '#8b949e' },
+  { statKey: 'bc',  labelKey: 'statBC',  color: 'var(--color-artifact-bc)' },
+  { statKey: 'sol', labelKey: 'statSOL', color: 'var(--color-artifact-sol)' },
+  { statKey: 'us',  labelKey: 'statUS',  color: 'var(--color-artifact-us)' },
+  { statKey: 'cmp', labelKey: 'statCMP', color: 'var(--color-artifact-cmp)' },
+  { statKey: 'fn',  labelKey: 'statFN',  color: 'var(--color-artifact-fn)' },
+  { statKey: 'inf', labelKey: 'statINF', color: 'var(--color-artifact-secondary)' },
+  { statKey: 'adr', labelKey: 'statADR', color: 'var(--color-artifact-secondary)' },
+  { statKey: 'ntf', labelKey: 'statNTF', color: 'var(--color-artifact-secondary)' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -87,7 +87,7 @@ export function StatsBar({ projectId }: StatsBarProps) {
               <StatPill
                 label={t('statGates')}
                 value={passedGates}
-                color="#FFD700"
+                color="var(--color-brand-gold)"
                 suffix={`/${totalGates}`}
               />
               <ConfidenceBadge score={pipeline.overallConfidence} />

@@ -38,10 +38,10 @@ export class ErrorBoundary extends Component<Props, State> {
           minHeight: '100vh',
           padding: '2rem',
           fontFamily: 'Inter, system-ui, sans-serif',
-          color: '#e0e0e0',
-          backgroundColor: '#1f1f1f',
+          color: 'var(--color-text, #e0e0e0)',
+          backgroundColor: 'var(--color-bg-primary, #1f1f1f)',
         }}>
-          <h1 style={{ color: '#FFD700', fontSize: '1.5rem', marginBottom: '1rem' }}>
+          <h1 style={{ color: 'var(--color-accent, #FFD700)', fontSize: '1.5rem', marginBottom: '1rem' }}>
             {t('somethingWentWrong')}
           </h1>
           <p style={{ marginBottom: '1.5rem', maxWidth: '480px', textAlign: 'center', lineHeight: 1.6 }}>
@@ -51,8 +51,8 @@ export class ErrorBoundary extends Component<Props, State> {
             onClick={this.handleReset}
             style={{
               padding: '0.5rem 1.5rem',
-              backgroundColor: '#FFD700',
-              color: '#1f1f1f',
+              backgroundColor: 'var(--color-accent, #FFD700)',
+              color: 'var(--color-bg-primary, #1f1f1f)',
               border: 'none',
               borderRadius: '6px',
               cursor: 'pointer',

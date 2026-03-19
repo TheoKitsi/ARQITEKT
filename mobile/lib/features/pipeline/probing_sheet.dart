@@ -267,7 +267,7 @@ class _ProbingSheetState extends ConsumerState<_ProbingSheet> {
       const SizedBox(height: Tokens.space6),
       const Center(child: CircularProgressIndicator(color: Tokens.gold)),
       const SizedBox(height: Tokens.space3),
-      const Center(
+      Center(
         child: Text(
           AppLocalizations.of(context)!.analyzingGaps,
           style: TextStyle(color: Tokens.textSecondary, fontSize: Tokens.fontSm),
@@ -405,7 +405,7 @@ class _ProbingSheetState extends ConsumerState<_ProbingSheet> {
         child: Icon(LucideIcons.checkCircle2, size: 48, color: Tokens.green),
       ),
       const SizedBox(height: Tokens.space3),
-      const Center(
+      Center(
         child: Text(
           AppLocalizations.of(context)!.probingComplete,
           style: TextStyle(

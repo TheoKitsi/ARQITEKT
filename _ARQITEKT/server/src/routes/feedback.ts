@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { listFeedback, createFeedback, deleteFeedback, exportFeedbackCsv } from '../services/feedback.js';
 import { validate, createFeedbackSchema } from '../middleware/validation.js';
+import { requireRole } from '../middleware/rbac.js';
 
 export const feedbackRouter = Router();
 
@@ -9,7 +10,7 @@ feedbackRouter.get('/:id/feedback', async (req, res, next) => {
   try {
     const projectId = req.params.id as string;
     const items = await listFeedback(projectId);
-    res.json({ items, projectId });
+    res.json({ items, total: items.length });
   } catch (err) {
     next(err);
   }
@@ -39,7 +40,7 @@ feedbackRouter.get('/:id/feedback/export', async (req, res, next) => {
 });
 
 // POST /api/projects/:id/feedback
-feedbackRouter.post('/:id/feedback', validate(createFeedbackSchema), async (req, res, next) => {
+feedbackRouter.post('/:id/feedback', requireRole('editor'), validate(createFeedbackSchema), async (req, res, next) => {
   try {
     const item = await createFeedback(req.params.id as string, req.body);
     res.status(201).json(item);
@@ -49,7 +50,7 @@ feedbackRouter.post('/:id/feedback', validate(createFeedbackSchema), async (req,
 });
 
 // DELETE /api/projects/:id/feedback/:fbkId
-feedbackRouter.delete('/:id/feedback/:fbkId', async (req, res, next) => {
+feedbackRouter.delete('/:id/feedback/:fbkId', requireRole('editor'), async (req, res, next) => {
   try {
     await deleteFeedback(req.params.id as string, req.params.fbkId as string);
     res.json({ success: true });

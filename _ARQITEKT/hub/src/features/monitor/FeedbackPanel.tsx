@@ -10,8 +10,9 @@ import {
   Bug,
   Lightbulb,
   Download,
+  Trash2,
 } from 'lucide-react';
-import { useGetFeedbackQuery } from '@/store/api/feedbackApi';
+import { useGetFeedbackQuery, useDeleteFeedbackMutation } from '@/store/api/feedbackApi';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -40,6 +41,7 @@ export function FeedbackPanel({ onAddFeedback }: FeedbackPanelProps) {
   const { t } = useTranslation();
   const { projectId } = useParams<{ projectId: string }>();
   const { data, isLoading } = useGetFeedbackQuery(projectId!);
+  const [deleteFeedback] = useDeleteFeedbackMutation();
   const [filter, setFilter] = useState<'all' | 'open' | 'resolved' | 'dismissed'>('all');
 
   const items = data ?? [];
@@ -143,6 +145,14 @@ export function FeedbackPanel({ onAddFeedback }: FeedbackPanelProps) {
                       {item.rating}/5
                     </span>
                   )}
+                  <button
+                    type="button"
+                    className={styles.deleteBtn}
+                    onClick={() => deleteFeedback({ projectId: projectId!, fbkId: item.id })}
+                    aria-label={t('delete', 'Delete')}
+                  >
+                    <Trash2 size={12} />
+                  </button>
                 </div>
               </li>
             ))}

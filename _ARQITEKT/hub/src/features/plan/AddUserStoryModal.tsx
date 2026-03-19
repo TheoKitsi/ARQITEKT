@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Zap } from 'lucide-react';
 import { useCreateUserStoryMutation } from '@/store/api/requirementsApi';
+import { useGetNextUsIdQuery } from '@/store/api/requirementsApi';
 import { useToast } from '@/components/ui/Toast';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
@@ -39,6 +40,10 @@ export function AddUserStoryModal({
   const [notes, setNotes] = useState('');
 
   const [createUS, { isLoading }] = useCreateUserStoryMutation();
+  const { data: nextId } = useGetNextUsIdQuery(
+    { projectId, sol: solutionId },
+    { skip: !isOpen },
+  );
 
   /* ---- Reset state on close ---- */
   const handleClose = useCallback(() => {
@@ -138,7 +143,7 @@ export function AddUserStoryModal({
       {/* Title input */}
       <div className={styles.field}>
         <Input
-          label={t('usTitleLabel')}
+          label={`${t('usTitleLabel')}${nextId?.nextId ? ` (${nextId.nextId})` : ''}`}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={handleKeyDown}
