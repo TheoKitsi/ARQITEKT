@@ -139,7 +139,7 @@ export async function createFeedback(
  * Read a single feedback item by ID.
  * Returns the full item including its markdown body.
  */
-async function readFeedback(projectId: string, fbkId: string): Promise<FeedbackItem> {
+export async function readFeedback(projectId: string, fbkId: string): Promise<FeedbackItem> {
   if (!/^FBK-\d+$/.test(fbkId)) {
     throw Object.assign(new Error(`Invalid feedback ID format: ${fbkId}`), { status: 400 });
   }

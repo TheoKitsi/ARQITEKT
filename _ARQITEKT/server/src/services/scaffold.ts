@@ -611,7 +611,7 @@ export async function scaffoldProject(
  * Run a command inside a project's app directory.
  * Returns a promise that resolves with the process output.
  */
-async function runProjectCommand(
+export async function runProjectCommand(
   projectId: string,
   command: string,
   args: string[]

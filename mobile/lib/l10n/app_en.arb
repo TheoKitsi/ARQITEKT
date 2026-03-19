@@ -134,7 +134,6 @@
   "saveConversation": "Save Conversation",
   "conversationTitle": "Conversation title",
   "conversationTitleHint": "e.g. Architecture Discussion",
-  "save": "Save",
   "cancel": "Cancel",
   "loadConversation": "Load",
   "conversationSaved": "Conversation saved"

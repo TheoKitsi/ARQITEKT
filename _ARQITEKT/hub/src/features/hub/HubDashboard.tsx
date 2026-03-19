@@ -145,7 +145,7 @@ export function HubDashboard() {
               <ProjectCard key={project.id} project={project} />
             ))}
             {filtered.length === 0 && (
-              <p className={styles.noResults}>{t('noResults')}</p>
+              <p className={styles.noResults}>{t('noProjectResults')}</p>
             )}
           </div>
         )}

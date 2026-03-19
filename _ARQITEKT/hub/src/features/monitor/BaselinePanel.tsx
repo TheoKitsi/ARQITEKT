@@ -68,7 +68,7 @@ export function BaselinePanel() {
         {loadingBaseline ? (
           <Spinner size="sm" />
         ) : !baseline ? (
-          <p className={styles.hint}>{t('baselineNone')}</p>
+          <p className={styles.hint}>{t('monitorBaselineNone')}</p>
         ) : (
           <div className={styles.info}>
             <div className={styles.infoRow}>
@@ -78,7 +78,7 @@ export function BaselinePanel() {
               </span>
             </div>
             <div className={styles.infoRow}>
-              <span className={styles.label}>{t('baselineArtifacts')}</span>
+              <span className={styles.label}>{t('monitorBaselineArtifacts')}</span>
               <span className={styles.value}>{baseline.artifacts.length}</span>
             </div>
             {orphanCount > 0 && (
@@ -101,22 +101,22 @@ export function BaselinePanel() {
             <div className={styles.driftSummary}>
               {drift.summary.added > 0 && (
                 <span className={styles.driftAdded}>
-                  <Plus size={12} /> {drift.summary.added} {t('driftAdded')}
+                  <Plus size={12} /> {drift.summary.added} {t('monitorDriftAdded')}
                 </span>
               )}
               {drift.summary.removed > 0 && (
                 <span className={styles.driftRemoved}>
-                  <Minus size={12} /> {drift.summary.removed} {t('driftRemoved')}
+                  <Minus size={12} /> {drift.summary.removed} {t('monitorDriftRemoved')}
                 </span>
               )}
               {drift.summary.changed > 0 && (
                 <span className={styles.driftChanged}>
-                  <Edit size={12} /> {drift.summary.changed} {t('driftChanged')}
+                  <Edit size={12} /> {drift.summary.changed} {t('monitorDriftChanged')}
                 </span>
               )}
               {drift.summary.regressed > 0 && (
                 <span className={styles.driftRegressed}>
-                  <AlertTriangle size={12} /> {drift.summary.regressed} {t('driftRegressed')}
+                  <AlertTriangle size={12} /> {drift.summary.regressed} {t('monitorDriftRegressed')}
                 </span>
               )}
             </div>

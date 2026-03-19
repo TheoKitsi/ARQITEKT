@@ -21,7 +21,7 @@ import { requireRole } from './rbac.js';
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-function mockReq(overrides: Partial<Request> = {}): Request {
+function mockReq(overrides: Partial<Request> & Record<string, unknown> = {}): Request {
   return {
     params: {},
     user: undefined,

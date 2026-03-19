@@ -2,7 +2,7 @@ import { join } from 'path';
 import { parseFrontmatter } from './frontmatter.js';
 import { resolveProjectById } from './projects.js';
 import { buildTree } from './tree.js';
-import { fmString, findArtifactFile, STATUS_ORDER } from './requirementHelpers.js';
+import { findArtifactFile, STATUS_ORDER } from './requirementHelpers.js';
 import { evaluateAllConfidence } from './confidence.js';
 import { loadGateDefinitions } from './pipeline.js';
 import type { TreeNode, ValidationResult } from '../types/project.js';

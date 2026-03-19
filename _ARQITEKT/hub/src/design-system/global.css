@@ -148,6 +148,7 @@ input, textarea, select {
 
 ::selection {
   background-color: var(--color-brand-gold);
+  color: var(--color-brand-anthracite);
 }
 
 /* Skip to content (accessibility) */
@@ -169,8 +170,6 @@ input, textarea, select {
 
 .skip-link:focus {
   top: var(--space-2);
-}
-  color: var(--color-brand-anthracite);
 }
 
 /* Scrollbars */
