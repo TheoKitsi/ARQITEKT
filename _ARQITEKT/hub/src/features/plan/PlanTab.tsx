@@ -7,6 +7,7 @@ import { RequirementDetail } from './RequirementDetail';
 import { AddSolutionModal } from './AddSolutionModal';
 import { AddUserStoryModal } from './AddUserStoryModal';
 import { ValidationOverlay } from './ValidationOverlay';
+import { TraceabilityPanel } from './TraceabilityPanel';
 import { ProbingDialog } from './ProbingDialog';
 import type { TreeNode } from '@/store/api/requirementsApi';
 import styles from './PlanTab.module.css';
@@ -28,6 +29,8 @@ export function PlanTab() {
       <StatsBar projectId={projectId!} />
 
       <PipelineView projectId={projectId!} />
+
+      <TraceabilityPanel projectId={projectId!} />
 
       <section className={styles.flowArea}>
         <FlowView

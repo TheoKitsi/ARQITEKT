@@ -139,5 +139,15 @@
   "moreLinks": "+ {count} more links",
   "@moreLinks": { "placeholders": { "count": { "type": "int" } } },
   "leafNodes": "Leaf nodes ({count})",
-  "@leafNodes": { "placeholders": { "count": { "type": "int" } } }
+  "@leafNodes": { "placeholders": { "count": { "type": "int" } } },
+
+  "conversationHistory": "Gespr\u00e4chsverlauf",
+  "noConversations": "Keine gespeicherten Gespr\u00e4che",
+  "saveConversation": "Gespr\u00e4ch speichern",
+  "conversationTitle": "Gespr\u00e4chstitel",
+  "conversationTitleHint": "z.B. Architektur-Diskussion",
+  "save": "Speichern",
+  "cancel": "Abbrechen",
+  "loadConversation": "Laden",
+  "conversationSaved": "Gespr\u00e4ch gespeichert"
 }

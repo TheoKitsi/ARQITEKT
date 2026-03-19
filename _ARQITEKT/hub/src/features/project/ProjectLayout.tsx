@@ -13,6 +13,7 @@ import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { RequirementsTree } from './RequirementsTree';
 import { SearchBox } from './SearchBox';
 import { ProgressTracker } from './ProgressTracker';
+import { BCSummaryCard } from './BCSummaryCard';
 import styles from './ProjectLayout.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -80,6 +81,8 @@ export function ProjectLayout() {
         </nav>
 
         <ProgressTracker projectId={projectId!} />
+
+        <BCSummaryCard projectId={projectId!} />
       </aside>
 
       {/* Main area */}

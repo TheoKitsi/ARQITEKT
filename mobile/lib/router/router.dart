@@ -6,6 +6,7 @@ import '../features/projects/create_project_screen.dart';
 import '../features/requirements/requirements_screen.dart';
 import '../features/requirements/requirement_detail_screen.dart';
 import '../features/chat/chat_screen.dart';
+import '../features/chat/conversation_history_screen.dart';
 import '../features/capture/capture_screen.dart';
 import '../features/feedback/feedback_list_screen.dart';
 import '../features/settings/settings_screen.dart';
@@ -85,6 +86,14 @@ final router = GoRouter(
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return ChatScreen(projectId: id);
+      },
+    ),
+    GoRoute(
+      path: '/projects/:id/chat/history',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return ConversationHistoryScreen(projectId: id);
       },
     ),
     GoRoute(

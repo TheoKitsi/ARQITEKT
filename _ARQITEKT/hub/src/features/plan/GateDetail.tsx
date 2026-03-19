@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { X, CheckCircle, XCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 import {
   useOverrideGateMutation,
+  useEvaluateArtifactConfidenceMutation,
   type GateResult,
   type GateCheck,
   type Gap,
@@ -52,6 +53,7 @@ export function GateDetail({ gate, projectId, onClose }: GateDetailProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
   const [overrideGate, { isLoading: isOverriding }] = useOverrideGateMutation();
+  const [evaluateConfidence, { isLoading: isReEvaluating }] = useEvaluateArtifactConfidenceMutation();
   const [overrideReason, setOverrideReason] = useState('');
   const [showOverride, setShowOverride] = useState(false);
 
@@ -110,6 +112,20 @@ export function GateDetail({ gate, projectId, onClose }: GateDetailProps) {
     }
   }, [gate, projectId, overrideReason, overrideGate, showToast, t, onClose]);
 
+  /* ---- Re-evaluate confidence handler ---- */
+  const handleReEvaluate = useCallback(async () => {
+    if (!gate) return;
+    const artifactIds = [...new Set(gate.gaps.map((g) => g.artifactId))];
+    try {
+      for (const artifactId of artifactIds) {
+        await evaluateConfidence({ projectId, artifactId }).unwrap();
+      }
+      showToast(t('confidenceUpdated', 'Confidence re-evaluated'), 'success');
+    } catch {
+      showToast(t('errorGeneric'), 'error');
+    }
+  }, [gate, projectId, evaluateConfidence, showToast, t]);
+
   if (!isOpen || !gate) return null;
 
   const passedChecks = gate.checks.filter((c) => c.passed).length;
@@ -142,6 +158,15 @@ export function GateDetail({ gate, projectId, onClose }: GateDetailProps) {
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>{t('confidence')}:</span>
             <ConfidenceBadge score={gate.confidence} />
+            <button
+              className={styles.closeBtn}
+              onClick={handleReEvaluate}
+              disabled={isReEvaluating || gate.gaps.length === 0}
+              type="button"
+              aria-label={t('reEvaluateConfidence', 'Re-evaluate confidence')}
+            >
+              <RefreshCw size={14} className={isReEvaluating ? styles.spinning : ''} />
+            </button>
           </div>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>{t('checks')}:</span>

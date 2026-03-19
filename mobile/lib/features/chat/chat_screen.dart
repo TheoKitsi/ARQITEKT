@@ -8,6 +8,7 @@ import '../../models/chat.dart';
 import '../../providers/chat_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../theme/tokens.dart';
+import 'conversation_history_screen.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String projectId;
@@ -56,6 +57,47 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _scrollToBottom();
   }
 
+  void _showSaveDialog(BuildContext ctx) {
+    final titleController = TextEditingController();
+    final l10n = AppLocalizations.of(ctx)!;
+    showDialog(
+      context: ctx,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: Tokens.surfaceBg2,
+        title: Text(l10n.saveConversation),
+        content: TextField(
+          controller: titleController,
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: l10n.conversationTitle,
+            hintText: l10n.conversationTitleHint,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              final title = titleController.text.trim();
+              if (title.isNotEmpty) {
+                ref
+                    .read(chatMessagesProvider(widget.projectId).notifier)
+                    .saveConversation(title);
+                Navigator.of(dialogCtx).pop();
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  SnackBar(content: Text(l10n.conversationSaved)),
+                );
+              }
+            },
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _toggleVoice() async {
     if (_listening) {
       await _speech.stop();
@@ -93,6 +135,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.history),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ConversationHistoryScreen(projectId: widget.projectId),
+                ),
+              );
+            },
+          ),
+          if (messages.isNotEmpty)
+            IconButton(
+              icon: const Icon(LucideIcons.save),
+              onPressed: () => _showSaveDialog(context),
+            ),
           if (messages.isNotEmpty)
             IconButton(
               icon: const Icon(LucideIcons.trash2),

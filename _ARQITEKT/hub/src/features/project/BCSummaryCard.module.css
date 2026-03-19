@@ -1,0 +1,102 @@
+/* ================================================================
+   BCSummaryCard – compact BC overview in project sidebar
+   ================================================================ */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--color-surface-bg2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* ---- Header ---- */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-secondary);
+}
+
+.title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---- Stats grid ---- */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brand-gold);
+}
+
+.statLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ---- Categories ---- */
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.catRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.catName {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  width: 64px;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catBar {
+  flex: 1;
+  height: 4px;
+  background-color: var(--color-surface-bg4);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.catFill {
+  height: 100%;
+  background-color: var(--color-brand-gold);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-normal);
+}
+
+.catPct {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}

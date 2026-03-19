@@ -545,5 +545,13 @@
   "tokens": "tokens",
   "skipToContent": "Skip to content",
   "auditTrail": "Activity",
-  "offline": "You are offline. Some features may be unavailable."
+  "offline": "You are offline. Some features may be unavailable.",
+  "reEvaluateConfidence": "Re-evaluate confidence",
+  "confidenceUpdated": "Confidence re-evaluated",
+  "bcSummary": "Business Case Summary",
+  "bcSolutions": "Solutions",
+  "bcUserStories": "User Stories",
+  "bcRequirements": "Requirements",
+  "bcReadiness": "Readiness",
+  "bcCategories": "Categories"
 }

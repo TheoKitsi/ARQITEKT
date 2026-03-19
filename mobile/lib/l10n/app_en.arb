@@ -127,5 +127,15 @@
   "linkCount": "{count} links",
   "noLinks": "No trace links found.",
   "moreLinks": "+ {count} more links",
-  "leafNodes": "Leaf nodes ({count})"
+  "leafNodes": "Leaf nodes ({count})",
+
+  "conversationHistory": "Conversation History",
+  "noConversations": "No saved conversations",
+  "saveConversation": "Save Conversation",
+  "conversationTitle": "Conversation title",
+  "conversationTitleHint": "e.g. Architecture Discussion",
+  "save": "Save",
+  "cancel": "Cancel",
+  "loadConversation": "Load",
+  "conversationSaved": "Conversation saved"
 }

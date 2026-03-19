@@ -545,5 +545,13 @@
   "tokens": "Tokens",
   "skipToContent": "Zum Inhalt springen",
   "auditTrail": "Aktivitaet",
-  "offline": "Keine Verbindung. Einige Funktionen sind moeglicherweise nicht verfuegbar."
+  "offline": "Keine Verbindung. Einige Funktionen sind moeglicherweise nicht verfuegbar.",
+  "reEvaluateConfidence": "Vertrauen neu bewerten",
+  "confidenceUpdated": "Vertrauen neu bewertet",
+  "bcSummary": "Geschaeftsfall-Uebersicht",
+  "bcSolutions": "Loesungen",
+  "bcUserStories": "User Stories",
+  "bcRequirements": "Anforderungen",
+  "bcReadiness": "Bereitschaft",
+  "bcCategories": "Kategorien"
 }
