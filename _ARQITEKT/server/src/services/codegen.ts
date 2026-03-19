@@ -1,6 +1,6 @@
 import { readFile, writeFile, readdir, stat } from 'fs/promises';
 import { join, extname, relative } from 'path';
-import { config } from '../config.js';
+import { resolveProjectById } from './projects.js';
 import { sendChatMessage } from './llm.js';
 import type { ChatMessage } from '../types/project.js';
 
@@ -89,7 +89,7 @@ export async function generateCode(
   projectId: string,
   model?: string
 ): Promise<CodegenResult> {
-  const appPath = join(config.workspaceRoot, projectId, 'app');
+  const appPath = join(await resolveProjectById(projectId), 'app');
   const logs: string[] = [];
   let filesProcessed = 0;
   let filesModified = 0;

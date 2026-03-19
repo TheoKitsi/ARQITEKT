@@ -1,6 +1,6 @@
 import { readFile, readdir, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { config } from '../config.js';
+import { resolveProjectById } from './projects.js';
 import { parseFrontmatter } from './frontmatter.js';
 import type { ChatMessage } from '../types/project.js';
 
@@ -15,7 +15,7 @@ export interface Conversation {
  * Get the conversations directory for a project, creating it if needed.
  */
 async function getConversationsDir(projectId: string): Promise<string> {
-  const dirPath = join(config.workspaceRoot, projectId, 'requirements', 'conversations');
+  const dirPath = join(await resolveProjectById(projectId), 'requirements', 'conversations');
   await mkdir(dirPath, { recursive: true });
   return dirPath;
 }

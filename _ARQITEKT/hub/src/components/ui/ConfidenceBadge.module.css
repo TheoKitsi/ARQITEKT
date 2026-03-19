@@ -1,0 +1,118 @@
+/* ================================================================
+   ConfidenceBadge – color-coded confidence score indicator
+   Gold >= 90, Green >= 70, Yellow >= 50, Red < 50
+   ================================================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-mono);
+  line-height: var(--line-height-tight);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  user-select: none;
+  cursor: default;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+/* ---- Color variants ---- */
+.gold {
+  background-color: rgba(255, 215, 0, 0.15);
+  color: var(--color-brand-gold);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.green {
+  background-color: rgba(63, 185, 80, 0.15);
+  color: var(--color-green);
+  border: 1px solid rgba(63, 185, 80, 0.3);
+}
+
+.yellow {
+  background-color: rgba(210, 153, 34, 0.15);
+  color: var(--color-yellow);
+  border: 1px solid rgba(210, 153, 34, 0.3);
+}
+
+.red {
+  background-color: rgba(248, 81, 73, 0.15);
+  color: var(--color-red);
+  border: 1px solid rgba(248, 81, 73, 0.3);
+}
+
+.none {
+  background-color: var(--color-surface-bg3);
+  color: var(--color-text-tertiary);
+  border: 1px solid var(--color-border);
+}
+
+/* ---- Interactive ---- */
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  filter: brightness(1.1);
+}
+
+.clickable:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: 2px;
+}
+
+/* ---- Tooltip ---- */
+.wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background-color: var(--color-surface-bg3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  box-shadow: var(--shadow-md);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: tooltipIn 120ms ease-out;
+}
+
+@keyframes tooltipIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.tooltipRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.tooltipLabel {
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+}
+
+.tooltipValue {
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}

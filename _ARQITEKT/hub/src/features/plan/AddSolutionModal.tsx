@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Zap } from 'lucide-react';
 import { useCreateSolutionMutation } from '@/store/api/requirementsApi';
+import { useToast } from '@/components/ui/Toast';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -29,6 +30,7 @@ export function AddSolutionModal({
   projectId,
 }: AddSolutionModalProps) {
   const { t } = useTranslation();
+  const { showToast } = useToast();
 
   const [mode, setMode] = useState<CreationMode>('discuss');
   const [title, setTitle] = useState('');
@@ -57,9 +59,9 @@ export function AddSolutionModal({
       }).unwrap();
       handleClose();
     } catch {
-      // Error is handled by RTK Query — toast / error boundary
+      showToast(t('createSolFailed', 'Failed to create solution'), 'error');
     }
-  }, [title, notes, mode, projectId, createSolution, handleClose]);
+  }, [title, notes, mode, projectId, createSolution, handleClose, showToast, t]);
 
   /* ---- Key handler for form submission ---- */
   const handleKeyDown = useCallback(

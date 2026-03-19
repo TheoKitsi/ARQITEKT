@@ -1,6 +1,7 @@
 import { useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bot } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { Spinner } from '@/components/ui/Spinner';
 import styles from './ChatMessages.module.css';
 
@@ -42,7 +43,7 @@ function markdownToHtml(md: string): string {
     // Line breaks
     .replace(/\n/g, '<br/>');
 
-  return html;
+  return DOMPurify.sanitize(html);
 }
 
 /** Format a timestamp as relative time (e.g. "just now", "2m ago"). */

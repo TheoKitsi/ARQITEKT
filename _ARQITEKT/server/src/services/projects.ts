@@ -2,6 +2,7 @@ import { readFile, readdir, stat, rm, writeFile, cp, mkdir } from 'fs/promises';
 import { join, resolve, isAbsolute } from 'path';
 import { config } from '../config.js';
 import { parseYaml, dumpYaml } from './yaml.js';
+import { getReadiness } from './requirements.js';
 import type {
   Project, ProjectConfig, ProjectStats, LifecycleStage,
   ProjectRegistryEntry, ProjectsRegistry,
@@ -47,6 +48,39 @@ function resolveProjectPath(entry: ProjectRegistryEntry): string {
   return join(config.workspaceRoot, entry.path);
 }
 
+/**
+ * Normalize raw parsed YAML into a flat ProjectConfig.
+ * Handles both `project: { name, lifecycle: { state } }` and flat formats.
+ */
+function normalizeProjectConfig(raw: Record<string, unknown>): ProjectConfig {
+  // Unwrap `project:` wrapper if present
+  const data = (typeof raw.project === 'object' && raw.project !== null)
+    ? (raw.project as Record<string, unknown>)
+    : raw;
+
+  // Extract lifecycle — may live inside `data` or as a top-level sibling of `project:`
+  let lifecycle: LifecycleStage = 'planning';
+  const rawLifecycle = data.lifecycle ?? raw.lifecycle;
+  if (typeof rawLifecycle === 'string') {
+    lifecycle = rawLifecycle as LifecycleStage;
+  } else if (typeof rawLifecycle === 'object' && rawLifecycle !== null) {
+    const lc = rawLifecycle as Record<string, unknown>;
+    if (typeof lc.state === 'string') {
+      lifecycle = lc.state as LifecycleStage;
+    }
+  }
+
+  return {
+    name: (data.name as string) || '',
+    codename: (data.codename as string) || '',
+    description: data.description as string | undefined,
+    lifecycle,
+    github: data.github as string | undefined,
+    tags: Array.isArray(data.tags) ? data.tags : undefined,
+    branding: typeof data.branding === 'object' ? data.branding as ProjectConfig['branding'] : undefined,
+  };
+}
+
 /* ------------------------------------------------------------------ */
 /*  Project listing — registry + auto-discovery fallback               */
 /* ------------------------------------------------------------------ */
@@ -67,9 +101,10 @@ export async function listProjects(): Promise<Project[]> {
       const projectPath = resolveProjectPath(entry);
       const configPath = join(projectPath, 'config', 'project.yaml');
       const configContent = await readFile(configPath, 'utf-8');
-      const projectConfig = parseYaml(configContent) as unknown as ProjectConfig;
+      const projectConfig = normalizeProjectConfig(parseYaml(configContent));
 
       const stats = await getProjectStats(projectPath);
+      const readiness = await getReadiness(entry.id).catch(() => ({ authored: 0, approved: 0 }));
 
       projects.push({
         id: entry.id,
@@ -82,7 +117,7 @@ export async function listProjects(): Promise<Project[]> {
           github: projectConfig.github || entry.github,
         },
         stats,
-        readiness: { authored: 0, approved: 0 },
+        readiness,
       });
     } catch {
       // Registry entry points to a project that doesn't exist (yet) — skip
@@ -101,16 +136,17 @@ export async function listProjects(): Promise<Project[]> {
         const projectPath = join(config.workspaceRoot, dir.name);
         const configPath = join(projectPath, 'config', 'project.yaml');
         const configContent = await readFile(configPath, 'utf-8');
-        const projectConfig = parseYaml(configContent) as unknown as ProjectConfig;
+        const projectConfig = normalizeProjectConfig(parseYaml(configContent));
 
         const stats = await getProjectStats(projectPath);
+        const readiness = await getReadiness(dir.name).catch(() => ({ authored: 0, approved: 0 }));
 
         projects.push({
           id: dir.name,
           path: projectPath,
           config: projectConfig,
           stats,
-          readiness: { authored: 0, approved: 0 },
+          readiness,
         });
       } catch {
         // Skip directories without valid config
@@ -121,6 +157,48 @@ export async function listProjects(): Promise<Project[]> {
   }
 
   return projects;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Get single project by ID                                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Get a single project by ID.
+ * Looks up registry first, falls back to workspace directory.
+ */
+export async function getProjectById(projectId: string): Promise<Project | null> {
+  const registry = await loadRegistry();
+  const entry = registry.find((e) => e.id === projectId);
+
+  const projectPath = entry
+    ? resolveProjectPath(entry)
+    : join(config.workspaceRoot, projectId);
+
+  try {
+    const configPath = join(projectPath, 'config', 'project.yaml');
+    const configContent = await readFile(configPath, 'utf-8');
+    const projectConfig = normalizeProjectConfig(parseYaml(configContent));
+
+    const stats = await getProjectStats(projectPath);
+    const readiness = await getReadiness(projectId).catch(() => ({ authored: 0, approved: 0 }));
+
+    return {
+      id: projectId,
+      path: projectPath,
+      config: {
+        ...projectConfig,
+        name: projectConfig.name || entry?.name || projectId,
+        codename: projectConfig.codename || entry?.codename || projectId,
+        description: projectConfig.description || entry?.description,
+        github: projectConfig.github || entry?.github,
+      },
+      stats,
+      readiness,
+    };
+  } catch {
+    return null;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -229,7 +307,7 @@ export async function importProject(
   if (isExternal) {
     // Register as external project — don't copy files
     const configContent = await readFile(join(resolvedSource, 'config', 'project.yaml'), 'utf-8');
-    const projectConfig = parseYaml(configContent) as unknown as ProjectConfig;
+    const projectConfig = normalizeProjectConfig(parseYaml(configContent));
 
     const id = projectConfig.codename || codename;
 
@@ -312,7 +390,7 @@ export async function updateProjectMeta(
   const projectPath = await resolveProjectById(projectId);
   const configPath = join(projectPath, 'config', 'project.yaml');
   const content = await readFile(configPath, 'utf-8');
-  const current = parseYaml(content) as unknown as ProjectConfig;
+  const current = normalizeProjectConfig(parseYaml(content));
 
   const updated = { ...current, ...meta };
   const yamlLines: string[] = [];
@@ -359,7 +437,7 @@ export async function getLifecycle(projectId: string): Promise<string> {
   const projectPath = await resolveProjectById(projectId);
   const configPath = join(projectPath, 'config', 'project.yaml');
   const content = await readFile(configPath, 'utf-8');
-  const projectConfig = parseYaml(content) as unknown as ProjectConfig;
+  const projectConfig = normalizeProjectConfig(parseYaml(content));
   return projectConfig.lifecycle || 'planning';
 }
 
@@ -384,7 +462,7 @@ export async function setLifecycle(projectId: string, stage: LifecycleStage): Pr
  * Resolve the absolute path for a project by ID.
  * Checks registry first, falls back to workspace root.
  */
-async function resolveProjectById(projectId: string): Promise<string> {
+export async function resolveProjectById(projectId: string): Promise<string> {
   const registry = await loadRegistry();
   const entry = registry.find((e) => e.id === projectId);
 

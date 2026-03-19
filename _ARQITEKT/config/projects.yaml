@@ -1,64 +1,43 @@
-# ============================================================================
-# ARQITEKT — Projects Registry
-# ============================================================================
-# Central registry of all projects managed by the Hub.
-#
-# Discovery modes:
-#   "local"    — project lives in the ARQITEKT workspace (NNN_NAME pattern)
-#   "external" — project lives in its own repo/directory outside the workspace
-#
-# For "local" projects, `path` is relative to the workspace root.
-# For "external" projects, `path` is an absolute path to the project directory.
-#
-# The Hub will also auto-discover any NNN_* directories in the workspace
-# that are NOT listed here (backward-compatible fallback).
-# ============================================================================
-
 projects:
-  - id: "001_SOCIAL"
-    name: "Social"
-    codename: "SOCIAL"
-    mode: "local"
-    path: "001_SOCIAL"
-    github: "TheoKitsi/social"
-    description: "Long-Term Relationship Dating Platform"
-
-  - id: "002_RELAY"
-    name: "Relay"
-    codename: "RELAY"
-    mode: "local"
-    path: "002_RELAY"
-    github: "TheoKitsi/TK.Apps"
-    description: "Verified successor tenant search - tenants find and nominate verified successors for their rental unit"
-
-  - id: "003_TRUSTGATE"
-    name: "TrustGate"
-    codename: "TRUSTGATE"
-    mode: "local"
-    path: "003_TRUSTGATE"
-    github: "TheoKitsi/TK.Apps"
-    description: "Identity, income, and credit verification as a service - internal module and standalone SaaS API"
-
-  - id: "004_PROSPECT"
-    name: "Prospect"
-    codename: "PROSPECT"
-    mode: "local"
-    path: "004_PROSPECT"
-    github: "TheoKitsi/TK.Apps"
-    description: "Owner-paid qualified tenant search - property owners find verified tenants through criteria-based matching"
-
-  - id: "005_WEALTHPILOT"
-    name: "WealthPilot"
-    codename: "WEALTHPILOT"
-    mode: "local"
-    path: "005_WEALTHPILOT"
-    github: "TheoKitsi/TK.Apps"
-    description: "Gemini-powered wealth advisory planner for banks and insurers with cross-impact simulation"
-
-  - id: "006_SCS_PLAY"
-    name: "SCS Play"
-    codename: "SCS_PLAY"
-    mode: "external"
-    path: "006_SCS_PLAY"
-    github: "TheoKitsi/scs-play"
-    description: "Gamified social card game PWA with touch gestures, Firebase auth, and 7 game modes"
+  - id: 001_SOCIAL
+    name: Social
+    codename: SOCIAL
+    mode: external
+    path: C:\Users\kitsi\Desktop\ARQITEKT_PROJECTS\001_SOCIAL
+    github: TheoKitsi/social
+    description: Long-Term Relationship Dating Platform
+  - id: 002_RELAY
+    name: Relay
+    codename: RELAY
+    mode: external
+    path: C:\Users\kitsi\Desktop\ARQITEKT_PROJECTS\002_RELAY
+    github: TheoKitsi/TK.Apps
+    description: Verified successor tenant search - tenants find and nominate verified successors for their rental unit
+  - id: 003_TRUSTGATE
+    name: TrustGate
+    codename: TRUSTGATE
+    mode: external
+    path: C:\Users\kitsi\Desktop\ARQITEKT_PROJECTS\003_TRUSTGATE
+    github: TheoKitsi/TK.Apps
+    description: Identity, income, and credit verification as a service - internal module and standalone SaaS API
+  - id: 004_PROSPECT
+    name: Prospect
+    codename: PROSPECT
+    mode: external
+    path: C:\Users\kitsi\Desktop\ARQITEKT_PROJECTS\004_PROSPECT
+    github: TheoKitsi/TK.Apps
+    description: Owner-paid qualified tenant search - property owners find verified tenants through criteria-based matching
+  - id: 005_WEALTHPILOT
+    name: WealthPilot
+    codename: WEALTHPILOT
+    mode: external
+    path: C:\Users\kitsi\Desktop\ARQITEKT_PROJECTS\005_WEALTHPILOT
+    github: TheoKitsi/TK.Apps
+    description: Gemini-powered wealth advisory planner for banks and insurers with cross-impact simulation
+  - id: 006_SCS_PLAY
+    name: SCS Play
+    codename: SCS_PLAY
+    mode: external
+    path: C:\Users\kitsi\Desktop\ARQITEKT_PROJECTS\006_SCS_PLAY
+    github: TheoKitsi/scs-play
+    description: Gamified social card game PWA with touch gestures, Firebase auth, and 7 game modes

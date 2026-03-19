@@ -217,3 +217,182 @@ validation:
       rule: "NTF must define at least one channel"
       scope: Notification
       check: "content.channels.count >= 1"
+
+    # --- Semantic Validation Rules (Phase 3 — Metaketten) ---
+
+    - id: V-009
+      rule: "BC must answer WHO, WHAT, WHY, FOR WHOM"
+      scope: BusinessCase
+      check: "content contains who/what/why/target sections"
+
+    - id: V-010
+      rule: "US must have Gherkin-compatible acceptance criteria"
+      scope: UserStory
+      check: "content.acceptance_criteria matches Given/When/Then pattern"
+
+    - id: V-011
+      rule: "No duplicate titles within same hierarchy level"
+      scope: all
+      check: "siblings.title.unique == true"
+
+    - id: V-012
+      rule: "FN must define input, output, and error case"
+      scope: Function
+      check: "content contains input AND output AND error sections"
+
+    - id: V-013
+      rule: "INF must reference DSGVO or OWASP"
+      scope: Infrastructure
+      check: "content references regulatory standards"
+
+    - id: V-014
+      rule: "SOL must link at least one ADR"
+      scope: Solution
+      check: "content or relationships reference ADR-*"
+
+    - id: V-015
+      rule: "No references to non-existent artifact IDs"
+      scope: all
+      check: "all inline ID references resolve to existing artifacts"
+
+    - id: V-016
+      rule: "Full status consistency (BC through FN)"
+      scope: all
+      check: "parent.status.order >= max(children.status.order)"
+
+    - id: V-017
+      rule: "Confidence score meets gate threshold"
+      scope: all
+      check: "artifact.confidence >= gate.autoPassThreshold"
+
+    - id: V-018
+      rule: "All critical probing questions must be answered"
+      scope: all
+      check: "open_probing_questions.severity.critical == 0"
+
+    - id: V-019
+      rule: "Cross-reference coherence (parent-child descriptions)"
+      scope: all
+      check: "LLM: child description is consistent with parent scope"
+
+    - id: V-020
+      rule: "Boundary/error coverage >= 3 edge cases per FN"
+      scope: Function
+      check: "content.edge_cases.count >= 3"
+
+# ----------------------------------------------------------------------------
+# Pipeline Gates (Metaketten-Framework)
+# ----------------------------------------------------------------------------
+# Each gate guards a transition in the metamodel hierarchy.
+# Artifacts must pass all mandatory checks before advancing.
+# Confidence score ≥ autoPassThreshold triggers automatic acceptance.
+# ----------------------------------------------------------------------------
+gates:
+  - id: G0_IDEA_TO_BC
+    name: "Idea → Business Case"
+    from: BC
+    to: BC
+    riskLevel: critical
+    autoPassThreshold: 95
+    agents: [socratic, example]
+    mandatoryChecks:
+      - "BC must answer WHO, WHAT, WHY, FOR WHOM"
+      - "BC must define target market or audience"
+      - "BC must have a unique value proposition"
+
+  - id: G1_BC_TO_SOL
+    name: "Business Case → Solutions"
+    from: BC
+    to: SOL
+    riskLevel: high
+    autoPassThreshold: 90
+    agents: [socratic, constraint]
+    mandatoryChecks:
+      - "At least one SOL exists (V-001 prerequisite)"
+      - "All feature areas from BC are covered by SOLs"
+      - "No duplicate SOL titles"
+      - "At least one INF requirement exists"
+
+  - id: G2_SOL_TO_US
+    name: "Solutions → User Stories"
+    from: SOL
+    to: US
+    riskLevel: high
+    autoPassThreshold: 90
+    agents: [example, constraint]
+    mandatoryChecks:
+      - "Every SOL has at least one US (V-001)"
+      - "Every US has acceptance criteria (V-004)"
+      - "Every US defines actors/personas"
+      - "No orphaned parent references (V-007)"
+
+  - id: G3_US_TO_CMP
+    name: "User Stories → Components"
+    from: US
+    to: CMP
+    riskLevel: medium
+    autoPassThreshold: 85
+    agents: [devils_advocate, boundary]
+    mandatoryChecks:
+      - "Every US has at least one CMP (V-002)"
+      - "Technical decomposition covers all US acceptance criteria"
+      - "No duplicate CMP within same US"
+
+  - id: G4_CMP_TO_FN
+    name: "Components → Functions"
+    from: CMP
+    to: FN
+    riskLevel: medium
+    autoPassThreshold: 85
+    agents: [boundary, devils_advocate]
+    mandatoryChecks:
+      - "Every CMP has at least one FN (V-003)"
+      - "Each FN defines input and output"
+      - "Boundary conditions are specified"
+
+  - id: G5_FN_TO_CODE
+    name: "Functions → Code"
+    from: FN
+    to: CODE
+    riskLevel: critical
+    autoPassThreshold: 95
+    agents: [devils_advocate, constraint, boundary]
+    mandatoryChecks:
+      - "All FN have pre/post conditions"
+      - "Error cases are defined for each FN"
+      - "No unresolved conflicts between sibling FNs"
+      - "All parent statuses are at least 'approved'"
+      - "Child status does not exceed parent (V-005)"
+
+# ----------------------------------------------------------------------------
+# Agent Configuration Reference
+# ----------------------------------------------------------------------------
+# Agent personas are defined in agents.yaml.
+# Each gate references agents by name for probing sessions.
+# ----------------------------------------------------------------------------
+agents:
+  configFile: agents.yaml
+  promptsDir: prompts/
+  personas:
+    - socratic       # Guided questioning, Socratic method
+    - devils_advocate # Challenge assumptions, find weaknesses
+    - constraint     # Technical/regulatory constraints
+    - example        # Concrete examples, edge cases
+    - boundary       # Boundary conditions, error scenarios
+
+# ----------------------------------------------------------------------------
+# Knowledge Integrity
+# ----------------------------------------------------------------------------
+# Baseline and traceability features for drift detection and impact analysis.
+# ----------------------------------------------------------------------------
+integrity:
+  baseline:
+    storageDir: .arqitekt/
+    storageFile: baseline.json
+    hashAlgorithm: sha256
+    hashLength: 16
+  drift:
+    kinds: [added, removed, title_changed, status_regressed, parent_changed, content_changed]
+  traceability:
+    expectChildrenFor: [SOL, US, CMP]
+    crossCuttingTypes: [INF, ADR, NTF, FBK]

@@ -1,6 +1,7 @@
 import { readFile, readdir, writeFile, mkdir } from 'fs/promises';
 import { join, extname, resolve } from 'path';
 import { config } from '../config.js';
+import { resolveProjectById } from './projects.js';
 
 export interface FileEntry {
   name: string;
@@ -40,7 +41,7 @@ export async function listProjectFiles(
   subPath = ''
 ): Promise<FileEntry[]> {
   assertSafePath(projectId, subPath);
-  const base = join(config.workspaceRoot, projectId, subPath);
+  const base = join(await resolveProjectById(projectId), subPath);
   const entries = await readdir(base, { withFileTypes: true });
   const result: FileEntry[] = [];
 

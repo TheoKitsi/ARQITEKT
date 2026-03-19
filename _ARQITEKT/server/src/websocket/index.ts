@@ -1,6 +1,8 @@
 import type { WebSocketServer, WebSocket } from 'ws';
+import type { IncomingMessage } from 'http';
 import { join } from 'path';
 import { config } from '../config.js';
+import { verifyToken } from '../services/auth.js';
 import {
   createTerminalSession,
   writeTerminalInput,
@@ -8,6 +10,23 @@ import {
   destroyTerminalSession,
   destroyAllTerminals,
 } from './terminal.js';
+
+/* ------------------------------------------------------------------ */
+/*  Cookie parser (minimal)                                            */
+/* ------------------------------------------------------------------ */
+
+function parseCookies(cookieHeader: string): Record<string, string> {
+  const cookies: Record<string, string> = {};
+  for (const pair of cookieHeader.split(';')) {
+    const eqIdx = pair.indexOf('=');
+    if (eqIdx > 0) {
+      const key = pair.substring(0, eqIdx).trim();
+      const val = pair.substring(eqIdx + 1).trim();
+      cookies[key] = decodeURIComponent(val);
+    }
+  }
+  return cookies;
+}
 
 /* ------------------------------------------------------------------ */
 /*  Message protocol                                                   */
@@ -34,7 +53,23 @@ interface TerminalResizePayload {
 /* ------------------------------------------------------------------ */
 
 export function setupWebSocket(wss: WebSocketServer): void {
-  wss.on('connection', (ws: WebSocket) => {
+  wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
+    // Auth check for WebSocket connections
+    if (config.authEnabled) {
+      const cookies = parseCookies(req.headers.cookie || '');
+      const token = cookies.arqitekt_token;
+      if (!token) {
+        ws.close(4001, 'Authentication required');
+        return;
+      }
+      try {
+        verifyToken(token);
+      } catch {
+        ws.close(4001, 'Invalid or expired token');
+        return;
+      }
+    }
+
     console.log('WebSocket client connected');
 
     ws.on('message', (raw: Buffer) => {

@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import { dirname, join } from 'path';
 import { mkdir, stat, writeFile } from 'fs/promises';
-import { config } from '../config.js';
+import { resolveProjectById } from './projects.js';
 import { buildTree } from './requirements.js';
 import type { TreeNode } from '../types/project.js';
 
@@ -416,7 +416,7 @@ export async function scaffoldProject(
   projectId: string,
   force = false
 ): Promise<ScaffoldResult> {
-  const projectPath = join(config.workspaceRoot, projectId);
+  const projectPath = await resolveProjectById(projectId);
   const appPath = join(projectPath, 'app');
   const srcPath = join(appPath, 'src');
   const logs: string[] = [];
@@ -597,13 +597,13 @@ export async function scaffoldProject(
  * Run a command inside a project's app directory.
  * Returns a promise that resolves with the process output.
  */
-export function runProjectCommand(
+async function runProjectCommand(
   projectId: string,
   command: string,
   args: string[]
 ): Promise<{ code: number; stdout: string; stderr: string }> {
+  const cwd = join(await resolveProjectById(projectId), 'app');
   return new Promise((resolve, reject) => {
-    const cwd = join(config.workspaceRoot, projectId, 'app');
     const proc = spawn(command, args, { cwd, shell: true });
 
     let stdout = '';

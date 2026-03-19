@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { StatsBar } from './StatsBar';
+import { PipelineView } from './PipelineView';
 import { FlowView } from './FlowView';
 import { RequirementDetail } from './RequirementDetail';
 import { AddSolutionModal } from './AddSolutionModal';
 import { AddUserStoryModal } from './AddUserStoryModal';
 import { ValidationOverlay } from './ValidationOverlay';
+import { ProbingDialog } from './ProbingDialog';
 import type { TreeNode } from '@/store/api/requirementsApi';
 import styles from './PlanTab.module.css';
 
@@ -19,10 +21,13 @@ export function PlanTab() {
   const [showAddSol, setShowAddSol] = useState(false);
   const [showAddUS, setShowAddUS] = useState<string | null>(null); // solutionId
   const [showValidation, setShowValidation] = useState(false);
+  const [probingArtifactId, setProbingArtifactId] = useState<string | null>(null);
 
   return (
     <div className={styles.tab}>
       <StatsBar projectId={projectId!} />
+
+      <PipelineView projectId={projectId!} />
 
       <section className={styles.flowArea}>
         <FlowView
@@ -38,6 +43,7 @@ export function PlanTab() {
         projectId={projectId!}
         onClose={() => setSelectedNode(null)}
         onValidate={() => setShowValidation(true)}
+        onProbe={(artifactId) => setProbingArtifactId(artifactId)}
       />
 
       {/* Add Solution modal */}
@@ -60,6 +66,14 @@ export function PlanTab() {
         isOpen={showValidation}
         onClose={() => setShowValidation(false)}
         projectId={projectId!}
+      />
+
+      {/* Probing dialog */}
+      <ProbingDialog
+        isOpen={!!probingArtifactId}
+        onClose={() => setProbingArtifactId(null)}
+        projectId={projectId!}
+        artifactId={probingArtifactId ?? ''}
       />
     </div>
   );

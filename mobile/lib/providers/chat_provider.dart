@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import '../models/chat.dart';
 import '../services/api_client.dart';
 
@@ -31,11 +32,20 @@ class ChatMessagesNotifier extends StateNotifier<List<ChatMessage>> {
         ChatMessage(role: 'assistant', content: response.reply, timestamp: DateTime.now()),
       ];
     } catch (e) {
+      String errorMessage;
+      if (e is DioException) {
+        errorMessage = e.response?.statusCode == 429
+            ? 'Zu viele Anfragen. Bitte warten.'
+            : 'Verbindung zum Server fehlgeschlagen.';
+      } else {
+        errorMessage = 'Es ist ein Fehler aufgetreten.';
+      }
+
       state = [
         ...state,
         ChatMessage(
           role: 'assistant',
-          content: 'Error: ${e.toString()}',
+          content: errorMessage,
           timestamp: DateTime.now(),
         ),
       ];

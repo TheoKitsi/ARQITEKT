@@ -1,14 +1,14 @@
 import { readFile, readdir, writeFile, unlink, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { config } from '../config.js';
+import { resolveProjectById } from './projects.js';
 import { parseFrontmatter } from './frontmatter.js';
 import type { FeedbackItem } from '../types/project.js';
 
 /**
  * Get the feedback directory path for a project.
  */
-function feedbackDir(projectId: string): string {
-  return join(config.workspaceRoot, projectId, 'requirements', 'feedback');
+async function feedbackDir(projectId: string): Promise<string> {
+  return join(await resolveProjectById(projectId), 'requirements', 'feedback');
 }
 
 /**
@@ -16,7 +16,7 @@ function feedbackDir(projectId: string): string {
  * Returns an empty array if the feedback directory does not exist.
  */
 export async function listFeedback(projectId: string): Promise<FeedbackItem[]> {
-  const dir = feedbackDir(projectId);
+  const dir = await feedbackDir(projectId);
   const items: FeedbackItem[] = [];
 
   let files: string[];
@@ -68,7 +68,7 @@ export async function createFeedback(
     rating?: number;
   }
 ): Promise<FeedbackItem> {
-  const dir = feedbackDir(projectId);
+  const dir = await feedbackDir(projectId);
 
   // Ensure the feedback directory exists
   await mkdir(dir, { recursive: true });
@@ -134,12 +134,12 @@ export async function createFeedback(
  * Read a single feedback item by ID.
  * Returns the full item including its markdown body.
  */
-export async function readFeedback(projectId: string, fbkId: string): Promise<FeedbackItem> {
+async function readFeedback(projectId: string, fbkId: string): Promise<FeedbackItem> {
   if (!/^FBK-\d+$/.test(fbkId)) {
     throw Object.assign(new Error(`Invalid feedback ID format: ${fbkId}`), { status: 400 });
   }
 
-  const dir = feedbackDir(projectId);
+  const dir = await feedbackDir(projectId);
   const filePath = join(dir, `${fbkId}.md`);
 
   const content = await readFile(filePath, 'utf-8');
@@ -166,8 +166,15 @@ export async function deleteFeedback(projectId: string, fbkId: string): Promise<
     throw Object.assign(new Error(`Invalid feedback ID format: ${fbkId}`), { status: 400 });
   }
 
-  const dir = feedbackDir(projectId);
+  const dir = await feedbackDir(projectId);
   const filePath = join(dir, `${fbkId}.md`);
 
-  await unlink(filePath);
+  try {
+    await unlink(filePath);
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && 'code' in err && (err as NodeJS.ErrnoException).code === 'ENOENT') {
+      throw Object.assign(new Error(`Feedback "${fbkId}" not found`), { status: 404 });
+    }
+    throw err;
+  }
 }

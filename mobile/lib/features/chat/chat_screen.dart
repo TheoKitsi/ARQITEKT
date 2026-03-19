@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../models/chat.dart';
 import '../../providers/chat_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../theme/tokens.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -65,6 +66,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!available) return;
 
     setState(() => _listening = true);
+    final settingsAsync = ref.read(settingsProvider);
+    final lang = settingsAsync.valueOrNull?.language ?? 'de';
+    final localeId = lang == 'en' ? 'en_US' : 'de_DE';
     await _speech.listen(
       onResult: (result) {
         _controller.text = result.recognizedWords;
@@ -72,7 +76,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           setState(() => _listening = false);
         }
       },
-      localeId: 'de_DE',
+      localeId: localeId,
     );
   }
 

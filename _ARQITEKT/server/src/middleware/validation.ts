@@ -168,3 +168,65 @@ export function validate(schema: z.ZodType) {
     next();
   };
 }
+
+/**
+ * Express middleware factory: validates req.query against a zod schema.
+ */
+export function validateQuery(schema: z.ZodType) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.query);
+    if (!result.success) {
+      res.status(400).json({
+        error: 'Query validation failed',
+        details: result.error.issues.map((i) => ({
+          path: i.path.join('.'),
+          message: i.message,
+        })),
+      });
+      return;
+    }
+    next();
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Pipeline schemas                                                   */
+/* ------------------------------------------------------------------ */
+
+export const evaluateGateSchema = z.object({}).strict().optional();
+
+export const overrideGateSchema = z.object({
+  reason: z.string().min(10).max(2000),
+});
+
+/* ------------------------------------------------------------------ */
+/*  Probing schemas                                                    */
+/* ------------------------------------------------------------------ */
+
+export const analyzeGapsSchema = z.object({
+  artifactId: z.string().min(1).max(50),
+});
+
+export const answerQuestionSchema = z.object({
+  questionId: z.string().min(1).max(100),
+  artifactId: z.string().min(1).max(50),
+  answer: z.string().min(1).max(5000),
+});
+
+export const skipQuestionSchema = z.object({
+  questionId: z.string().min(1).max(100),
+  artifactId: z.string().min(1).max(50),
+  reason: z.string().min(5).max(1000),
+});
+
+/* ------------------------------------------------------------------ */
+/*  Query parameter schemas                                            */
+/* ------------------------------------------------------------------ */
+
+export const searchQuerySchema = z.object({
+  q: z.string().min(1).max(200),
+});
+
+export const nextUsIdQuerySchema = z.object({
+  sol: z.string().min(1).max(50),
+});

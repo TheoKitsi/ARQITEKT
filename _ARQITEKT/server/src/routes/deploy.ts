@@ -59,57 +59,31 @@ deployRouter.get('/:id/app/status', (req, res, next) => {
 });
 
 // POST /api/projects/:id/github-push
-deployRouter.post('/:id/github-push', validate(githubPushSchema), async (_req, res, next) => {
-  try {
-    // TODO: Implement git push with spawn (not execSync)
-    res.json({ success: false, message: 'Git push not yet implemented in v2' });
-  } catch (err) {
-    next(err);
-  }
+deployRouter.post('/:id/github-push', validate(githubPushSchema), async (_req, res) => {
+  res.status(501).json({ error: 'Not implemented', message: 'Git push not yet implemented in v2' });
 });
 
 // POST /api/projects/:id/github-export
-deployRouter.post('/:id/github-export', async (_req, res, next) => {
-  try {
-    // TODO: Implement GitHub issues export via Octokit
-    res.json({ success: false, message: 'Issues export not yet implemented in v2', count: 0 });
-  } catch (err) {
-    next(err);
-  }
+deployRouter.post('/:id/github-export', async (_req, res) => {
+  res.status(501).json({ error: 'Not implemented', message: 'Issues export not yet implemented in v2' });
 });
 
 // POST /api/projects/:id/store/configure
-deployRouter.post('/:id/store/configure', async (_req, res, next) => {
-  try {
-    res.json({ success: true, message: 'Store configuration saved' });
-  } catch (err) {
-    next(err);
-  }
+deployRouter.post('/:id/store/configure', async (_req, res) => {
+  res.status(501).json({ error: 'Not implemented', message: 'Store configuration not yet implemented in v2' });
 });
 
 // POST /api/projects/:id/store/build
-deployRouter.post('/:id/store/build', async (_req, res, next) => {
-  try {
-    res.json({ success: false, message: 'Store build not yet implemented in v2' });
-  } catch (err) {
-    next(err);
-  }
+deployRouter.post('/:id/store/build', async (_req, res) => {
+  res.status(501).json({ error: 'Not implemented', message: 'Store build not yet implemented in v2' });
 });
 
 // POST /api/projects/:id/build-deploy
-deployRouter.post('/:id/build-deploy', async (_req, res, next) => {
-  try {
-    res.json({ success: false, message: 'Build + deploy not yet implemented in v2' });
-  } catch (err) {
-    next(err);
-  }
+deployRouter.post('/:id/build-deploy', async (_req, res) => {
+  res.status(501).json({ error: 'Not implemented', message: 'Build + deploy not yet implemented in v2' });
 });
 
 // POST /api/projects/:id/github-actions
-deployRouter.post('/:id/github-actions', async (_req, res, next) => {
-  try {
-    res.json({ success: false, message: 'GitHub Actions not yet implemented in v2' });
-  } catch (err) {
-    next(err);
-  }
+deployRouter.post('/:id/github-actions', async (_req, res) => {
+  res.status(501).json({ error: 'Not implemented', message: 'GitHub Actions not yet implemented in v2' });
 });

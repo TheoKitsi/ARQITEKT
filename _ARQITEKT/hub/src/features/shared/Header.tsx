@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Github, Globe } from 'lucide-react';
+import { Github, Globe, LogOut } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { setLanguage, type Language } from '@/store/slices/uiSlice';
 import { useGetGithubStatusQuery } from '@/store/api/githubApi';
+import { useGetAuthStatusQuery, useLogoutMutation } from '@/store/api/authApi';
 import { Button } from '@/components/ui/Button';
 import { GitHubSetupModal } from './GitHubSetupModal';
 import styles from './Header.module.css';
@@ -18,6 +19,8 @@ export function Header() {
   const dispatch = useAppDispatch();
   const language = useAppSelector((s) => s.ui.language);
   const { data: ghStatus } = useGetGithubStatusQuery();
+  const { data: authStatus } = useGetAuthStatusQuery();
+  const [logout] = useLogoutMutation();
   const [showGithubSetup, setShowGithubSetup] = useState(false);
 
   const toggleLang = () => {
@@ -25,6 +28,13 @@ export function Header() {
     dispatch(setLanguage(next));
     i18n.changeLanguage(next);
   };
+
+  const handleLogout = async () => {
+    await logout().unwrap();
+    window.location.href = '/';
+  };
+
+  const isAuthEnabled = authStatus?.authEnabled && authStatus.authenticated;
 
   return (
     <header className={styles.header}>
@@ -48,28 +58,49 @@ export function Header() {
           <span className={styles.langLabel}>{language.toUpperCase()}</span>
         </button>
 
-        {/* GitHub status */}
-        {ghStatus?.connected ? (
-          <button className={styles.ghAvatar} type="button" aria-label="GitHub" onClick={() => setShowGithubSetup(true)}>
-            {ghStatus.avatarUrl ? (
-              <img
-                src={ghStatus.avatarUrl}
-                alt={ghStatus.username ?? 'GitHub'}
-                className={styles.avatar}
-              />
+        {/* GitHub status (only when auth is NOT enabled — otherwise user logged in via OAuth already) */}
+        {!isAuthEnabled && (
+          <>
+            {ghStatus?.connected ? (
+              <button className={styles.ghAvatar} type="button" aria-label="GitHub" onClick={() => setShowGithubSetup(true)}>
+                {ghStatus.avatarUrl ? (
+                  <img
+                    src={ghStatus.avatarUrl}
+                    alt={ghStatus.username ?? 'GitHub'}
+                    className={styles.avatar}
+                  />
+                ) : (
+                  <Github size={18} />
+                )}
+              </button>
             ) : (
-              <Github size={18} />
+              <Button
+                variant="outlined"
+                size="sm"
+                icon={<Github size={14} />}
+                onClick={() => setShowGithubSetup(true)}
+              >
+                {t('connectGithub', 'Connect GitHub')}
+              </Button>
             )}
-          </button>
-        ) : (
-          <Button
-            variant="outlined"
-            size="sm"
-            icon={<Github size={14} />}
-            onClick={() => setShowGithubSetup(true)}
-          >
-            {t('connectGithub', 'Connect GitHub')}
-          </Button>
+          </>
+        )}
+
+        {/* User menu (when auth is enabled) */}
+        {isAuthEnabled && (
+          <>
+            <span className={styles.username}>
+              {authStatus.user?.username}
+            </span>
+            <Button
+              variant="outlined"
+              size="sm"
+              icon={<LogOut size={14} />}
+              onClick={handleLogout}
+            >
+              {t('authLogout', 'Logout')}
+            </Button>
+          </>
         )}
       </div>
 

@@ -20,19 +20,14 @@ class AppSettings {
 }
 
 /// Settings notifier — loads/saves to SharedPreferences.
-class SettingsNotifier extends Notifier<AppSettings> {
+class SettingsNotifier extends AsyncNotifier<AppSettings> {
   static const _keyHubUrl = 'hub_url';
   static const _keyLanguage = 'language';
 
   @override
-  AppSettings build() {
-    _load();
-    return const AppSettings();
-  }
-
-  Future<void> _load() async {
+  Future<AppSettings> build() async {
     final prefs = await SharedPreferences.getInstance();
-    state = AppSettings(
+    return AppSettings(
       hubUrl: prefs.getString(_keyHubUrl) ?? 'http://localhost:3334',
       language: prefs.getString(_keyLanguage) ?? 'de',
     );
@@ -41,16 +36,16 @@ class SettingsNotifier extends Notifier<AppSettings> {
   Future<void> setHubUrl(String url) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyHubUrl, url);
-    state = state.copyWith(hubUrl: url);
+    state = AsyncData(state.requireValue.copyWith(hubUrl: url));
   }
 
   Future<void> setLanguage(String lang) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyLanguage, lang);
-    state = state.copyWith(language: lang);
+    state = AsyncData(state.requireValue.copyWith(language: lang));
   }
 }
 
-final settingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(
+final settingsProvider = AsyncNotifierProvider<SettingsNotifier, AppSettings>(
   SettingsNotifier.new,
 );

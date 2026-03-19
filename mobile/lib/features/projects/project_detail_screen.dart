@@ -104,6 +104,13 @@ class ProjectDetailScreen extends ConsumerWidget {
                 subtitle: 'Projektbezogener KI-Assistent',
                 onTap: () => context.push('/projects/$projectId/chat'),
               ),
+              const SizedBox(height: Tokens.space2),
+              _ActionTile(
+                icon: LucideIcons.shield,
+                title: 'Pipeline',
+                subtitle: 'Gates, Confidence & Drift',
+                onTap: () => context.push('/projects/$projectId/pipeline'),
+              ),
             ],
           ),
         );

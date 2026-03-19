@@ -1,0 +1,189 @@
+/* ================================================================
+   PipelineView – horizontal gate pipeline visualization
+   ================================================================ */
+
+.pipeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+}
+
+/* ---- Toolbar ---- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.toolbarTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.overallScore {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ---- Stages row (horizontal pipeline) ---- */
+.stages {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--space-2) 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-bg4) transparent;
+}
+
+.stages::-webkit-scrollbar {
+  height: 4px;
+}
+
+.stages::-webkit-scrollbar-thumb {
+  background-color: var(--color-surface-bg4);
+  border-radius: var(--radius-full);
+}
+
+/* ---- Single stage node ---- */
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  min-width: 72px;
+}
+
+.stageLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+/* ---- Gate indicator (circle between stages) ---- */
+.gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.gate:hover {
+  transform: scale(1.1);
+}
+
+.gate:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: 4px;
+  border-radius: var(--radius-full);
+}
+
+.gateCircle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-mono);
+  border: 2px solid;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+/* Gate status colors */
+.gatePassed .gateCircle {
+  background-color: rgba(255, 215, 0, 0.2);
+  border-color: var(--color-brand-gold);
+  color: var(--color-brand-gold);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+.gateFailed .gateCircle {
+  background-color: rgba(248, 81, 73, 0.15);
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.gatePending .gateCircle {
+  background-color: var(--color-surface-bg3);
+  border-color: var(--color-border);
+  color: var(--color-text-tertiary);
+}
+
+.gateOverridden .gateCircle {
+  background-color: rgba(210, 153, 34, 0.15);
+  border-color: var(--color-yellow);
+  color: var(--color-yellow);
+}
+
+.gateId {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+/* ---- Connector line between stages ---- */
+.connector {
+  flex-shrink: 0;
+  width: 24px;
+  height: 2px;
+  background-color: var(--color-border);
+  transition: background-color var(--transition-fast);
+}
+
+.connectorPassed {
+  background-color: var(--color-brand-gold);
+}
+
+.connectorFailed {
+  background-color: var(--color-red);
+}
+
+/* ---- Loading / error ---- */
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.errorText {
+  font-size: var(--font-size-sm);
+  color: var(--color-red);
+  margin: 0;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 560px) {
+  .stages {
+    gap: 0;
+  }
+
+  .connector {
+    width: 12px;
+  }
+
+  .stage {
+    min-width: 56px;
+  }
+}

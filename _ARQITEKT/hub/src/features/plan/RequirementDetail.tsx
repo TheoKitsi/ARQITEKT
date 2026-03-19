@@ -1,11 +1,13 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, FileEdit, ShieldCheck, ExternalLink } from 'lucide-react';
+import { X, ShieldCheck, ExternalLink, Sparkles } from 'lucide-react';
 import type { TreeNode, RequirementStatus } from '@/store/api/requirementsApi';
 import { useSetStatusMutation } from '@/store/api/requirementsApi';
+import { useGetConfidenceQuery } from '@/store/api/pipelineApi';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { ConfidenceBadge } from '@/components/ui/ConfidenceBadge';
 import styles from './RequirementDetail.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -17,6 +19,7 @@ export interface RequirementDetailProps {
   projectId: string;
   onClose: () => void;
   onValidate?: () => void;
+  onProbe?: (artifactId: string) => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -57,12 +60,19 @@ export function RequirementDetail({
   projectId,
   onClose,
   onValidate,
+  onProbe,
 }: RequirementDetailProps) {
   const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
   const [setStatus] = useSetStatusMutation();
+  const { data: confidenceData } = useGetConfidenceQuery(projectId, { skip: !node });
 
   const isOpen = node !== null;
+
+  /* ---- Find confidence for this node ---- */
+  const nodeConfidence = node
+    ? confidenceData?.scores?.find((s) => s.artifactId === node.id)
+    : undefined;
 
   /* ---- Close on Escape ---- */
   useEffect(() => {
@@ -135,6 +145,16 @@ export function RequirementDetail({
           <div className={styles.headerLeft}>
             <Badge variant={typeVariant}>{node.type}</Badge>
             <span className={styles.headerId}>{node.id}</span>
+            <ConfidenceBadge
+              score={nodeConfidence?.overall ?? null}
+              breakdown={nodeConfidence ? {
+                structural: nodeConfidence.structural,
+                semantic: nodeConfidence.semantic,
+                consistency: nodeConfidence.consistency,
+                boundary: nodeConfidence.boundary,
+              } : undefined}
+              onClick={onProbe ? () => onProbe(node.id) : undefined}
+            />
           </div>
           <button
             className={styles.closeBtn}
@@ -182,14 +202,16 @@ export function RequirementDetail({
 
         {/* ---- Actions ---- */}
         <footer className={styles.footer}>
-          <Button
-            variant="outlined"
-            size="sm"
-            icon={<FileEdit size={14} />}
-            disabled
-          >
-            {t('detailEditFuture')}
-          </Button>
+          {onProbe && (
+            <Button
+              variant="gold"
+              size="sm"
+              icon={<Sparkles size={14} />}
+              onClick={() => onProbe(node.id)}
+            >
+              {t('probe')}
+            </Button>
+          )}
           {onValidate && (
             <Button
               variant="outlined"

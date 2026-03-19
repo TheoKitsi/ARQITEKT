@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useGetStatsQuery } from '@/store/api/requirementsApi';
+import { useGetPipelineQuery } from '@/store/api/pipelineApi';
+import { ConfidenceBadge } from '@/components/ui/ConfidenceBadge';
 import { Spinner } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
 import styles from './StatsBar.module.css';
@@ -48,6 +50,10 @@ export function StatsBar({ projectId }: StatsBarProps) {
     isError,
     refetch,
   } = useGetStatsQuery(projectId);
+  const { data: pipeline } = useGetPipelineQuery(projectId);
+
+  const passedGates = pipeline?.gates.filter((g) => g.status === 'passed' || g.status === 'overridden').length ?? 0;
+  const totalGates = pipeline?.gates.length ?? 0;
 
   return (
     <section className={styles.bar} aria-label={t('statBC')}>
@@ -76,6 +82,17 @@ export function StatsBar({ projectId }: StatsBarProps) {
               color={def.color}
             />
           ))}
+          {pipeline && (
+            <>
+              <StatPill
+                label={t('statGates')}
+                value={passedGates}
+                color="#FFD700"
+                suffix={`/${totalGates}`}
+              />
+              <ConfidenceBadge score={pipeline.overallConfidence} />
+            </>
+          )}
         </div>
       )}
     </section>
@@ -90,10 +107,12 @@ function StatPill({
   label,
   value,
   color,
+  suffix,
 }: {
   label: string;
   value: number;
   color: string;
+  suffix?: string;
 }) {
   return (
     <div className={styles.pill}>
@@ -102,7 +121,7 @@ function StatPill({
         style={{ backgroundColor: color }}
         aria-hidden="true"
       />
-      <span className={styles.value}>{value}</span>
+      <span className={styles.value}>{value}{suffix ?? ''}</span>
       <span className={styles.label}>{label}</span>
     </div>
   );

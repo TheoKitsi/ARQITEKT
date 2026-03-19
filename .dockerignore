@@ -1,0 +1,14 @@
+node_modules
+dist
+.vite
+coverage
+playwright-report
+test-results
+*.tsbuildinfo
+.env
+.git
+mobile
+_ARQITEKT/hub/node_modules
+_ARQITEKT/server/node_modules
+_ARQITEKT/hub/dist
+_ARQITEKT/server/dist

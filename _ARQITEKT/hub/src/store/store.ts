@@ -3,6 +3,7 @@ import { baseApi } from './api/baseApi';
 import { uiReducer } from './slices/uiSlice';
 import { editorReducer } from './slices/editorSlice';
 import { chatReducer } from './slices/chatSlice';
+import { authReducer } from './slices/authSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     ui: uiReducer,
     editor: editorReducer,
     chat: chatReducer,
+    auth: authReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(baseApi.middleware),

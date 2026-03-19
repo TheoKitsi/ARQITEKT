@@ -20,7 +20,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    final settings = ref.read(settingsProvider);
+    final settingsAsync = ref.read(settingsProvider);
+    final settings = settingsAsync.valueOrNull ?? const AppSettings();
     _urlController.text = settings.hubUrl;
   }
 
@@ -76,7 +77,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final settings = ref.watch(settingsProvider);
+    final settingsAsync = ref.watch(settingsProvider);
+    final settings = settingsAsync.valueOrNull ?? const AppSettings();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Einstellungen')),

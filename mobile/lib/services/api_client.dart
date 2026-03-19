@@ -87,10 +87,49 @@ class ApiClient {
     final res = await _dio.get('/hub/version');
     return res.data as Map<String, dynamic>;
   }
+
+  // ── Pipeline ─────────────────────────────────────────────────────
+  Future<Map<String, dynamic>> getPipeline(String projectId) async {
+    final res = await _dio.get('/projects/$projectId/pipeline');
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> evaluateGate(String projectId, String gateId) async {
+    final res = await _dio.post('/projects/$projectId/pipeline/gate/$gateId');
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> getConfidence(String projectId) async {
+    final res = await _dio.get('/projects/$projectId/pipeline/confidence');
+    return res.data as Map<String, dynamic>;
+  }
+
+  // ── Baseline & Drift ─────────────────────────────────────────────
+  Future<Map<String, dynamic>> setBaseline(String projectId) async {
+    final res = await _dio.post('/projects/$projectId/baseline');
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> getDrift(String projectId) async {
+    final res = await _dio.get('/projects/$projectId/drift');
+    return res.data as Map<String, dynamic>;
+  }
+
+  // ── Traceability ─────────────────────────────────────────────────
+  Future<Map<String, dynamic>> getTraceability(String projectId) async {
+    final res = await _dio.get('/projects/$projectId/traceability');
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> getOrphans(String projectId) async {
+    final res = await _dio.get('/projects/$projectId/traceability/orphans');
+    return res.data as Map<String, dynamic>;
+  }
 }
 
 /// Provider for the API client — re-created when the hub URL changes.
 final apiClientProvider = Provider<ApiClient>((ref) {
-  final settings = ref.watch(settingsProvider);
+  final settingsAsync = ref.watch(settingsProvider);
+  final settings = settingsAsync.valueOrNull ?? const AppSettings();
   return ApiClient(baseUrl: '${settings.hubUrl}/api');
 });

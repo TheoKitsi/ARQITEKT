@@ -8,5 +8,8 @@ coverage/
 playwright-report/
 test-results/
 
+# Auth user data (contains tokens)
+_ARQITEKT/config/users.yaml
+
 # App code lives in separate repos per project
 */app/

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Zap } from 'lucide-react';
 import { useCreateUserStoryMutation } from '@/store/api/requirementsApi';
+import { useToast } from '@/components/ui/Toast';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -31,6 +32,7 @@ export function AddUserStoryModal({
   solutionId,
 }: AddUserStoryModalProps) {
   const { t } = useTranslation();
+  const { showToast } = useToast();
 
   const [mode, setMode] = useState<CreationMode>('discuss');
   const [title, setTitle] = useState('');
@@ -60,9 +62,9 @@ export function AddUserStoryModal({
       }).unwrap();
       handleClose();
     } catch {
-      // Error is handled by RTK Query — toast / error boundary
+      showToast(t('createUSFailed', 'Failed to create user story'), 'error');
     }
-  }, [title, notes, mode, projectId, solutionId, createUS, handleClose]);
+  }, [title, notes, mode, projectId, solutionId, createUS, handleClose, showToast, t]);
 
   /* ---- Key handler for form submission ---- */
   const handleKeyDown = useCallback(

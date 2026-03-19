@@ -23,14 +23,14 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    port: parseInt(process.env.VITE_PORT || '5173', 10),
     proxy: {
       '/api': {
-        target: 'http://localhost:3334',
+        target: `http://localhost:${process.env.VITE_API_PORT || '3334'}`,
         changeOrigin: true,
       },
       '/ws': {
-        target: 'ws://localhost:3334',
+        target: `ws://localhost:${process.env.VITE_API_PORT || '3334'}`,
         ws: true,
       },
     },

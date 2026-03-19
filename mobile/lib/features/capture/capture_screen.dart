@@ -13,6 +13,7 @@ class CaptureScreen extends ConsumerStatefulWidget {
 }
 
 class _CaptureScreenState extends ConsumerState<CaptureScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
   String? _selectedProjectId;
@@ -27,8 +28,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   }
 
   Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
     final title = _titleController.text.trim();
-    if (title.isEmpty || _selectedProjectId == null) return;
+    if (title.isEmpty || _selectedProjectId == null || _submitting) return;
 
     setState(() => _submitting = true);
 
@@ -65,7 +67,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Idee erfassen')),
-      body: SingleChildScrollView(
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
         padding: const EdgeInsets.all(Tokens.space4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -95,8 +99,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
             const SizedBox(height: Tokens.space4),
 
             // Title
-            TextField(
+            TextFormField(
               controller: _titleController,
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Titel erforderlich' : null,
               decoration: const InputDecoration(
                 labelText: 'Titel',
                 prefixIcon: Icon(LucideIcons.lightbulb),
@@ -177,6 +182,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -7,6 +7,7 @@ import '../features/requirements/requirement_detail_screen.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/capture/capture_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/pipeline/pipeline_screen.dart';
 import '../features/shared/app_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -68,6 +69,14 @@ final router = GoRouter(
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return ChatScreen(projectId: id);
+      },
+    ),
+    GoRoute(
+      path: '/projects/:id/pipeline',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return PipelineScreen(projectId: id);
       },
     ),
   ],

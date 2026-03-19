@@ -9,9 +9,23 @@ import { platform } from 'os';
 interface PtySession {
   pty: pty.IPty;
   cwd: string;
+  createdAt: number;
 }
 
 const sessions = new Map<WebSocket, PtySession>();
+
+const SESSION_TIMEOUT_MS = 4 * 60 * 60 * 1000; // 4 hours
+
+/** Periodically clean up stale/orphaned sessions */
+setInterval(() => {
+  const now = Date.now();
+  for (const [ws, session] of sessions) {
+    if (ws.readyState > 1 || now - session.createdAt > SESSION_TIMEOUT_MS) {
+      session.pty.kill();
+      sessions.delete(ws);
+    }
+  }
+}, 60_000);
 
 /**
  * Spawn a new PTY for a WebSocket client.
@@ -55,7 +69,7 @@ export function createTerminalSession(
     }
   });
 
-  sessions.set(ws, { pty: ptyProcess, cwd });
+  sessions.set(ws, { pty: ptyProcess, cwd, createdAt: Date.now() });
 
   ws.send(JSON.stringify({
     type: 'terminal:ready',

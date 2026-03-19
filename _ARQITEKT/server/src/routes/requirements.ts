@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { buildTree, getStats, getReadiness, validateProject, setRequirementStatus } from '../services/requirements.js';
-import { validate, setStatusSchema } from '../middleware/validation.js';
+import { validate, validateQuery, setStatusSchema, searchQuerySchema, nextUsIdQuerySchema } from '../middleware/validation.js';
 
 export const requirementsRouter = Router();
 
@@ -56,7 +56,7 @@ requirementsRouter.put('/:id/set-status', validate(setStatusSchema), async (req,
 });
 
 // GET /api/projects/:id/search
-requirementsRouter.get('/:id/search', async (req, res, next) => {
+requirementsRouter.get('/:id/search', validateQuery(searchQuerySchema), async (req, res, next) => {
   try {
     const query = req.query.q as string;
     const tree = await buildTree(req.params.id as string);
@@ -94,7 +94,7 @@ requirementsRouter.get('/:id/next-sol-id', async (req, res, next) => {
 });
 
 // GET /api/projects/:id/next-us-id
-requirementsRouter.get('/:id/next-us-id', async (req, res, next) => {
+requirementsRouter.get('/:id/next-us-id', validateQuery(nextUsIdQuerySchema), async (req, res, next) => {
   try {
     const sol = req.query.sol as string;
     const tree = await buildTree(req.params.id as string);

@@ -110,6 +110,11 @@ export function CommandPalette() {
     );
   }, [commands, query]);
 
+  /* ---- Clamp activeIndex when filtered list shrinks ---- */
+  useEffect(() => {
+    setActiveIndex((prev) => Math.min(prev, Math.max(0, filtered.length - 1)));
+  }, [filtered.length]);
+
   /* ---- Reset state on open/close ---- */
   useEffect(() => {
     if (isOpen) {

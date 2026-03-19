@@ -104,6 +104,12 @@
 }
 
 /* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .panel {
+    width: 320px;
+  }
+}
+
 @media (max-width: 480px) {
   .panel {
     width: 100vw;

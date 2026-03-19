@@ -2,6 +2,7 @@ import { spawn, type ChildProcess } from 'child_process';
 import { join } from 'path';
 import { stat } from 'fs/promises';
 import { config } from '../config.js';
+import { resolveProjectById } from './projects.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -97,6 +98,11 @@ function allocatePort(): number {
  * Start the dev server for the given project.
  */
 export async function startApp(projectId: string): Promise<StartResult> {
+  // Validate projectId to prevent path traversal / command injection
+  if (!/^[\w-]+$/.test(projectId)) {
+    return { success: false, message: 'Invalid project ID format' };
+  }
+
   // Already running?
   if (runningApps.has(projectId)) {
     return { success: false, message: 'App is already running' };
@@ -111,7 +117,7 @@ export async function startApp(projectId: string): Promise<StartResult> {
   }
 
   // Resolve app directory
-  const appDir = join(config.workspaceRoot, projectId, 'app');
+  const appDir = join(await resolveProjectById(projectId), 'app');
   try {
     const s = await stat(appDir);
     if (!s.isDirectory()) {
@@ -146,7 +152,7 @@ export async function startApp(projectId: string): Promise<StartResult> {
   // Spawn the dev server
   const child = spawn(command, args, {
     cwd: appDir,
-    shell: true,
+    shell: process.platform === 'win32',
     stdio: 'pipe',
   });
 

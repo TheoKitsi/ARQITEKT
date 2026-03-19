@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listProjects, createProject, deleteProject, importProject, updateProjectMeta, renameProject, getLifecycle, setLifecycle, getRegistry, updateRegistryEntry } from '../services/projects.js';
+import { listProjects, createProject, deleteProject, importProject, updateProjectMeta, renameProject, getLifecycle, setLifecycle, getRegistry, updateRegistryEntry, getProjectById } from '../services/projects.js';
 import { validate, createProjectSchema, importProjectSchema, updateMetaSchema, renameProjectSchema, lifecycleSchema, updateRegistryEntrySchema } from '../middleware/validation.js';
 
 export const projectsRouter = Router();
@@ -67,6 +67,20 @@ projectsRouter.put('/registry/:id', validate(updateRegistryEntrySchema), async (
 /* ------------------------------------------------------------------ */
 /*  Parameterized routes (/:id)                                         */
 /* ------------------------------------------------------------------ */
+
+// GET /api/projects/:id
+projectsRouter.get('/:id', async (req, res, next) => {
+  try {
+    const project = await getProjectById(req.params.id as string);
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' });
+      return;
+    }
+    res.json(project);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // DELETE /api/projects/:id
 projectsRouter.delete('/:id', async (req, res, next) => {

@@ -1,0 +1,77 @@
+import { Router } from 'express';
+import { setBaseline, getBaseline, checkDrift } from '../services/baseline.js';
+import { buildMatrix, findOrphans, impactAnalysis } from '../services/traceability.js';
+
+export const baselineRouter = Router();
+
+/* ------------------------------------------------------------------ */
+/*  Baseline                                                           */
+/* ------------------------------------------------------------------ */
+
+// POST /api/projects/:id/baseline — snapshot current state
+baselineRouter.post('/:id/baseline', async (req, res, next) => {
+  try {
+    const baseline = await setBaseline(req.params.id);
+    res.json(baseline);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/projects/:id/baseline — get current baseline
+baselineRouter.get('/:id/baseline', async (req, res, next) => {
+  try {
+    const baseline = await getBaseline(req.params.id);
+    if (!baseline) {
+      res.status(404).json({ error: 'No baseline set for this project' });
+      return;
+    }
+    res.json(baseline);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/projects/:id/drift — compare current state against baseline
+baselineRouter.get('/:id/drift', async (req, res, next) => {
+  try {
+    const drift = await checkDrift(req.params.id);
+    res.json(drift);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/*  Traceability                                                       */
+/* ------------------------------------------------------------------ */
+
+// GET /api/projects/:id/traceability — full trace matrix
+baselineRouter.get('/:id/traceability', async (req, res, next) => {
+  try {
+    const matrix = await buildMatrix(req.params.id);
+    res.json(matrix);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/projects/:id/traceability/orphans — unlinked artifacts
+baselineRouter.get('/:id/traceability/orphans', async (req, res, next) => {
+  try {
+    const orphans = await findOrphans(req.params.id);
+    res.json({ orphans });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/projects/:id/traceability/impact/:artifactId — impact analysis
+baselineRouter.get('/:id/traceability/impact/:artifactId', async (req, res, next) => {
+  try {
+    const impact = await impactAnalysis(req.params.id, req.params.artifactId);
+    res.json(impact);
+  } catch (err) {
+    next(err);
+  }
+});

@@ -4,6 +4,7 @@ import { Code2 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { updateContent, markSaved } from '@/store/slices/editorSlice';
 import { useReadFileQuery, useWriteFileMutation } from '@/store/api/filesApi';
+import { useToast } from '@/components/ui/Toast';
 import { Spinner } from '@/components/ui/Spinner';
 import { EditorTabs } from './EditorTabs';
 import { MonacoWrapper } from './MonacoWrapper';
@@ -24,6 +25,7 @@ interface EditorAreaProps {
 export function EditorArea({ projectId }: EditorAreaProps) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const { showToast } = useToast();
 
   const openTabs = useAppSelector((s) => s.editor.openTabs);
   const activeTabId = useAppSelector((s) => s.editor.activeTabId);
@@ -62,9 +64,9 @@ export function EditorArea({ projectId }: EditorAreaProps) {
       }).unwrap();
       dispatch(markSaved(activeTab.id));
     } catch {
-      // Error handled by RTK Query global error handler
+      showToast(t('saveFailed', 'Failed to save file'), 'error');
     }
-  }, [activeTab, projectId, writeFile, dispatch]);
+  }, [activeTab, projectId, writeFile, dispatch, showToast, t]);
 
   /* ---- Register keyboard shortcut ---- */
   useEffect(() => {

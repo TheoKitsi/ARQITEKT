@@ -88,7 +88,9 @@ export function TerminalPanel({ projectId }: TerminalPanelProps) {
     /* ---- WebSocket connection ---- */
     let ws: WebSocket | null = null;
     try {
-      ws = new WebSocket(`ws://localhost:3334/ws`);
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsHost = import.meta.env.VITE_WS_HOST || window.location.host;
+      ws = new WebSocket(`${wsProtocol}//${wsHost}/ws`);
       wsRef.current = ws;
 
       ws.addEventListener('open', () => {
