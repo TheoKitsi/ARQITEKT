@@ -140,6 +140,28 @@ input, textarea, select {
 
 ::selection {
   background-color: var(--color-brand-gold);
+}
+
+/* Skip to content (accessibility) */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  padding: 0.5rem 1.5rem;
+  background: var(--color-brand-gold);
+  color: var(--color-brand-anthracite);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: top 0.15s;
+}
+
+.skip-link:focus {
+  top: var(--space-2);
+}
   color: var(--color-brand-anthracite);
 }
 

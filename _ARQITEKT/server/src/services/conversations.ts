@@ -82,7 +82,10 @@ export async function listConversations(projectId: string): Promise<Conversation
   let files: string[];
   try {
     files = await readdir(dirPath);
-  } catch {
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.error(`Error reading conversations directory for ${projectId}:`, err);
+    }
     return conversations;
   }
 

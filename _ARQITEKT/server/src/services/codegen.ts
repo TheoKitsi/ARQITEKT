@@ -17,8 +17,8 @@ const MAX_FILE_SIZE = 50 * 1024; // 50 KB
 /** Maximum number of retry attempts for each LLM call. */
 const MAX_RETRIES = 2;
 
-/** Delay between retries in milliseconds. */
-const RETRY_DELAY_MS = 1000;
+/** Delay between retries in milliseconds (base for exponential backoff). */
+const RETRY_BASE_DELAY_MS = 1000;
 
 /**
  * Sleep for the given number of milliseconds.
@@ -149,8 +149,9 @@ export async function generateCode(
       for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
           if (attempt > 0) {
-            logs.push(`  -> Retry ${attempt}/${MAX_RETRIES}...`);
-            await sleep(RETRY_DELAY_MS);
+            const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt - 1);
+            logs.push(`  -> Retry ${attempt}/${MAX_RETRIES} (waiting ${delay}ms)...`);
+            await sleep(delay);
           }
 
           const result = await sendChatMessage(messages, model);

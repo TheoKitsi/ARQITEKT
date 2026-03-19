@@ -35,7 +35,7 @@ async function loadGateDefinitions(): Promise<GateDefinition[]> {
     to: g.to as GateDefinition['to'],
     mandatoryChecks: (g.mandatoryChecks as string[]) ?? [],
     agents: (g.agents as AgentType[]) ?? [],
-    autoPassThreshold: (g.autoPassThreshold as number) ?? 90,
+    autoPassThreshold: Number(g.autoPassThreshold) || 90,
     riskLevel: (g.riskLevel as RiskLevel) ?? 'medium',
   }));
 

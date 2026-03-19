@@ -39,7 +39,7 @@ export function FeedbackPanel({ onAddFeedback }: FeedbackPanelProps) {
   const { t } = useTranslation();
   const { projectId } = useParams<{ projectId: string }>();
   const { data, isLoading } = useGetFeedbackQuery(projectId!);
-  const [filter, setFilter] = useState<'all' | 'open' | 'planned' | 'done'>('all');
+  const [filter, setFilter] = useState<'all' | 'open' | 'resolved' | 'dismissed'>('all');
 
   const items = data ?? [];
   const filtered = filter === 'all'
@@ -72,7 +72,7 @@ export function FeedbackPanel({ onAddFeedback }: FeedbackPanelProps) {
       <Card.Body>
         {/* Filter tabs */}
         <div className={styles.filters}>
-          {(['all', 'open', 'planned', 'done'] as const).map((f) => (
+          {(['all', 'open', 'resolved', 'dismissed'] as const).map((f) => (
             <button
               key={f}
               type="button"

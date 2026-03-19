@@ -34,16 +34,23 @@ export async function buildTree(projectId: string): Promise<TreeNode[]> {
     for (const sol of bcNode.children) {
       sol.children = await readEntities(reqPath, 'user-stories', 'US', sol.id);
       for (const us of sol.children) {
+        // Read conversations as children of user stories
+        const convs = await readEntities(reqPath, 'conversations', 'CONV', us.id);
         us.children = await readEntities(reqPath, 'components', 'CMP', us.id);
+        us.children.push(...convs);
         for (const cmp of us.children) {
-          cmp.children = await readEntities(reqPath, 'functions', 'FN', cmp.id);
+          if (cmp.type === 'CMP') {
+            cmp.children = await readEntities(reqPath, 'functions', 'FN', cmp.id);
+          }
         }
       }
     }
 
     nodes.push(bcNode);
-  } catch {
-    // No BC file
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.error('Error reading Business Case:', err);
+    }
   }
 
   // Read cross-cutting entities

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AppStatusPanel } from './AppStatusPanel';
+import { BaselinePanel } from './BaselinePanel';
 import { FeedbackPanel } from './FeedbackPanel';
 import { ValidationPanel } from './ValidationPanel';
 import { FeedbackModal } from '@/features/shared/FeedbackModal';
@@ -17,6 +18,7 @@ export function MonitorTab() {
   return (
     <div className={styles.tab}>
       <AppStatusPanel />
+      <BaselinePanel />
       <FeedbackPanel onAddFeedback={() => setFeedbackModalOpen(true)} />
       <ValidationPanel />
 

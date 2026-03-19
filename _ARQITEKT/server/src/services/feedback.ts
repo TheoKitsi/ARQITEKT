@@ -22,8 +22,10 @@ export async function listFeedback(projectId: string): Promise<FeedbackItem[]> {
   let files: string[];
   try {
     files = await readdir(dir);
-  } catch {
-    // Directory does not exist — no feedback yet
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.error(`Error reading feedback directory for ${projectId}:`, err);
+    }
     return items;
   }
 

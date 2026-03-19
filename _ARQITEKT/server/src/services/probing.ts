@@ -135,7 +135,7 @@ export async function analyzeGaps(
     parentTitle: nodeInfo.parent?.title ?? 'N/A',
     parentType: nodeInfo.parent?.type ?? 'N/A',
     childrenSummary: nodeInfo.node.children.map((c) => `${c.id}: ${c.title}`).join(', ') || 'None',
-    currentConfidence: content?.frontmatter?.confidence ?? 'N/A',
+    currentConfidence: String(content?.frontmatter?.confidence ?? 'N/A'),
   });
 
   const result = await sendChatMessage([
@@ -222,8 +222,9 @@ export async function startProbing(
         allGaps.push(gap);
       }
     }
-  } catch {
-    // LLM unavailable — proceed with structural gaps only
+  } catch (err) {
+    console.error(`LLM gap analysis failed for ${artifactId}:`, err instanceof Error ? err.message : err);
+    // Proceed with structural gaps only
   }
 
   // Limit to top 5 gaps by severity
@@ -235,7 +236,8 @@ export async function startProbing(
     try {
       const q = await generateQuestion(projectId, artifactId, gap);
       questions.push(q);
-    } catch {
+    } catch (err) {
+      console.error(`LLM question generation failed for gap "${gap.description}":`, err instanceof Error ? err.message : err);
       // If LLM fails for one question, create a structural fallback
       questions.push(createFallbackQuestion(gap, artifactId));
     }

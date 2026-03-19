@@ -34,7 +34,18 @@ const app = express();
 const server = createServer(app);
 
 // Middleware
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https://avatars.githubusercontent.com"],
+      connectSrc: ["'self'", "ws:", "wss:", "https://api.github.com", "https://models.inference.ai.azure.com"],
+    },
+  },
+}));
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
 app.use(express.json({ limit: config.bodyLimit }));
 app.use(cookieParser());

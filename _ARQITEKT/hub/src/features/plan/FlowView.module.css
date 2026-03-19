@@ -69,3 +69,66 @@
   background-color: var(--color-surface-bg4);
   border-radius: var(--radius-full);
 }
+
+/* ---- Cross-cutting artifacts section ---- */
+.crossCutting {
+  flex-shrink: 0;
+  border-top: 1px solid var(--color-surface-bg3, #333);
+  padding-top: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.crossCuttingTitle {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.crossCuttingGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.crossCuttingItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-bg2, #2a2a2a);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: border-color 0.15s;
+  text-align: left;
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.crossCuttingItem:hover {
+  border-color: var(--color-brand, #FFD700);
+}
+
+.crossCuttingIcon {
+  color: var(--color-text-tertiary);
+  display: flex;
+  align-items: center;
+}
+
+.crossCuttingLabel {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--font-size-xs);
+  color: var(--color-brand, #FFD700);
+  min-width: 48px;
+}
+
+.crossCuttingName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

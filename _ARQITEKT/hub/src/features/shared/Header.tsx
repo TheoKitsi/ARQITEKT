@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Github, Globe, LogOut } from 'lucide-react';
+import { Github, Globe, LogOut, Sun, Moon, ArrowUpCircle } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { setLanguage, type Language } from '@/store/slices/uiSlice';
+import { setLanguage, toggleTheme, type Language } from '@/store/slices/uiSlice';
 import { useGetGithubStatusQuery } from '@/store/api/githubApi';
 import { useGetAuthStatusQuery, useLogoutMutation } from '@/store/api/authApi';
+import { useCheckUpdateQuery } from '@/store/api/hubApi';
 import { Button } from '@/components/ui/Button';
 import { GitHubSetupModal } from './GitHubSetupModal';
 import styles from './Header.module.css';
@@ -18,8 +19,10 @@ export function Header() {
   const { t, i18n } = useTranslation();
   const dispatch = useAppDispatch();
   const language = useAppSelector((s) => s.ui.language);
+  const theme = useAppSelector((s) => s.ui.theme);
   const { data: ghStatus } = useGetGithubStatusQuery();
   const { data: authStatus } = useGetAuthStatusQuery();
+  const { data: updateInfo } = useCheckUpdateQuery(undefined, { pollingInterval: 3600000 });
   const [logout] = useLogoutMutation();
   const [showGithubSetup, setShowGithubSetup] = useState(false);
 
@@ -46,12 +49,36 @@ export function Header() {
 
       {/* Right: actions */}
       <div className={styles.actions}>
+        {/* Update available banner */}
+        {updateInfo?.updateAvailable && (
+          <a
+            className={styles.updateBanner}
+            href={updateInfo.downloadUrl ?? '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <ArrowUpCircle size={14} />
+            <span>v{updateInfo.latestVersion}</span>
+          </a>
+        )}
+
+        {/* Theme toggle */}
+        <button
+          className={styles.langToggle}
+          onClick={() => dispatch(toggleTheme())}
+          aria-label={t('toggleTheme', 'Toggle theme')}
+          title={theme === 'dark' ? t('lightMode', 'Light mode') : t('darkMode', 'Dark mode')}
+          type="button"
+        >
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+
         {/* Language toggle */}
         <button
           className={styles.langToggle}
           onClick={toggleLang}
           aria-label={t('language', 'Language')}
-          title={language === 'de' ? 'Switch to English' : 'Auf Deutsch wechseln'}
+          title={language === 'de' ? t('switchLangEn') : t('switchLangDe')}
           type="button"
         >
           <Globe size={16} />

@@ -7,6 +7,8 @@ import {
   Send,
   X,
   ArrowRight,
+  ArrowLeft,
+  RotateCcw,
   Lightbulb,
   Users,
   Layers,
@@ -446,6 +448,24 @@ export function OnboardingWizard() {
     }
   }, [phase, advancePhase]);
 
+  /* ---- Go back to previous phase ---- */
+  const handleBack = useCallback(() => {
+    if (phase > 1) {
+      setPhase(phase - 1);
+      setMessages((prev) => prev.filter((m) => m.phase !== phase));
+    }
+  }, [phase]);
+
+  /* ---- Start over (restart wizard) ---- */
+  const handleRestart = useCallback(() => {
+    if (!confirm(t('wizRestartConfirm', 'Start over? All progress will be lost.'))) return;
+    setPhase(1);
+    setMessages([]);
+    setInputText('');
+    wizardData.current = { idea: '', audience: '', features: '', platform: '', projectName: '' };
+    advancePhase(1);
+  }, [advancePhase, t]);
+
   /* ---- Voice: toggle recording ---- */
   const toggleListening = useCallback(() => {
     /* Stop */
@@ -561,6 +581,19 @@ export function OnboardingWizard() {
                 </option>
               ))}
             </select>
+          )}
+
+          {/* Start over */}
+          {phase > 1 && (
+            <button
+              type="button"
+              className={styles.iconBtn}
+              onClick={handleRestart}
+              aria-label={t('wizRestart', 'Neu starten')}
+              title={t('wizRestart', 'Neu starten')}
+            >
+              <RotateCcw size={18} />
+            </button>
           )}
 
           {/* Close */}
@@ -695,18 +728,31 @@ export function OnboardingWizard() {
               </button>
             </form>
 
-            {/* Skip / next phase button */}
-            {phase < TOTAL_PHASES && (
-              <button
-                type="button"
-                className={styles.skipBtn}
-                onClick={handleSkip}
-                disabled={isBusy}
-              >
-                {t('wizNext', 'Weiter')}
-                <ArrowRight size={14} />
-              </button>
-            )}
+            {/* Back / Skip phase buttons */}
+            <div className={styles.navButtons}>
+              {phase > 1 && (
+                <button
+                  type="button"
+                  className={styles.skipBtn}
+                  onClick={handleBack}
+                  disabled={isBusy}
+                >
+                  <ArrowLeft size={14} />
+                  {t('wizBack', 'Zurueck')}
+                </button>
+              )}
+              {phase < TOTAL_PHASES && (
+                <button
+                  type="button"
+                  className={styles.skipBtn}
+                  onClick={handleSkip}
+                  disabled={isBusy}
+                >
+                  {t('wizNext', 'Weiter')}
+                  <ArrowRight size={14} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

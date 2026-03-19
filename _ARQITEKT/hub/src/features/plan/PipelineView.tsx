@@ -25,14 +25,14 @@ export interface PipelineViewProps {
 /*  Stage definitions (entities between gates)                         */
 /* ------------------------------------------------------------------ */
 
-const STAGE_LABELS: Record<string, string> = {
-  IDEA: 'Idea',
-  BC: 'BC',
-  SOL: 'SOL',
-  US: 'US',
-  CMP: 'CMP',
-  FN: 'FN',
-  CODE: 'Code',
+const STAGE_KEYS: Record<string, string> = {
+  IDEA: 'stageIdea',
+  BC: 'stageBC',
+  SOL: 'stageSOL',
+  US: 'stageUS',
+  CMP: 'stageCMP',
+  FN: 'stageFN',
+  CODE: 'stageCode',
 };
 
 const STAGE_ORDER = ['IDEA', 'BC', 'SOL', 'US', 'CMP', 'FN', 'CODE'];
@@ -99,7 +99,7 @@ export function PipelineView({ projectId }: PipelineViewProps) {
     <div className={styles.pipeline}>
       {/* Toolbar */}
       <div className={styles.toolbar}>
-        <span className={styles.toolbarTitle}>Pipeline</span>
+        <span className={styles.toolbarTitle}>{t('pipeline')}</span>
         <div className={styles.overallScore}>
           {pipeline && (
             <ConfidenceBadge score={pipeline.overallConfidence} />
@@ -127,7 +127,7 @@ export function PipelineView({ projectId }: PipelineViewProps) {
           return (
             <StageSegment
               key={stage}
-              label={STAGE_LABELS[stage] ?? stage}
+              label={t(STAGE_KEYS[stage] ?? stage)}
               gateResult={gateResult}
               gateId={gateId}
               showConnector={!!nextStage}

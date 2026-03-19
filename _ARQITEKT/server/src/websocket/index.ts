@@ -103,9 +103,15 @@ function handleMessage(ws: WebSocket, message: WSMessage): void {
   switch (message.type) {
     case 'terminal:start': {
       const p = (message.payload ?? {}) as TerminalStartPayload;
-      const cwd = p.projectId
-        ? join(config.workspaceRoot, p.projectId)
-        : config.workspaceRoot;
+      let cwd = config.workspaceRoot;
+      if (p.projectId) {
+        // Reject path traversal attempts in projectId
+        if (p.projectId.includes('..') || p.projectId.includes('/') || p.projectId.includes('\\')) {
+          ws.send(JSON.stringify({ type: 'error', payload: 'Invalid projectId' }));
+          return;
+        }
+        cwd = join(config.workspaceRoot, p.projectId);
+      }
       createTerminalSession(ws, cwd, p.cols ?? 80, p.rows ?? 24);
       break;
     }

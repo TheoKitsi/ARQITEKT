@@ -1,5 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { createCipheriv, createDecipheriv, randomBytes, createHash } from 'crypto';
+import { hostname } from 'os';
 import { config } from '../config.js';
 
 interface GitHubStatus {
@@ -10,12 +12,49 @@ interface GitHubStatus {
 }
 
 const ENV_PATH = join(config.hubRoot, '.env');
+const TOKEN_FILE = join(config.hubRoot, '.github-token');
+
+/** Derive an encryption key from the machine hostname + a fixed salt. */
+function deriveKey(): Buffer {
+  return createHash('sha256')
+    .update(`arqitekt-${hostname()}-github-token`)
+    .digest();
+}
+
+function encryptToken(token: string): string {
+  const key = deriveKey();
+  const iv = randomBytes(16);
+  const cipher = createCipheriv('aes-256-cbc', key, iv);
+  const encrypted = Buffer.concat([cipher.update(token, 'utf8'), cipher.final()]);
+  return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+function decryptToken(data: string): string {
+  const key = deriveKey();
+  const [ivHex, encHex] = data.split(':');
+  if (!ivHex || !encHex) throw new Error('Invalid token file format');
+  const iv = Buffer.from(ivHex, 'hex');
+  const encrypted = Buffer.from(encHex, 'hex');
+  const decipher = createDecipheriv('aes-256-cbc', key, iv);
+  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString('utf8');
+}
+
+async function loadStoredToken(): Promise<string | undefined> {
+  // Try encrypted file first, then fall back to env var
+  try {
+    const data = await readFile(TOKEN_FILE, 'utf-8');
+    return decryptToken(data.trim());
+  } catch {
+    // Fall back to env var / .env
+    return process.env.GITHUB_TOKEN;
+  }
+}
 
 /**
  * Get GitHub connection status.
  */
 export async function getGithubStatus(): Promise<GitHubStatus> {
-  const token = process.env.GITHUB_TOKEN;
+  const token = await loadStoredToken();
   if (!token) {
     return { connected: false };
   }
@@ -57,20 +96,10 @@ export async function connectGithub(token: string): Promise<GitHubStatus> {
 
   const user = (await response.json()) as { login: string; avatar_url: string };
 
-  // Store token in .env
-  let envContent = '';
-  try {
-    envContent = await readFile(ENV_PATH, 'utf-8');
-  } catch { /* file doesn't exist */ }
+  // Store token encrypted
+  await writeFile(TOKEN_FILE, encryptToken(token), 'utf-8');
 
-  if (envContent.includes('GITHUB_TOKEN=')) {
-    envContent = envContent.replace(/GITHUB_TOKEN=.*/g, `GITHUB_TOKEN=${token}`);
-  } else {
-    envContent += `\nGITHUB_TOKEN=${token}\n`;
-  }
-  await writeFile(ENV_PATH, envContent.trim() + '\n', 'utf-8');
-
-  // Set in current process
+  // Also set in current process for immediate use
   process.env.GITHUB_TOKEN = token;
 
   return {
@@ -84,6 +113,13 @@ export async function connectGithub(token: string): Promise<GitHubStatus> {
  * Disconnect GitHub.
  */
 export async function disconnectGithub(): Promise<void> {
+  // Remove encrypted token file
+  try {
+    const { unlink } = await import('fs/promises');
+    await unlink(TOKEN_FILE);
+  } catch { /* file may not exist */ }
+
+  // Also clean up legacy .env entry if present
   try {
     const envContent = await readFile(ENV_PATH, 'utf-8');
     const updated = envContent.replace(/GITHUB_TOKEN=.*/g, '').trim();

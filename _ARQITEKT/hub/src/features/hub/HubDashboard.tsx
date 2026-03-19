@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { FolderPlus, Download, Sparkles } from 'lucide-react';
+import { FolderPlus, Download, Sparkles, Search } from 'lucide-react';
 import { useGetProjectsQuery } from '@/store/api/projectsApi';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
@@ -20,6 +20,26 @@ export function HubDashboard() {
   const { data: projects, isLoading, isError, refetch } = useGetProjectsQuery();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'lifecycle'>('name');
+
+  const filtered = useMemo(() => {
+    if (!projects) return [];
+    const q = search.toLowerCase();
+    const list = q
+      ? projects.filter(
+          (p) =>
+            p.config.name.toLowerCase().includes(q) ||
+            (p.config.description ?? '').toLowerCase().includes(q),
+        )
+      : [...projects];
+    list.sort((a, b) =>
+      sortBy === 'name'
+        ? a.config.name.localeCompare(b.config.name)
+        : (a.config.lifecycle ?? '').localeCompare(b.config.lifecycle ?? ''),
+    );
+    return list;
+  }, [projects, search, sortBy]);
 
   return (
     <main className={styles.page}>
@@ -59,6 +79,30 @@ export function HubDashboard() {
       <section className={styles.content}>
         <h2 className={styles.sectionTitle}>{t('projects')}</h2>
 
+        {/* Search & Sort */}
+        {!isLoading && !isError && projects && projects.length > 0 && (
+          <div className={styles.toolbar}>
+            <div className={styles.searchBox}>
+              <Search size={16} />
+              <input
+                className={styles.searchInput}
+                type="text"
+                placeholder={t('searchProjects')}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <select
+              className={styles.sortSelect}
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'name' | 'lifecycle')}
+            >
+              <option value="name">{t('sortName')}</option>
+              <option value="lifecycle">{t('sortLifecycle')}</option>
+            </select>
+          </div>
+        )}
+
         {isLoading && (
           <div className={styles.center}>
             <Spinner size="lg" />
@@ -97,9 +141,12 @@ export function HubDashboard() {
 
         {!isLoading && !isError && projects && projects.length > 0 && (
           <div className={styles.grid}>
-            {projects.map((project) => (
+            {filtered.map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
+            {filtered.length === 0 && (
+              <p className={styles.noResults}>{t('noResults')}</p>
+            )}
           </div>
         )}
       </section>

@@ -1,12 +1,13 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronsUpDown, ChevronsDownUp } from 'lucide-react';
+import { ChevronsUpDown, ChevronsDownUp, Shield, FileText, Bell, MessageSquare } from 'lucide-react';
 import {
   useGetTreeQuery,
   type TreeNode,
 } from '@/store/api/requirementsApi';
 import { Spinner } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { SolutionCard } from './SolutionCard';
 import styles from './FlowView.module.css';
 
@@ -31,9 +32,9 @@ export function FlowView({ projectId, onSelectNode, onAddUS }: FlowViewProps) {
   /* ---- Local expand/collapse state ---- */
   const [expandedSet, setExpandedSet] = useState<Set<string>>(new Set());
 
-  /* ---- Derive BC and solution nodes ---- */
-  const { bcNode: _bcNode, solutions } = useMemo(() => {
-    if (!tree || tree.length === 0) return { bcNode: null, solutions: [] };
+  /* ---- Derive BC, solution, and cross-cutting nodes ---- */
+  const { bcNode: _bcNode, solutions, crossCutting } = useMemo(() => {
+    if (!tree || tree.length === 0) return { bcNode: null, solutions: [], crossCutting: [] };
 
     // Find the BC node (should be root-level)
     const bc = tree.find((n) => n.type === 'BC') ?? null;
@@ -41,7 +42,11 @@ export function FlowView({ projectId, onSelectNode, onAddUS }: FlowViewProps) {
       ? bc.children.filter((c) => c.type === 'SOL')
       : tree.filter((n) => n.type === 'SOL');
 
-    return { bcNode: bc, solutions: sols };
+    // Cross-cutting entities at root level
+    const ccTypes = new Set(['INF', 'ADR', 'NTF', 'FBK']);
+    const cc = tree.filter((n) => ccTypes.has(n.type));
+
+    return { bcNode: bc, solutions: sols, crossCutting: cc };
   }, [tree]);
 
   /* ---- Expand / Collapse handlers ---- */
@@ -136,6 +141,34 @@ export function FlowView({ projectId, onSelectNode, onAddUS }: FlowViewProps) {
           />
         ))}
       </div>
+
+      {/* Cross-cutting artifacts (INF, ADR, NTF, FBK) */}
+      {crossCutting.length > 0 && (
+        <div className={styles.crossCutting}>
+          <h3 className={styles.crossCuttingTitle}>{t('crossCutting', 'Cross-cutting')}</h3>
+          <div className={styles.crossCuttingGrid}>
+            {crossCutting.map((node) => (
+              <button
+                key={node.id}
+                className={styles.crossCuttingItem}
+                onClick={() => handleSelectNode(node)}
+              >
+                <span className={styles.crossCuttingIcon}>
+                  {node.type === 'INF' && <Shield size={14} />}
+                  {node.type === 'ADR' && <FileText size={14} />}
+                  {node.type === 'NTF' && <Bell size={14} />}
+                  {node.type === 'FBK' && <MessageSquare size={14} />}
+                </span>
+                <span className={styles.crossCuttingLabel}>{node.id}</span>
+                <span className={styles.crossCuttingName}>{node.title}</span>
+                <Badge variant={node.status === 'approved' ? 'success' : node.status === 'review' ? 'warning' : 'default'}>
+                  {node.status}
+                </Badge>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

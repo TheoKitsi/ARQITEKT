@@ -1,4 +1,4 @@
-import { readFile, readdir, writeFile, mkdir } from 'fs/promises';
+import { readFile, readdir, writeFile, mkdir, realpath, stat } from 'fs/promises';
 import { join, extname, resolve } from 'path';
 import { config } from '../config.js';
 import { resolveProjectById } from './projects.js';
@@ -18,11 +18,13 @@ const SKIP_DIRS = new Set([
 
 /**
  * Validate a file path is within the project directory (path traversal protection).
+ * Resolves symlinks to prevent symlink-based path traversal.
  */
-function assertSafePath(projectId: string, filePath: string): string {
+async function assertSafePath(projectId: string, filePath: string): Promise<string> {
   const projectDir = resolve(config.workspaceRoot, projectId);
   const fullPath = resolve(projectDir, filePath);
 
+  // Preliminary check before resolving symlinks
   if (!fullPath.startsWith(projectDir)) {
     throw Object.assign(
       new Error('Path traversal detected: path escapes project directory'),
@@ -30,7 +32,25 @@ function assertSafePath(projectId: string, filePath: string): string {
     );
   }
 
-  return fullPath;
+  // Resolve symlinks and re-check
+  try {
+    const realProjectDir = await realpath(projectDir);
+    const realFullPath = await realpath(fullPath);
+    if (!realFullPath.startsWith(realProjectDir)) {
+      throw Object.assign(
+        new Error('Path traversal detected: resolved path escapes project directory'),
+        { status: 403 },
+      );
+    }
+    return realFullPath;
+  } catch (err) {
+    // If realpath fails because the file doesn't exist yet (e.g. writing new file),
+    // fall back to the string-based check which already passed
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+      return fullPath;
+    }
+    throw err;
+  }
 }
 
 /**
@@ -40,7 +60,7 @@ export async function listProjectFiles(
   projectId: string,
   subPath = ''
 ): Promise<FileEntry[]> {
-  assertSafePath(projectId, subPath);
+  await assertSafePath(projectId, subPath);
   const base = join(await resolveProjectById(projectId), subPath);
   const entries = await readdir(base, { withFileTypes: true });
   const result: FileEntry[] = [];
@@ -64,6 +84,9 @@ export async function listProjectFiles(
   return result;
 }
 
+/** Maximum file size for read operations (10 MB). */
+const MAX_READ_SIZE = 10 * 1024 * 1024;
+
 /**
  * Read a file from a project.
  */
@@ -71,7 +94,16 @@ export async function readProjectFile(
   projectId: string,
   filePath: string
 ): Promise<{ content: string; language: string }> {
-  const fullPath = assertSafePath(projectId, filePath);
+  const fullPath = await assertSafePath(projectId, filePath);
+
+  const info = await stat(fullPath);
+  if (info.size > MAX_READ_SIZE) {
+    throw Object.assign(
+      new Error(`File too large (${Math.round(info.size / 1024 / 1024)}MB). Maximum: 10MB`),
+      { status: 413 },
+    );
+  }
+
   const content = await readFile(fullPath, 'utf-8');
   const ext = extname(filePath).slice(1);
 
@@ -105,7 +137,7 @@ export async function writeProjectFile(
   filePath: string,
   content: string
 ): Promise<void> {
-  const fullPath = assertSafePath(projectId, filePath);
+  const fullPath = await assertSafePath(projectId, filePath);
   const dir = fullPath.substring(0, fullPath.lastIndexOf('/') > 0 ? fullPath.lastIndexOf('/') : fullPath.lastIndexOf('\\'));
   await mkdir(dir, { recursive: true });
   await writeFile(fullPath, content, 'utf-8');

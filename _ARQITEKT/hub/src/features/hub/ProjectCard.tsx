@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { Play, ExternalLink } from 'lucide-react';
 import type { Project } from '@/store/api/projectsApi';
+import { useAppStartMutation } from '@/store/api/deployApi';
 import { Badge, type LifecycleStage } from '@/components/ui/Badge';
 import styles from './ProjectCard.module.css';
 
@@ -16,6 +18,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const lifecycle: LifecycleStage = project.config.lifecycle;
+  const [startApp, { isLoading: starting }] = useAppStartMutation();
 
   const handleClick = () => {
     navigate(`/projects/${project.id}`);
@@ -25,6 +28,15 @@ export function ProjectCard({ project }: ProjectCardProps) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleClick();
+    }
+  };
+
+  const handleAction = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (lifecycle === 'built' || lifecycle === 'building') {
+      startApp(project.id);
+    } else if (lifecycle === 'running') {
+      window.open(`http://localhost:${project.config.github ? 3000 : 8080}`, '_blank', 'noopener');
     }
   };
 
@@ -55,6 +67,22 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <StatItem label={t('statCMP')} value={project.stats.cmp} />
         <StatItem label={t('statFN')} value={project.stats.fn} />
       </div>
+
+      {/* Action button */}
+      {(lifecycle === 'built' || lifecycle === 'building' || lifecycle === 'running') && (
+        <button
+          className={`${styles.actionBtn} ${lifecycle === 'running' ? styles.actionRunning : styles.actionPlay}`}
+          onClick={handleAction}
+          disabled={starting}
+          aria-label={lifecycle === 'running' ? t('openApp') : t('runApp')}
+        >
+          {lifecycle === 'running' ? (
+            <><ExternalLink size={14} /> {t('openApp')}</>
+          ) : (
+            <><Play size={14} /> {starting ? t('starting') : t('runApp')}</>
+          )}
+        </button>
+      )}
     </article>
   );
 }

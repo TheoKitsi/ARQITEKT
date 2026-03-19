@@ -57,6 +57,26 @@
   gap: var(--space-3);
 }
 
+/* ---- Update banner ---- */
+.updateBanner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-brand-gold);
+  color: var(--color-surface-bg);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: filter var(--transition-fast);
+}
+
+.updateBanner:hover {
+  filter: brightness(1.1);
+}
+
 /* ---- Language toggle ---- */
 .langToggle {
   display: inline-flex;
