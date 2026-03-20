@@ -20,6 +20,9 @@ import { useListFilesQuery, type FileEntry,
 } from '@/store/api/filesApi';
 import { useGitStatusQuery, type GitFileStatus } from '@/store/api/deployApi';
 import { Spinner } from '@/components/ui/Spinner';
+import { Modal } from '@/components/ui/Modal';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 import styles from './FileExplorer.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -287,6 +290,13 @@ interface ContextMenuState {
   entry: FileEntry;
 }
 
+interface PromptState {
+  mode: 'newFile' | 'newFolder' | 'rename' | 'delete';
+  dir: string;
+  defaultValue: string;
+  entry?: FileEntry;
+}
+
 /* ------------------------------------------------------------------ */
 /*  FileExplorer                                                       */
 /* ------------------------------------------------------------------ */
@@ -319,6 +329,8 @@ export function FileExplorer({
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const [ctxMenu, setCtxMenu] = useState<ContextMenuState | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [promptState, setPromptState] = useState<PromptState | null>(null);
+  const [promptValue, setPromptValue] = useState('');
 
   const [deleteFile] = useDeleteFileMutation();
   const [renameFile] = useRenameFileMutation();
@@ -364,43 +376,67 @@ export function FileExplorer({
     if (!ctxMenu) return;
     const dir = ctxMenu.entry.type === 'directory' ? ctxMenu.entry.path : ctxMenu.entry.path.replace(/\/[^/]+$/, '');
     setCtxMenu(null);
-    const name = window.prompt(t('feNewFile'));
-    if (!name?.trim()) return;
-    const path = `${dir}/${name.trim()}`;
-    setExpandedDirs((prev) => new Set(prev).add(dir));
-    void writeFile({ projectId, path, content: '' }).then(() => onFileSelect(path));
+    setPromptValue('');
+    setPromptState({ mode: 'newFile', dir, defaultValue: '' });
   };
 
   const startNewFolder = () => {
     if (!ctxMenu) return;
     const dir = ctxMenu.entry.type === 'directory' ? ctxMenu.entry.path : ctxMenu.entry.path.replace(/\/[^/]+$/, '');
     setCtxMenu(null);
-    const name = window.prompt(t('feNewFolder'));
-    if (!name?.trim()) return;
-    const path = `${dir}/${name.trim()}`;
-    setExpandedDirs((prev) => new Set(prev).add(dir));
-    void createDir({ projectId, path });
+    setPromptValue('');
+    setPromptState({ mode: 'newFolder', dir, defaultValue: '' });
   };
 
   const startRename = () => {
     if (!ctxMenu) return;
     const entry = ctxMenu.entry;
     setCtxMenu(null);
-    const name = window.prompt(t('feRename'), entry.name);
-    if (!name?.trim() || name.trim() === entry.name) return;
-    const parentDir = entry.path.replace(/\/[^/]+$/, '');
-    void renameFile({ projectId, oldPath: entry.path, newPath: `${parentDir}/${name.trim()}` });
+    setPromptValue(entry.name);
+    setPromptState({ mode: 'rename', dir: entry.path.replace(/\/[^/]+$/, ''), defaultValue: entry.name, entry });
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!ctxMenu) return;
     const entry = ctxMenu.entry;
     setCtxMenu(null);
-    const confirmed = window.confirm(
-      t('feDeleteConfirm', { name: entry.name }),
-    );
-    if (!confirmed) return;
-    await deleteFile({ projectId, path: entry.path });
+    setPromptState({ mode: 'delete', dir: '', defaultValue: entry.name, entry });
+  };
+
+  const handlePromptConfirm = async () => {
+    if (!promptState) return;
+    const { mode, dir, entry } = promptState;
+    const name = promptValue.trim();
+    setPromptState(null);
+
+    switch (mode) {
+      case 'newFile': {
+        if (!name) return;
+        const path = `${dir}/${name}`;
+        setExpandedDirs((prev) => new Set(prev).add(dir));
+        await writeFile({ projectId, path, content: '' });
+        onFileSelect(path);
+        break;
+      }
+      case 'newFolder': {
+        if (!name) return;
+        const path = `${dir}/${name}`;
+        setExpandedDirs((prev) => new Set(prev).add(dir));
+        await createDir({ projectId, path });
+        break;
+      }
+      case 'rename': {
+        if (!name || !entry || name === entry.name) return;
+        const parentDir = entry.path.replace(/\/[^/]+$/, '');
+        await renameFile({ projectId, oldPath: entry.path, newPath: `${parentDir}/${name}` });
+        break;
+      }
+      case 'delete': {
+        if (!entry) return;
+        await deleteFile({ projectId, path: entry.path });
+        break;
+      }
+    }
   };
 
   return (
@@ -482,6 +518,53 @@ export function FileExplorer({
           </button>
         </div>
       )}
+
+      {/* Prompt modal for new file / folder / rename / delete */}
+      <Modal
+        isOpen={!!promptState}
+        onClose={() => setPromptState(null)}
+        title={
+          promptState?.mode === 'newFile' ? t('feNewFile', 'New File')
+          : promptState?.mode === 'newFolder' ? t('feNewFolder', 'New Folder')
+          : promptState?.mode === 'rename' ? t('feRename', 'Rename')
+          : t('feDelete', 'Delete')
+        }
+        footer={
+          <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+            <Button variant="outlined" size="sm" onClick={() => setPromptState(null)}>
+              {t('cancel')}
+            </Button>
+            <Button
+              variant={promptState?.mode === 'delete' ? 'outlined' : 'gold'}
+              size="sm"
+              onClick={() => void handlePromptConfirm()}
+              disabled={promptState?.mode !== 'delete' && !promptValue.trim()}
+            >
+              {promptState?.mode === 'delete' ? t('feDelete', 'Delete') : t('confirm', 'Confirm')}
+            </Button>
+          </div>
+        }
+      >
+        {promptState?.mode === 'delete' ? (
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', margin: 0 }}>
+            {t('feDeleteConfirm', { name: promptState.defaultValue })}
+          </p>
+        ) : (
+          <Input
+            label={
+              promptState?.mode === 'newFile' ? t('feNewFile', 'File name')
+              : promptState?.mode === 'newFolder' ? t('feNewFolder', 'Folder name')
+              : t('feRename', 'New name')
+            }
+            value={promptValue}
+            onChange={(e) => setPromptValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && promptValue.trim()) void handlePromptConfirm();
+            }}
+            autoFocus
+          />
+        )}
+      </Modal>
     </div>
   );
 }

@@ -13,6 +13,7 @@ import styles from './TerminalPanel.module.css';
 
 interface TerminalPanelProps {
   projectId: string;
+  runCommand?: string;
 }
 
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected';
@@ -57,7 +58,7 @@ const termTheme = {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function TerminalPanel({ projectId }: TerminalPanelProps) {
+export function TerminalPanel({ projectId, runCommand = 'npm start' }: TerminalPanelProps) {
   const { t } = useTranslation();
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<Terminal | null>(null);
@@ -290,7 +291,7 @@ export function TerminalPanel({ projectId }: TerminalPanelProps) {
   /* ---- Run button handler ---- */
   const handleRun = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'terminal:input', payload: 'npm start\r' }));
+      wsRef.current.send(JSON.stringify({ type: 'terminal:input', payload: `${runCommand}\r` }));
     }
   }, []);
 

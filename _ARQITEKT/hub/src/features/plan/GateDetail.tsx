@@ -160,7 +160,7 @@ export function GateDetail({ gate, projectId, onClose }: GateDetailProps) {
             <span className={styles.metaLabel}>{t('confidence')}:</span>
             <ConfidenceBadge score={gate.confidence} />
             <button
-              className={styles.closeBtn}
+              className={styles.reEvalBtn}
               onClick={handleReEvaluate}
               disabled={isReEvaluating || gate.gaps.length === 0}
               type="button"

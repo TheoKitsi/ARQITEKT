@@ -9,36 +9,36 @@ import styles from './AuditPanel.module.css';
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-const ACTION_LABELS: Record<string, string> = {
-  'requirement.status_changed': 'Status changed',
-  'requirement.created': 'Created',
-  'requirement.edited': 'Edited',
-  'requirement.deleted': 'Deleted',
-  'gate.evaluated': 'Gate evaluated',
-  'gate.overridden': 'Gate overridden',
-  'probing.answered': 'Probing answered',
-  'probing.skipped': 'Probing skipped',
-  'baseline.created': 'Baseline created',
-  'feedback.created': 'Feedback added',
-  'feedback.updated': 'Feedback updated',
-  'project.scaffolded': 'App scaffolded',
-  'project.codegen': 'Code generated',
-  'file.written': 'File written',
-  'file.deleted': 'File deleted',
-  'file.renamed': 'File renamed',
-  'project.pushed': 'Pushed to GitHub',
-  'project.deployed': 'Built/Deployed',
+const ACTION_KEYS: Record<string, string> = {
+  'requirement.status_changed': 'auditStatusChanged',
+  'requirement.created': 'auditCreated',
+  'requirement.edited': 'auditEdited',
+  'requirement.deleted': 'auditDeleted',
+  'gate.evaluated': 'auditGateEvaluated',
+  'gate.overridden': 'auditGateOverridden',
+  'probing.answered': 'auditProbingAnswered',
+  'probing.skipped': 'auditProbingSkipped',
+  'baseline.created': 'auditBaselineCreated',
+  'feedback.created': 'auditFeedbackCreated',
+  'feedback.updated': 'auditFeedbackUpdated',
+  'project.scaffolded': 'auditScaffolded',
+  'project.codegen': 'auditCodegen',
+  'file.written': 'auditFileWritten',
+  'file.deleted': 'auditFileDeleted',
+  'file.renamed': 'auditFileRenamed',
+  'project.pushed': 'auditPushed',
+  'project.deployed': 'auditDeployed',
 };
 
-function formatTime(iso: string): string {
+function formatTime(iso: string, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const d = new Date(iso);
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffMin = Math.floor(diffMs / 60_000);
-  if (diffMin < 1) return 'just now';
-  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 1) return t('timeJustNow');
+  if (diffMin < 60) return t('timeMinutesAgo', { n: diffMin });
   const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
+  if (diffHr < 24) return t('timeHoursAgo', { n: diffHr });
   return d.toLocaleDateString();
 }
 
@@ -84,7 +84,9 @@ export function AuditPanel() {
 /* ------------------------------------------------------------------ */
 
 function AuditRow({ entry }: { entry: AuditEntry }) {
-  const label = ACTION_LABELS[entry.action] ?? entry.action;
+  const { t } = useTranslation();
+  const key = ACTION_KEYS[entry.action];
+  const label = key ? t(key) : entry.action;
 
   return (
     <li className={styles.row}>
@@ -92,7 +94,7 @@ function AuditRow({ entry }: { entry: AuditEntry }) {
         <span className={styles.action}>{label}</span>
         <span className={styles.time}>
           <Clock size={12} />
-          {formatTime(entry.timestamp)}
+          {formatTime(entry.timestamp, t)}
         </span>
       </div>
       <div className={styles.rowMeta}>

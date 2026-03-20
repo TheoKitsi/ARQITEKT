@@ -62,9 +62,7 @@ export function PipelineView({ projectId, onStageClick }: PipelineViewProps) {
       'G0_IDEA_TO_BC', 'G1_BC_TO_SOL', 'G2_SOL_TO_US',
       'G3_US_TO_CMP', 'G4_CMP_TO_FN', 'G5_FN_TO_CODE',
     ];
-    for (const gateId of gateIds) {
-      await evaluateGate({ projectId, gateId });
-    }
+    await Promise.all(gateIds.map((gateId) => evaluateGate({ projectId, gateId })));
     refetch();
   }, [projectId, evaluateGate, refetch]);
 

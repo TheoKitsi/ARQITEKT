@@ -13,6 +13,8 @@ import { ProbingDialog } from './ProbingDialog';
 import { Modal } from '@/components/ui/Modal';
 import { useGetProjectQuery } from '@/store/api/projectsApi';
 import { useGetTreeQuery, type TreeNode } from '@/store/api/requirementsApi';
+import { Button } from '@/components/ui/Button';
+import { ShieldCheck } from 'lucide-react';
 import styles from './PlanTab.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -102,7 +104,17 @@ export function PlanTab() {
 
   return (
     <div className={styles.tab}>
-      <PipelineView projectId={projectId!} onStageClick={handleStageClick} />
+      <div className={styles.toolbar}>
+        <PipelineView projectId={projectId!} onStageClick={handleStageClick} />
+        <Button
+          variant="outlined"
+          size="sm"
+          icon={<ShieldCheck size={14} />}
+          onClick={() => setShowValidation(true)}
+        >
+          {t('validationTitle')}
+        </Button>
+      </div>
 
       <section className={styles.flowArea}>
         <FocusedView

@@ -22,15 +22,24 @@ export function MonitorTab() {
 
   return (
     <div className={styles.tab}>
+      {/* Full-width status row */}
       <AppStatusPanel />
-      <LogViewerPanel />
-      <BaselinePanel />
-      <TraceabilityPanel projectId={projectId!} />
-      <FeedbackPanel onAddFeedback={() => setFeedbackModalOpen(true)} />
-      <ValidationPanel />
-      <LlmUsagePanel />
-      <MembersPanel />
-      <AuditPanel />
+
+      {/* 2-column grid for remaining panels */}
+      <div className={styles.grid}>
+        <LogViewerPanel />
+        <BaselinePanel />
+        <div className={styles.fullWidth}>
+          <TraceabilityPanel projectId={projectId!} />
+        </div>
+        <FeedbackPanel onAddFeedback={() => setFeedbackModalOpen(true)} />
+        <ValidationPanel />
+        <LlmUsagePanel />
+        <MembersPanel />
+        <div className={styles.fullWidth}>
+          <AuditPanel />
+        </div>
+      </div>
 
       <FeedbackModal
         isOpen={feedbackModalOpen}

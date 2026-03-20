@@ -90,6 +90,40 @@
   outline-offset: 2px;
 }
 
+.reEvalBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-bg);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.reEvalBtn:hover:not(:disabled) {
+  background-color: var(--color-surface-bg3);
+  color: var(--color-brand-gold);
+  border-color: var(--color-brand-gold);
+}
+
+.reEvalBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.reEvalBtn:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: 2px;
+}
+
 /* ---- Meta row ---- */
 .meta {
   display: flex;

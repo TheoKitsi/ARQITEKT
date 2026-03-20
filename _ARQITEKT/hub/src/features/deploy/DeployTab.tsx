@@ -30,6 +30,17 @@ import { RepoStatusPanel } from './RepoStatusPanel';
 import styles from './DeployTab.module.css';
 
 /* ------------------------------------------------------------------ */
+/*  Constants                                                          */
+/* ------------------------------------------------------------------ */
+
+const CODEGEN_MODELS = [
+  { value: 'deepseek-chat', label: 'DeepSeek Chat' },
+  { value: 'gpt-4o', label: 'GPT-4o' },
+  { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
+  { value: 'o3-mini', label: 'o3-mini' },
+];
+
+/* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -44,21 +55,26 @@ export function DeployTab() {
   const [githubActions, { isLoading: settingUpCI }] = useGithubActionsMutation();
 
   const [showCodegenModal, setShowCodegenModal] = useState(false);
-  const [codegenModel, setCodegenModel] = useState('gpt-4o');
+  const [codegenModel, setCodegenModel] = useState('deepseek-chat');
   const [logs, setLogs] = useState<string[]>([]);
   const [showLogs, setShowLogs] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{ key: string; action: () => void } | null>(null);
 
   const handleScaffold = async () => {
     if (!projectId) return;
-    if (!confirm(t('confirmScaffold'))) return;
-    try {
-      const result = await scaffold({ projectId }).unwrap();
-      setLogs(result.filesCreated.length ? result.filesCreated : [result.message ?? 'Scaffold complete']);
-      setShowLogs(true);
-    } catch (err) {
-      setLogs([`Error: ${err instanceof Error ? err.message : String(err)}`]);
-      setShowLogs(true);
-    }
+    setConfirmAction({
+      key: 'confirmScaffold',
+      action: async () => {
+        try {
+          const result = await scaffold({ projectId }).unwrap();
+          setLogs(result.filesCreated.length ? result.filesCreated : [result.message ?? 'Scaffold complete']);
+          setShowLogs(true);
+        } catch (err) {
+          setLogs([`Error: ${err instanceof Error ? err.message : String(err)}`]);
+          setShowLogs(true);
+        }
+      },
+    });
   };
 
   const handleCodegen = async () => {
@@ -88,15 +104,19 @@ export function DeployTab() {
 
   const handlePush = async () => {
     if (!projectId) return;
-    if (!confirm(t('confirmPush'))) return;
-    try {
-      await githubPush({ projectId, commitMessage: 'Update from ARQITEKT' }).unwrap();
-      setLogs(['Pushed to GitHub']);
-      setShowLogs(true);
-    } catch (err) {
-      setLogs([`Error: ${err instanceof Error ? err.message : String(err)}`]);
-      setShowLogs(true);
-    }
+    setConfirmAction({
+      key: 'confirmPush',
+      action: async () => {
+        try {
+          await githubPush({ projectId, commitMessage: 'Update from ARQITEKT' }).unwrap();
+          setLogs(['Pushed to GitHub']);
+          setShowLogs(true);
+        } catch (err) {
+          setLogs([`Error: ${err instanceof Error ? err.message : String(err)}`]);
+          setShowLogs(true);
+        }
+      },
+    });
   };
 
   const handleBuild = async () => {
@@ -189,6 +209,7 @@ export function DeployTab() {
               title={t('deployGPlayTitle')}
               description={t('deployGPlayDesc')}
               buttonLabel={t('deployConfigureBtn')}
+              disabled
             />
             <ActionTile
               icon={<Settings size={20} />}
@@ -203,6 +224,7 @@ export function DeployTab() {
               title={t('storeDeploy')}
               description={t('deployGPlayDesc')}
               buttonLabel={t('deployUploadBtn')}
+              disabled
             />
           </div>
         </Card.Body>
@@ -240,16 +262,12 @@ export function DeployTab() {
 
       {/* Codegen Model Selector Modal */}
       <Modal isOpen={showCodegenModal} onClose={() => setShowCodegenModal(false)} title={t('deployCodegenTitle')}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className={styles.modalColumn}>
           <Select
             label={t('model')}
             value={codegenModel}
             onChange={(e) => setCodegenModel(e.target.value)}
-            options={[
-              { value: 'gpt-4o', label: 'GPT-4o' },
-              { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-              { value: 'o3-mini', label: 'o3-mini' },
-            ]}
+            options={CODEGEN_MODELS}
           />
           <Button variant="gold" onClick={handleCodegen} loading={generating}>
             {t('deployCodegenBtn')}
@@ -257,20 +275,22 @@ export function DeployTab() {
         </div>
       </Modal>
 
+      {/* Confirm Modal */}
+      <Modal
+        isOpen={!!confirmAction}
+        onClose={() => setConfirmAction(null)}
+        title={t('confirm')}
+      >
+        <p>{confirmAction ? t(confirmAction.key) : ''}</p>
+        <div className={styles.modalFooter}>
+          <Button variant="outlined" onClick={() => setConfirmAction(null)}>{t('cancel')}</Button>
+          <Button variant="filled" onClick={() => { confirmAction?.action(); setConfirmAction(null); }}>{t('confirm')}</Button>
+        </div>
+      </Modal>
+
       {/* Logs Modal */}
       <Modal isOpen={showLogs} onClose={() => setShowLogs(false)} title={t('output')}>
-        <pre style={{
-          maxHeight: '400px',
-          overflow: 'auto',
-          padding: '1rem',
-          background: '#0d1117',
-          borderRadius: '8px',
-          fontSize: '0.8125rem',
-          fontFamily: 'var(--font-mono, monospace)',
-          lineHeight: 1.6,
-          color: '#e6edf3',
-          whiteSpace: 'pre-wrap',
-        }}>
+        <pre className={styles.logPre}>
           {logs.join('\n')}
         </pre>
       </Modal>
@@ -290,6 +310,7 @@ function ActionTile({
   variant = 'outlined',
   onClick,
   loading,
+  disabled,
 }: {
   icon: React.ReactNode;
   title: string;
@@ -298,15 +319,16 @@ function ActionTile({
   variant?: 'outlined' | 'gold';
   onClick?: () => void;
   loading?: boolean;
+  disabled?: boolean;
 }) {
   return (
-    <div className={styles.tile}>
+    <div className={`${styles.tile} ${disabled ? styles.tileDisabled : ''}`}>
       <div className={styles.tileIcon}>{icon}</div>
       <div className={styles.tileText}>
         <span className={styles.tileTitle}>{title}</span>
         <span className={styles.tileDesc}>{description}</span>
       </div>
-      <Button variant={variant} size="sm" onClick={onClick} loading={loading} disabled={loading}>
+      <Button variant={variant} size="sm" onClick={onClick} loading={loading} disabled={loading || disabled}>
         {buttonLabel}
       </Button>
     </div>

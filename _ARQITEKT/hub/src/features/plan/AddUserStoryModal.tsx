@@ -7,7 +7,7 @@ import { useToast } from '@/components/ui/Toast';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import styles from './AddUserStoryModal.module.css';
+import styles from './AddArtifactModal.module.css';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */

@@ -12,6 +12,7 @@ export interface SearchBoxProps {
   projectId: string;
   className?: string;
   autoFocus?: boolean;
+  onSelect?: (nodeId: string, type: string) => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -22,6 +23,7 @@ export function SearchBox({
   projectId,
   className,
   autoFocus = false,
+  onSelect,
 }: SearchBoxProps) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -109,7 +111,16 @@ export function SearchBox({
             <div className={styles.dropdownMsg}>{t('loading', 'Searching...')}</div>
           ) : hasResults ? (
             results.map((r) => (
-              <div key={r.nodeId} className={styles.resultItem} role="option">
+              <div
+                key={r.nodeId}
+                className={styles.resultItem}
+                role="option"
+                onClick={() => {
+                  onSelect?.(r.nodeId, r.type);
+                  setValue('');
+                  setShowResults(false);
+                }}
+              >
                 <span className={styles.resultType}>{r.type}</span>
                 <span className={styles.resultTitle}>{r.title}</span>
               </div>

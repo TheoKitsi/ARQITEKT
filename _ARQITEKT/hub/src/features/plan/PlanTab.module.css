@@ -9,6 +9,14 @@
   height: 100%;
 }
 
+/* ---- Toolbar: pipeline + actions ---- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
 /* ---- Stats bar ---- */
 .statsBar {
   display: flex;

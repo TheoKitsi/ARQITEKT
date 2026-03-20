@@ -11,9 +11,13 @@ import {
   type ProjectMember,
 } from '@/store/api/projectsApi';
 import { Spinner } from '@/components/ui/Spinner';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { Button } from '@/components/ui/Button';
 import styles from './MembersPanel.module.css';
 
 const ROLES: ProjectRole[] = ['owner', 'editor', 'viewer'];
+const ROLE_OPTIONS = ROLES.map((r) => ({ value: r, label: r }));
 
 export function MembersPanel() {
   const { t } = useTranslation();
@@ -68,16 +72,12 @@ export function MembersPanel() {
           {members.map((m) => (
             <li key={m.userId} className={styles.row}>
               <span className={styles.username}>{m.username}</span>
-              <select
+              <Select
                 value={m.role}
                 onChange={(e) => handleRoleChange(m, e.target.value as ProjectRole)}
-                className={styles.roleBadge}
-                data-role={m.role}
-              >
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
+                options={ROLE_OPTIONS}
+                selectSize="sm"
+              />
               <div className={styles.actions}>
                 <button
                   className={styles.iconBtn}
@@ -93,24 +93,26 @@ export function MembersPanel() {
       )}
 
       <div className={styles.addForm}>
-        <input
+        <Input
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder={t('memberUsername', 'Username or user ID')}
           onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
         />
-        <select value={role} onChange={(e) => setRole(e.target.value as ProjectRole)}>
-          {ROLES.map((r) => (
-            <option key={r} value={r}>{r}</option>
-          ))}
-        </select>
-        <button
-          className={styles.addBtn}
+        <Select
+          value={role}
+          onChange={(e) => setRole(e.target.value as ProjectRole)}
+          options={ROLE_OPTIONS}
+          selectSize="sm"
+        />
+        <Button
+          variant="filled"
+          size="sm"
           onClick={handleAdd}
           disabled={!username.trim()}
         >
           {t('addMember', 'Add')}
-        </button>
+        </Button>
       </div>
     </section>
   );
