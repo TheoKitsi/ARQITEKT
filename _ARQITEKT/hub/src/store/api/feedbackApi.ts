@@ -41,6 +41,7 @@ export const feedbackApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getFeedback: builder.query<Feedback[], string>({
       query: (projectId) => `/projects/${projectId}/feedback`,
+      transformResponse: (response: { items: Feedback[] }) => response.items ?? [],
       providesTags: (result, _error, projectId) =>
         result
           ? [

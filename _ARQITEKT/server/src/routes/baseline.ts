@@ -25,11 +25,7 @@ baselineRouter.post('/:id/baseline', requireRole('editor'), async (req, res, nex
 baselineRouter.get('/:id/baseline', async (req, res, next) => {
   try {
     const baseline = await getBaseline(req.params.id);
-    if (!baseline) {
-      res.status(404).json({ error: 'No baseline set for this project' });
-      return;
-    }
-    res.json(baseline);
+    res.json(baseline ?? null);
   } catch (err) {
     next(err);
   }

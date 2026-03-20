@@ -47,9 +47,9 @@ export function BCSummaryCard({ projectId }: BCSummaryCardProps) {
         </div>
       </div>
 
-      {summary.categories.length > 0 && (
+      {summary.categories?.length > 0 && (
         <div className={styles.categories}>
-          {summary.categories.map((cat) => (
+          {summary.categories.map((cat: { name: string; completionPercent: number }) => (
             <div key={cat.name} className={styles.catRow}>
               <span className={styles.catName}>{cat.name}</span>
               <div className={styles.catBar}>

@@ -10,6 +10,10 @@ import App from '@/App';
 
 initClientErrorReporting();
 
+// Apply saved theme before first paint to avoid flash
+const savedTheme = localStorage.getItem('arqitekt-theme') ?? 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>

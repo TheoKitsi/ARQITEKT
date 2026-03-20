@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useMatch } from 'react-router-dom';
-import { Github, Globe, LogOut, Sun, Moon, ArrowUpCircle } from 'lucide-react';
+import { Github, LogOut, Sun, Moon, ArrowUpCircle, Globe, Settings, User, ChevronDown } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { setLanguage, toggleTheme, type Language } from '@/store/slices/uiSlice';
 import { useGetGithubStatusQuery } from '@/store/api/githubApi';
 import { useGetAuthStatusQuery, useLogoutMutation } from '@/store/api/authApi';
 import { useCheckUpdateQuery } from '@/store/api/hubApi';
-import { Button } from '@/components/ui/Button';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 import { GitHubSetupModal } from './GitHubSetupModal';
 import styles from './Header.module.css';
@@ -26,6 +25,8 @@ export function Header() {
   const { data: updateInfo } = useCheckUpdateQuery(undefined, { pollingInterval: 3600000 });
   const [logout] = useLogoutMutation();
   const [showGithubSetup, setShowGithubSetup] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const projectMatch = useMatch('/projects/:projectId/*');
   const activeProjectId = projectMatch?.params.projectId;
 
@@ -36,17 +37,52 @@ export function Header() {
   };
 
   const handleLogout = async () => {
+    setMenuOpen(false);
     await logout().unwrap();
     window.location.href = '/';
   };
 
   const isAuthEnabled = authStatus?.authEnabled && authStatus.authenticated;
 
+  // Determine display name and avatar
+  const displayName = isAuthEnabled
+    ? authStatus.user?.username
+    : ghStatus?.connected
+      ? ghStatus.username
+      : undefined;
+
+  const avatarUrl = isAuthEnabled
+    ? authStatus.user?.avatarUrl
+    : ghStatus?.connected
+      ? ghStatus.avatarUrl
+      : undefined;
+
+  const isConnected = isAuthEnabled || ghStatus?.connected;
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [menuOpen]);
+
   return (
     <header className={styles.header}>
       {/* Left: Logo / brand */}
       <Link to="/" className={styles.brand}>
-        <span className={styles.logo}>A</span>
+        <svg className={styles.logoSvg} width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="6" fill="var(--color-brand-anthracite)"/>
+          <g transform="translate(16,16) rotate(45)">
+            <rect x="-8" y="-8" width="16" height="16" rx="2" fill="none" stroke="var(--color-brand-gold)" strokeWidth="2"/>
+            <line x1="-4" y1="0" x2="4" y2="0" stroke="var(--color-brand-gold)" strokeWidth="1.5" strokeLinecap="round"/>
+            <line x1="0" y1="-4" x2="0" y2="4" stroke="var(--color-brand-gold)" strokeWidth="1.5" strokeLinecap="round"/>
+          </g>
+        </svg>
         <span className={styles.brandName}>ARQITEKT</span>
       </Link>
 
@@ -68,73 +104,122 @@ export function Header() {
           </a>
         )}
 
-        {/* Theme toggle */}
-        <button
-          className={styles.langToggle}
-          onClick={() => dispatch(toggleTheme())}
-          aria-label={t('toggleTheme', 'Toggle theme')}
-          title={theme === 'dark' ? t('lightMode', 'Light mode') : t('darkMode', 'Dark mode')}
-          type="button"
-        >
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
-
-        {/* Language toggle */}
-        <button
-          className={styles.langToggle}
-          onClick={toggleLang}
-          aria-label={t('language', 'Language')}
-          title={language === 'de' ? t('switchLangEn') : t('switchLangDe')}
-          type="button"
-        >
-          <Globe size={16} />
-          <span className={styles.langLabel}>{language.toUpperCase()}</span>
-        </button>
-
-        {/* GitHub status (only when auth is NOT enabled — otherwise user logged in via OAuth already) */}
-        {!isAuthEnabled && (
-          <>
-            {ghStatus?.connected ? (
-              <button className={styles.ghAvatar} type="button" aria-label="GitHub" onClick={() => setShowGithubSetup(true)}>
-                {ghStatus.avatarUrl ? (
-                  <img
-                    src={ghStatus.avatarUrl}
-                    alt={ghStatus.username ?? 'GitHub'}
-                    className={styles.avatar}
-                  />
-                ) : (
-                  <Github size={18} />
-                )}
-              </button>
+        {/* Avatar menu */}
+        <div className={styles.avatarMenu} ref={menuRef}>
+          <button
+            className={styles.avatarBtn}
+            type="button"
+            onClick={() => setMenuOpen((p) => !p)}
+            aria-label={t('userMenu', 'User menu')}
+            aria-expanded={menuOpen}
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={displayName ?? ''} className={styles.avatarImg} />
             ) : (
-              <Button
-                variant="outlined"
-                size="sm"
-                icon={<Github size={14} />}
-                onClick={() => setShowGithubSetup(true)}
-              >
-                {t('connectGithub', 'Connect GitHub')}
-              </Button>
+              <User size={18} />
             )}
-          </>
-        )}
+            <ChevronDown size={12} className={`${styles.chevron} ${menuOpen ? styles.chevronOpen : ''}`} />
+          </button>
 
-        {/* User menu (when auth is enabled) */}
-        {isAuthEnabled && (
-          <>
-            <span className={styles.username}>
-              {authStatus.user?.username}
-            </span>
-            <Button
-              variant="outlined"
-              size="sm"
-              icon={<LogOut size={14} />}
-              onClick={handleLogout}
-            >
-              {t('authLogout', 'Logout')}
-            </Button>
-          </>
-        )}
+          {menuOpen && (
+            <div className={styles.dropdown} role="menu">
+              {/* GitHub connection status */}
+              <div className={styles.dropdownSection}>
+                {isConnected ? (
+                  <div className={styles.userInfo}>
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={displayName ?? ''} className={styles.userAvatar} />
+                    ) : (
+                      <div className={styles.userAvatarFallback}><Github size={20} /></div>
+                    )}
+                    <div className={styles.userDetails}>
+                      <span className={styles.userName}>{displayName}</span>
+                      <span className={styles.userHint}>{t('connectedViaGithub', 'Connected via GitHub')}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className={styles.dropdownItem}
+                    onClick={() => { setMenuOpen(false); setShowGithubSetup(true); }}
+                    role="menuitem"
+                    type="button"
+                  >
+                    <Github size={16} />
+                    <span>{t('connectGithub', 'Connect GitHub')}</span>
+                  </button>
+                )}
+              </div>
+
+              <div className={styles.dropdownDivider} />
+
+              {/* Settings section */}
+              <div className={styles.dropdownSection}>
+                <div className={styles.dropdownLabel}>
+                  <Settings size={13} />
+                  <span>{t('settings', 'Settings')}</span>
+                </div>
+
+                {/* Theme toggle */}
+                <button
+                  className={styles.dropdownItem}
+                  onClick={() => dispatch(toggleTheme())}
+                  role="menuitem"
+                  type="button"
+                >
+                  {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                  <span>{theme === 'dark' ? t('lightMode', 'Light mode') : t('darkMode', 'Dark mode')}</span>
+                </button>
+
+                {/* Language toggle */}
+                <button
+                  className={styles.dropdownItem}
+                  onClick={toggleLang}
+                  role="menuitem"
+                  type="button"
+                >
+                  <Globe size={16} />
+                  <span>{language === 'de' ? 'English' : 'Deutsch'}</span>
+                </button>
+              </div>
+
+              {/* Logout (only when auth is enabled) */}
+              {isAuthEnabled && (
+                <>
+                  <div className={styles.dropdownDivider} />
+                  <div className={styles.dropdownSection}>
+                    <button
+                      className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
+                      onClick={handleLogout}
+                      role="menuitem"
+                      type="button"
+                    >
+                      <LogOut size={16} />
+                      <span>{t('authLogout', 'Logout')}</span>
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* GitHub settings (when connected but not via OAuth) */}
+              {!isAuthEnabled && isConnected && (
+                <>
+                  <div className={styles.dropdownDivider} />
+                  <div className={styles.dropdownSection}>
+                    <button
+                      className={styles.dropdownItem}
+                      onClick={() => { setMenuOpen(false); setShowGithubSetup(true); }}
+                      role="menuitem"
+                      type="button"
+                    >
+                      <Github size={16} />
+                      <span>{t('githubSettings', 'GitHub Settings')}</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <GitHubSetupModal

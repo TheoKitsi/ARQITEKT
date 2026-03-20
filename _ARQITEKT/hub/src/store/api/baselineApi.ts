@@ -62,6 +62,7 @@ export const baselineApi = baseApi.injectEndpoints({
     /* Baseline */
     getBaseline: build.query<Baseline, string>({
       query: (projectId) => `projects/${projectId}/baseline`,
+      extraOptions: { maxRetries: 0 },
       providesTags: (_r, _e, id) => [{ type: 'Baseline', id }],
     }),
 

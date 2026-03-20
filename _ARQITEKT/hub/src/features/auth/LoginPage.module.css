@@ -23,15 +23,7 @@
 .logo {
   width: 72px;
   height: 72px;
-  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
-  color: var(--color-surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   border-radius: var(--radius-lg);
-  font-size: 2rem;
-  font-weight: 800;
-  font-family: var(--font-mono);
 }
 
 .title {

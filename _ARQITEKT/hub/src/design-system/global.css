@@ -91,6 +91,47 @@
 }
 
 /* ============================================================================
+   Light Theme Override
+   ============================================================================ */
+[data-theme="light"] {
+  /* Surfaces */
+  --color-surface-bg: #ffffff;
+  --color-surface-bg2: #f6f8fa;
+  --color-surface-bg3: #eaeef2;
+  --color-surface-bg4: #d0d7de;
+
+  /* Text */
+  --color-text-primary: #1f2328;
+  --color-text-secondary: #656d76;
+  --color-text-tertiary: #8c959f;
+
+  /* Semantic */
+  --color-accent: #0969da;
+  --color-green: #1a7f37;
+  --color-yellow: #9a6700;
+  --color-orange: #bc4c00;
+  --color-red: #cf222e;
+  --color-purple: #8250df;
+
+  /* Artifact types */
+  --color-artifact-bc: #8250df;
+  --color-artifact-sol: #0969da;
+  --color-artifact-us: #1a7f37;
+  --color-artifact-cmp: #9a6700;
+  --color-artifact-fn: #bc4c00;
+  --color-artifact-secondary: #656d76;
+
+  /* Borders */
+  --color-border: #d0d7de;
+  --color-border-strong: #afb8c1;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(31,35,40,.06), 0 1px 2px rgba(31,35,40,.04);
+  --shadow-md: 0 3px 12px rgba(31,35,40,.08), 0 1px 4px rgba(31,35,40,.04);
+  --shadow-lg: 0 8px 24px rgba(31,35,40,.12);
+}
+
+/* ============================================================================
    Global Reset & Base Styles
    ============================================================================ */
 *,

@@ -43,11 +43,9 @@ export function HubDashboard() {
 
   return (
     <main className={styles.page}>
-      {/* Hero */}
-      <section className={styles.hero}>
-        <h1 className={styles.heroTitle}>ARQITEKT Hub</h1>
-        <p className={styles.heroSub}>{t('hubSubFull')}</p>
-        <div className={styles.heroActions}>
+      {/* Quick actions bar */}
+      <section className={styles.actionsBar}>
+        <div className={styles.actionsLeft}>
           <Button
             variant="gold"
             size="md"

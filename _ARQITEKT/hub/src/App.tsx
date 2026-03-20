@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from '@/features/shared/Header';
@@ -13,6 +13,7 @@ import OfflineBanner from '@/components/ui/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { NotFound } from '@/components/NotFound';
 import { Spinner } from '@/components/ui/Spinner';
+import { useAppSelector } from '@/store/hooks';
 
 const PlanTab = lazy(() => import('@/features/plan/PlanTab').then(m => ({ default: m.PlanTab })));
 const DevelopTab = lazy(() => import('@/features/develop/DevelopTab').then(m => ({ default: m.DevelopTab })));
@@ -26,6 +27,13 @@ function TabFallback() {
 
 export default function App() {
   const { t } = useTranslation();
+  const theme = useAppSelector((s) => s.ui.theme);
+
+  // Sync theme attribute to <html> for CSS variable switching
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   return (
     <ErrorBoundary>
       <Toast>

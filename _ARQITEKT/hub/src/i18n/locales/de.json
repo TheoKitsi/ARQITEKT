@@ -553,5 +553,9 @@
   "bcUserStories": "User Stories",
   "bcRequirements": "Anforderungen",
   "bcReadiness": "Bereitschaft",
-  "bcCategories": "Kategorien"
+  "bcCategories": "Kategorien",
+  "userMenu": "Benutzermenue",
+  "connectedViaGithub": "Verbunden ueber GitHub",
+  "settings": "Einstellungen",
+  "githubSettings": "GitHub-Einstellungen"
 }
