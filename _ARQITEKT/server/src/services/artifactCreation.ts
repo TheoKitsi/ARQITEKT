@@ -1,4 +1,4 @@
-import { readdir, writeFile, mkdir } from 'fs/promises';
+import { readdir, writeFile, mkdir, access } from 'fs/promises';
 import { join } from 'path';
 import { resolveProjectById } from './projects.js';
 
@@ -152,4 +152,82 @@ ${notes || 'As a {role}\nI want to {capability/action}\nSo that {benefit/value}.
   await writeFile(join(usDir, filename), body, 'utf-8');
 
   return { id: usId, title, type: 'US', status: 'draft', children: [] as never[] };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Create Business Case                                               */
+/* ------------------------------------------------------------------ */
+
+export async function createBusinessCase(
+  projectId: string,
+  title: string,
+): Promise<{ id: string; title: string; type: string; status: string; children: never[] }> {
+  const projectPath = await resolveProjectById(projectId);
+  const reqDir = join(projectPath, 'requirements');
+  const bcPath = join(reqDir, '00_BUSINESS_CASE.md');
+
+  // Don't overwrite an existing BC
+  try {
+    await access(bcPath);
+    throw Object.assign(new Error('Business Case already exists'), { status: 409 });
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
+  }
+
+  await mkdir(reqDir, { recursive: true });
+
+  const date = todayISO();
+  const body = `---
+type: BusinessCase
+id: "BC-1"
+title: "${title}"
+status: draft
+version: "1.0"
+date: "${date}"
+---
+
+# BC-1: ${title}
+
+> **Version**: 1.0
+> **Date**: ${date}
+> **Status**: draft
+
+---
+
+## 1. Business Objective
+
+<!-- What is the core idea? What problem does it solve? Why now? -->
+
+---
+
+## 2. Scope
+
+### In Scope
+
+<!-- What is included? -->
+
+### Out of Scope
+
+<!-- What is explicitly NOT included? -->
+
+---
+
+## 3. Target Audience
+
+<!-- Who uses the product? Personas, demographics, needs. -->
+
+---
+
+## 4. Core Principles
+
+| Principle | Description |
+|---|---|
+| **{Principle 1}** | {Description} |
+
+---
+`;
+
+  await writeFile(bcPath, body, 'utf-8');
+
+  return { id: 'BC-1', title, type: 'BC', status: 'draft', children: [] as never[] };
 }

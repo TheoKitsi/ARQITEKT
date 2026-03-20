@@ -48,6 +48,10 @@ export const setStatusSchema = z.object({
   status: z.enum(['idea', 'draft', 'review', 'approved', 'implemented']),
 });
 
+export const createBusinessCaseSchema = z.object({
+  title: z.string().min(1).max(200),
+});
+
 export const createSolutionSchema = z.object({
   title: z.string().min(1).max(200),
   notes: z.string().max(2000).optional(),

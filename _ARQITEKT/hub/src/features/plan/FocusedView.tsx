@@ -2,7 +2,7 @@ import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pencil, ArrowRight, CheckCircle2 } from 'lucide-react';
 import type { TreeNode } from '@/store/api/requirementsApi';
-import { useGetTreeQuery, useGetStatsQuery, useGetReadinessQuery } from '@/store/api/requirementsApi';
+import { useGetTreeQuery, useGetStatsQuery, useGetReadinessQuery, useCreateBusinessCaseMutation } from '@/store/api/requirementsApi';
 import { Badge } from '@/components/ui/Badge';
 import styles from './FocusedView.module.css';
 
@@ -39,6 +39,7 @@ export function FocusedView({ projectId, selectedNode, onOpenNode }: FocusedView
   const { data: tree } = useGetTreeQuery(projectId);
   const { data: stats } = useGetStatsQuery(projectId);
   const { data: readiness } = useGetReadinessQuery(projectId);
+  const [createBC] = useCreateBusinessCaseMutation();
 
   /* Derive next step hint from stats */
   const nextHint = useMemo(() => {
@@ -80,25 +81,37 @@ export function FocusedView({ projectId, selectedNode, onOpenNode }: FocusedView
   }, [tree]);
 
   /* Get Started click: open the first artifact of the needed type */
-  const handleGetStarted = useCallback(() => {
+  const handleGetStarted = useCallback(async () => {
     const targetType = nextHint.type;
-    if (!targetType || !tree) return;
+    if (!targetType) return;
 
-    // For BC: find the BC node and open it for editing
+    // If the tree is not loaded yet, bail
+    if (!tree) return;
+
+    // Try to find an existing node of the target type
     const node = findByType(targetType);
     if (node) {
       onOpenNode(node);
       return;
     }
 
-    // If no node of the target type exists but BC exists, open BC so user can navigate
-    if (targetType !== 'BC') {
-      const bcNode = findByType('BC');
-      if (bcNode) {
-        onOpenNode(bcNode);
+    // No BC exists yet — scaffold one and open it
+    if (targetType === 'BC') {
+      try {
+        const created = await createBC({ projectId, title: 'Business Case' }).unwrap();
+        onOpenNode({ ...created, children: [] });
+      } catch {
+        // Silently ignore (e.g. 409 when BC already exists)
       }
+      return;
     }
-  }, [nextHint.type, tree, findByType, onOpenNode]);
+
+    // If no node of the target type exists but BC exists, open BC so user can navigate
+    const bcNode = findByType('BC');
+    if (bcNode) {
+      onOpenNode(bcNode);
+    }
+  }, [nextHint.type, tree, findByType, onOpenNode, createBC, projectId]);
 
   /* ---- Welcome screen → Guided Card ---- */
   if (!fullNode) {

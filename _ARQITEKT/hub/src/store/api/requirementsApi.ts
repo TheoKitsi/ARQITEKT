@@ -66,6 +66,11 @@ export interface ValidationItem {
   affectedArtifacts?: string[];
 }
 
+export interface CreateBusinessCaseRequest {
+  projectId: string;
+  title: string;
+}
+
 export interface CreateSolutionRequest {
   projectId: string;
   title: string;
@@ -201,6 +206,19 @@ export const requirementsApi = baseApi.injectEndpoints({
       ],
     }),
 
+    createBusinessCase: builder.mutation<TreeNode, CreateBusinessCaseRequest>({
+      query: ({ projectId, ...body }) => ({
+        url: `/projects/${projectId}/business-case`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [
+        { type: 'Requirements', id: projectId },
+        { type: 'Requirements', id: `${projectId}-stats` },
+        { type: 'Requirements', id: `${projectId}-readiness` },
+      ],
+    }),
+
     createSolution: builder.mutation<TreeNode, CreateSolutionRequest>({
       query: ({ projectId, ...body }) => ({
         url: `/projects/${projectId}/solutions`,
@@ -281,6 +299,7 @@ export const {
   useGetNextSolIdQuery,
   useGetNextUsIdQuery,
   useGetBCSummaryQuery,
+  useCreateBusinessCaseMutation,
   useCreateSolutionMutation,
   useCreateUserStoryMutation,
   useValidateProjectMutation,
