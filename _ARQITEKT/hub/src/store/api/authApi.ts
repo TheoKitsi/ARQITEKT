@@ -21,7 +21,7 @@ export interface AuthStatus {
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
 
-export const authApi = baseApi.injectEndpoints({
+const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAuthStatus: builder.query<AuthStatus, void>({
       query: () => '/auth/me',
@@ -49,5 +49,4 @@ export const authApi = baseApi.injectEndpoints({
 export const {
   useGetAuthStatusQuery,
   useLogoutMutation,
-  useRefreshTokenMutation,
 } = authApi;

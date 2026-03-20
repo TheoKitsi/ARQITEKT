@@ -108,7 +108,7 @@ export interface GitStatusResult {
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
 
-export const deployApi = baseApi.injectEndpoints({
+const deployApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     scaffold: builder.mutation<ScaffoldResult, ScaffoldRequest>({
       query: ({ projectId, ...body }) => ({
@@ -218,8 +218,6 @@ export const {
   useAppLogsQuery,
   useGithubPushMutation,
   useExportIssuesMutation,
-  useStoreConfigureMutation,
-  useStoreBuildMutation,
   useBuildDeployMutation,
   useGithubActionsMutation,
   useGitStatusQuery,

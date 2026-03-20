@@ -37,7 +37,7 @@ export interface DeleteFeedbackRequest {
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
 
-export const feedbackApi = baseApi.injectEndpoints({
+const feedbackApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getFeedback: builder.query<Feedback[], string>({
       query: (projectId) => `/projects/${projectId}/feedback`,

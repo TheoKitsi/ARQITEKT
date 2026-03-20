@@ -93,6 +93,12 @@
   box-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
 }
 
+.dot_probing {
+  background-color: var(--color-brand-gold);
+  border-color: var(--color-yellow);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.25);
+}
+
 .dot_failed {
   background-color: var(--color-red);
   border-color: var(--color-red);

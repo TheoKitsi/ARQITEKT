@@ -56,7 +56,7 @@ interface ImpactAnalysis {
   totalImpact: number;
 }
 
-export const baselineApi = baseApi.injectEndpoints({
+const baselineApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
 
     /* Baseline */

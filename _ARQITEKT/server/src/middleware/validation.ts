@@ -296,7 +296,3 @@ export const updateContentSchema = z.object({
   content: z.string().max(51200),
   title: z.string().min(1).max(200).optional(),
 });
-
-export const artifactIdParamSchema = z.object({
-  artifactId: z.string().min(1).max(50),
-});

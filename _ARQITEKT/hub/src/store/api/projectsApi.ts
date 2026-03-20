@@ -293,8 +293,4 @@ export const {
   useAddMemberMutation,
   useUpdateMemberRoleMutation,
   useRemoveMemberMutation,
-  useGetInvitesQuery,
-  useCreateInviteMutation,
-  useRevokeInviteMutation,
-  useAcceptInviteMutation,
 } = projectsApi;

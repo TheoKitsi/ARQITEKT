@@ -1,4 +1,3 @@
-import { spawn } from 'child_process';
 import { dirname, join } from 'path';
 import { mkdir, stat, writeFile } from 'fs/promises';
 import { resolveProjectById, getProjectById } from './projects.js';
@@ -601,42 +600,4 @@ export async function scaffoldProject(
     filesCreated,
     logs,
   };
-}
-
-/* ------------------------------------------------------------------ */
-/*  Run a command inside a project's app directory                     */
-/* ------------------------------------------------------------------ */
-
-/**
- * Run a command inside a project's app directory.
- * Returns a promise that resolves with the process output.
- */
-export async function runProjectCommand(
-  projectId: string,
-  command: string,
-  args: string[]
-): Promise<{ code: number; stdout: string; stderr: string }> {
-  const cwd = join(await resolveProjectById(projectId), 'app');
-  return new Promise((resolve, reject) => {
-    const proc = spawn(command, args, { cwd, shell: true });
-
-    let stdout = '';
-    let stderr = '';
-
-    proc.stdout.on('data', (data: Buffer) => {
-      stdout += data.toString();
-    });
-
-    proc.stderr.on('data', (data: Buffer) => {
-      stderr += data.toString();
-    });
-
-    proc.on('close', (code) => {
-      resolve({ code: code ?? 1, stdout, stderr });
-    });
-
-    proc.on('error', (err) => {
-      reject(err);
-    });
-  });
 }

@@ -48,7 +48,7 @@ export function ProjectLayout() {
   const { data: project, isLoading, isError } = useGetProjectQuery(projectId!);
   const { data: readiness } = useGetReadinessQuery(projectId!);
   const { data: tree } = useGetTreeQuery(projectId!);
-  const requirementsComplete = (readiness?.authored ?? 0) >= 100;
+  const requirementsComplete = (readiness?.approved ?? 0) >= 100;
 
   /* ---- Tree → Dialog bridge (passed to Outlet context) ---- */
   const [openNode, setOpenNode] = useState<TreeNode | null>(null);
@@ -120,7 +120,7 @@ export function ProjectLayout() {
             )}
             <div className={styles.metaRow}>
               {project.config.lifecycle && (
-                <span className={styles.metaBadge}>{project.config.lifecycle}</span>
+                <span className={styles.metaBadge}>{t(project.config.lifecycle)}</span>
               )}
               {project.config.github && (
                 <a

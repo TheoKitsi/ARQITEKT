@@ -138,22 +138,17 @@ export interface NextIdResult {
 export interface BCSummary {
   totalSolutions: number;
   totalUserStories: number;
-  totalRequirements: number;
+  totalComponents: number;
+  totalFunctions: number;
   readiness: number;
-  categories: BCSummaryCategory[];
-}
-
-export interface BCSummaryCategory {
-  name: string;
-  count: number;
-  completionPercent: number;
+  tree: TreeNode[];
 }
 
 /* ------------------------------------------------------------------ */
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
 
-export const requirementsApi = baseApi.injectEndpoints({
+const requirementsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getTree: builder.query<TreeNode[], string>({
       query: (projectId) => `/projects/${projectId}/tree`,
@@ -333,7 +328,6 @@ export const {
   useGetTreeQuery,
   useGetStatsQuery,
   useGetReadinessQuery,
-  useValidateMutation,
   useSetStatusMutation,
   useSearchRequirementsQuery,
   useGetNextSolIdQuery,
@@ -345,7 +339,6 @@ export const {
   useCreateComponentMutation,
   useCreateFunctionMutation,
   useValidateProjectMutation,
-  useImportCsvMutation,
   useGetArtifactContentQuery,
   useUpdateContentMutation,
 } = requirementsApi;

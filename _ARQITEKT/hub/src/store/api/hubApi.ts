@@ -58,7 +58,7 @@ export interface LlmUsageSummary {
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
 
-export const hubApi = baseApi.injectEndpoints({
+const hubApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getHubVersion: builder.query<HubVersion, void>({
       query: () => '/hub/version',
@@ -93,9 +93,7 @@ export const hubApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useGetHubVersionQuery,
   useCheckUpdateQuery,
-  useInstallUpdateMutation,
   useGetLlmUsageQuery,
   useGetStarterTemplatesQuery,
 } = hubApi;

@@ -33,10 +33,17 @@ type StepKey = (typeof STEPS)[number];
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-function deriveCompletedSteps(readiness: ReadinessResult | undefined): number {
-  if (!readiness) return 0;
-  const raw = Math.floor((readiness.authored / 100) * STEPS.length);
-  return Math.min(raw, STEPS.length);
+function deriveCompletedSteps(stats: RequirementsStats | undefined): number {
+  if (!stats) return 0;
+  let count = 0;
+  if (stats.bc > 0) count++;
+  if (stats.sol > 0) count++;
+  if (stats.us > 0) count++;
+  if (stats.cmp > 0) count++;
+  if (stats.fn > 0) count++;
+  // Step 6 (Review) is only complete if all prior steps exist
+  if (count === 5) count++;
+  return count;
 }
 
 function deriveNextStepHint(
@@ -100,8 +107,8 @@ export function ProgressTracker({ projectId, onNextStep }: ProgressTrackerProps)
   const { data: stats } = useGetStatsQuery(projectId);
 
   const completedCount = useMemo(
-    () => deriveCompletedSteps(readiness),
-    [readiness],
+    () => deriveCompletedSteps(stats),
+    [stats],
   );
 
   const percent = useMemo(() => {

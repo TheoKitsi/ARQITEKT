@@ -43,7 +43,7 @@ interface UnreadCountResponse {
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
 
-export const notificationsApi = baseApi.injectEndpoints({
+const notificationsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getNotifications: builder.query<NotificationsResponse, { projectId: string; unreadOnly?: boolean }>({
       query: ({ projectId, unreadOnly }) =>

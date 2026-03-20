@@ -62,7 +62,7 @@ const chatSlice = createSlice({
   },
 });
 
-export const { toggleChat, addMessage, updateMessage, setModel, setLoading, clearMessages } =
+export const { toggleChat, addMessage, updateMessage, setModel, setLoading } =
   chatSlice.actions;
 
 export const chatReducer = chatSlice.reducer;

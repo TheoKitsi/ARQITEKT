@@ -75,18 +75,17 @@ let nextMsgId = 1;
 
 interface PhaseInfo {
   key: string;
-  labelDe: string;
-  labelEn: string;
+  i18nKey: string;
   icon: typeof Lightbulb;
 }
 
 const PHASES: PhaseInfo[] = [
-  { key: 'idea', labelDe: 'Idee', labelEn: 'Idea', icon: Lightbulb },
-  { key: 'audience', labelDe: 'Zielgruppe', labelEn: 'Audience', icon: Users },
-  { key: 'features', labelDe: 'Features', labelEn: 'Features', icon: Layers },
-  { key: 'platform', labelDe: 'Plattform', labelEn: 'Platform', icon: Monitor },
-  { key: 'name', labelDe: 'Name', labelEn: 'Name', icon: Type },
-  { key: 'summary', labelDe: 'Zusammenfassung', labelEn: 'Summary', icon: Check },
+  { key: 'idea', i18nKey: 'wizPhaseIdea', icon: Lightbulb },
+  { key: 'audience', i18nKey: 'wizPhaseAudience', icon: Users },
+  { key: 'features', i18nKey: 'wizPhaseFeatures', icon: Layers },
+  { key: 'platform', i18nKey: 'wizPhasePlatform', icon: Monitor },
+  { key: 'name', i18nKey: 'wizPhaseName', icon: Type },
+  { key: 'summary', i18nKey: 'wizPhaseSummary', icon: Check },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -114,18 +113,18 @@ function inferTemplate(platform: string): string | undefined {
   return undefined;
 }
 
-function getPhaseGreeting(phase: number): string {
+function getPhaseGreeting(phase: number, t: (key: string, defaultValue: string) => string): string {
   switch (phase) {
     case 1:
-      return 'Willkommen beim ARQITEKT Wizard! Beschreibe mir deine App-Idee. Was moechtest du bauen?';
+      return t('wizGreeting1', 'Welcome to the ARQITEKT Wizard! Describe your app idea. What do you want to build?');
     case 2:
-      return 'Gut! Jetzt erzaehl mir: Wer ist die Zielgruppe fuer deine App?';
+      return t('wizGreeting2', 'Great! Now tell me: Who is the target audience for your app?');
     case 3:
-      return 'Verstanden! Welche Kernfunktionen soll deine App haben?';
+      return t('wizGreeting3', 'Got it! What core features should your app have?');
     case 4:
-      return 'Super! Auf welchen Plattformen soll die App laufen? (Web, Android, iOS oder alle)';
+      return t('wizGreeting4', 'Excellent! Which platforms should the app run on? (Web, Android, iOS or all)');
     case 5:
-      return 'Fast geschafft! Wie soll dein Projekt heissen?';
+      return t('wizGreeting5', 'Almost done! What should your project be called?');
     case 6:
       return '';
     default:
@@ -133,60 +132,75 @@ function getPhaseGreeting(phase: number): string {
   }
 }
 
-function buildSummaryGreeting(data: WizardData): string {
+function buildSummaryGreeting(data: WizardData, t: (key: string, defaultValue: string) => string): string {
   return (
-    `Hier ist die Zusammenfassung deines Projekts:\n\n` +
-    `Idee: ${data.idea}\n` +
-    `Zielgruppe: ${data.audience}\n` +
-    `Features: ${data.features}\n` +
-    `Plattform: ${data.platform}\n` +
-    `Name: ${data.projectName}\n\n` +
-    `Soll ich das Projekt jetzt erstellen? Sage "Ja" um fortzufahren.`
+    `${t('wizSummaryIntro', 'Here is your project summary:')}\n\n` +
+    `${t('wizSummaryIdea', 'Idea: ')}${data.idea}\n` +
+    `${t('wizSummaryAudience', 'Audience: ')}${data.audience}\n` +
+    `${t('wizSummaryFeatures', 'Features: ')}${data.features}\n` +
+    `${t('wizSummaryPlatform', 'Platform: ')}${data.platform}\n` +
+    `${t('wizSummaryName', 'Name: ')}${data.projectName}\n\n` +
+    t('wizSummaryConfirm', 'Should I create the project now? Say "Yes" to continue.')
   );
 }
 
-function buildWizardSystemPrompt(phase: number, data: WizardData): string {
-  const base =
-    'Du bist ARQITEKT, ein KI-Assistent fuer Requirements Engineering. ' +
-    'Du fuehrst den Benutzer durch den Prozess von der Idee bis zur fertigen Applikation. ' +
-    'Antworte auf Deutsch, kurz und praezise (maximal 2-3 Saetze).';
+function buildWizardSystemPrompt(phase: number, data: WizardData, lang: string): string {
+  const isEn = lang === 'en';
+
+  const base = isEn
+    ? 'You are ARQITEKT, an AI assistant for Requirements Engineering. ' +
+      'You guide the user from idea to finished application. ' +
+      'Answer in English, briefly and precisely (max 2-3 sentences).'
+    : 'Du bist ARQITEKT, ein KI-Assistent fuer Requirements Engineering. ' +
+      'Du fuehrst den Benutzer durch den Prozess von der Idee bis zur fertigen Applikation. ' +
+      'Antworte auf Deutsch, kurz und praezise (maximal 2-3 Saetze).';
 
   switch (phase) {
     case 1:
-      return (
-        `${base}\n` +
-        'Der Benutzer beschreibt seine App-Idee. Stelle Rueckfragen um die Idee zu konkretisieren. ' +
-        'Wenn genug Informationen vorliegen, sage "Perfekt, lassen Sie uns zur Zielgruppe uebergehen." ' +
-        'und fuege [NEXT_PHASE] am Ende hinzu.'
-      );
+      return isEn
+        ? `${base}\nThe user describes their app idea. Ask follow-up questions to sharpen the idea. ` +
+          'Once enough information is gathered, say "Perfect, let\'s move on to the target audience." ' +
+          'and append [NEXT_PHASE] at the end.'
+        : `${base}\n` +
+          'Der Benutzer beschreibt seine App-Idee. Stelle Rueckfragen um die Idee zu konkretisieren. ' +
+          'Wenn genug Informationen vorliegen, sage "Perfekt, lassen Sie uns zur Zielgruppe uebergehen." ' +
+          'und fuege [NEXT_PHASE] am Ende hinzu.';
     case 2:
-      return (
-        `${base}\nIdee: ${data.idea}\n` +
-        'Frage nach der Zielgruppe. Wer sind die Nutzer? B2C, B2B oder beide? Wenn klar, sage [NEXT_PHASE].'
-      );
+      return isEn
+        ? `${base}\nIdea: ${data.idea}\n` +
+          'Ask about the target audience. Who are the users? B2C, B2B, or both? When clear, say [NEXT_PHASE].'
+        : `${base}\nIdee: ${data.idea}\n` +
+          'Frage nach der Zielgruppe. Wer sind die Nutzer? B2C, B2B oder beide? Wenn klar, sage [NEXT_PHASE].';
     case 3:
-      return (
-        `${base}\nIdee: ${data.idea}\nZielgruppe: ${data.audience}\n` +
-        'Frage nach den Kernfunktionen/Features. Was soll die App koennen? Wenn genug, sage [NEXT_PHASE].'
-      );
+      return isEn
+        ? `${base}\nIdea: ${data.idea}\nAudience: ${data.audience}\n` +
+          'Ask about core features. What should the app do? When enough, say [NEXT_PHASE].'
+        : `${base}\nIdee: ${data.idea}\nZielgruppe: ${data.audience}\n` +
+          'Frage nach den Kernfunktionen/Features. Was soll die App koennen? Wenn genug, sage [NEXT_PHASE].';
     case 4:
-      return (
-        `${base}\nIdee: ${data.idea}\n` +
-        'Frage welche Plattformen (Web, Android, iOS oder alle). Wenn klar, sage [NEXT_PHASE].'
-      );
+      return isEn
+        ? `${base}\nIdea: ${data.idea}\n` +
+          'Ask which platforms (Web, Android, iOS or all). When clear, say [NEXT_PHASE].'
+        : `${base}\nIdee: ${data.idea}\n` +
+          'Frage welche Plattformen (Web, Android, iOS oder alle). Wenn klar, sage [NEXT_PHASE].';
     case 5:
-      return (
-        `${base}\nIdee: ${data.idea}\n` +
-        'Frage nach dem Projektnamen. Wenn gegeben, sage [NEXT_PHASE].'
-      );
+      return isEn
+        ? `${base}\nIdea: ${data.idea}\n` +
+          'Ask for the project name. When given, say [NEXT_PHASE].'
+        : `${base}\nIdee: ${data.idea}\n` +
+          'Frage nach dem Projektnamen. Wenn gegeben, sage [NEXT_PHASE].';
     case 6:
-      return (
-        `${base}\n` +
-        `Fasse das Projekt zusammen:\n` +
-        `Idee: ${data.idea}\nZielgruppe: ${data.audience}\n` +
-        `Features: ${data.features}\nPlattform: ${data.platform}\nName: ${data.projectName}\n` +
-        'Frage ob der Benutzer bereit ist, das Projekt zu erstellen. Sage [CREATE_PROJECT] wenn er bestaetigt.'
-      );
+      return isEn
+        ? `${base}\n` +
+          `Summarize the project:\n` +
+          `Idea: ${data.idea}\nAudience: ${data.audience}\n` +
+          `Features: ${data.features}\nPlatform: ${data.platform}\nName: ${data.projectName}\n` +
+          'Ask if the user is ready to create the project. Say [CREATE_PROJECT] when confirmed.'
+        : `${base}\n` +
+          `Fasse das Projekt zusammen:\n` +
+          `Idee: ${data.idea}\nZielgruppe: ${data.audience}\n` +
+          `Features: ${data.features}\nPlattform: ${data.platform}\nName: ${data.projectName}\n` +
+          'Frage ob der Benutzer bereit ist, das Projekt zu erstellen. Sage [CREATE_PROJECT] wenn er bestaetigt.';
     default:
       return base;
   }
@@ -203,9 +217,7 @@ export function OnboardingWizard() {
 
   /* ---- State ---- */
   const [phase, setPhase] = useState(1);
-  const [messages, setMessages] = useState<WizardMessage[]>([
-    { id: makeId(), role: 'assistant', content: getPhaseGreeting(1), phase: 1 },
-  ]);
+  const [messages, setMessages] = useState<WizardMessage[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -238,6 +250,14 @@ export function OnboardingWizard() {
     }
   }, [chatConfig, selectedModel]);
 
+  /* ---- Set initial greeting once t() is ready ---- */
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length > 0) return prev;
+      return [{ id: makeId(), role: 'assistant', content: getPhaseGreeting(1, t), phase: 1 }];
+    });
+  }, [t]);
+
   /* ---- Auto-scroll messages ---- */
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -257,14 +277,14 @@ export function OnboardingWizard() {
       if (!ttsEnabled || !window.speechSynthesis) return;
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'de-DE';
+      utterance.lang = i18n.language === 'en' ? 'en-US' : 'de-DE';
       utterance.rate = 1.0;
       setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
       window.speechSynthesis.speak(utterance);
     },
-    [ttsEnabled],
+    [ttsEnabled, i18n.language],
   );
 
   const stopSpeaking = useCallback(() => {
@@ -280,9 +300,9 @@ export function OnboardingWizard() {
 
       let greeting: string;
       if (next === 6) {
-        greeting = buildSummaryGreeting(wizardData.current);
+        greeting = buildSummaryGreeting(wizardData.current, t);
       } else {
-        greeting = getPhaseGreeting(next);
+        greeting = getPhaseGreeting(next, t);
       }
 
       if (greeting) {
@@ -291,7 +311,7 @@ export function OnboardingWizard() {
         speakText(greeting);
       }
     },
-    [speakText],
+    [speakText, t],
   );
 
   /* ---- Send message to LLM ---- */
@@ -331,13 +351,13 @@ export function OnboardingWizard() {
 
       /* Phase 6: simple confirmation check */
       if (currentPhase === 6) {
-        const isConfirm = /^(ja|yes|ok|jep|sicher|klar|los|machen|erstellen)/i.test(trimmed);
+        const isConfirm = /^(ja|yes|ok|jep|sicher|klar|los|machen|erstellen|sure|create|go)/i.test(trimmed);
         if (isConfirm) {
           setIsThinking(true);
           const inferredTemplate = inferTemplate(d.platform);
           try {
             const project = await createProject({
-              name: d.projectName || 'Neues Projekt',
+              name: d.projectName || t('wizDefaultProject', 'New Project'),
               description: d.idea,
               ...(inferredTemplate && { template: inferredTemplate }),
             }).unwrap();
@@ -355,7 +375,7 @@ export function OnboardingWizard() {
       }
 
       /* Build system prompt */
-      const systemPrompt = buildWizardSystemPrompt(currentPhase, { ...d });
+      const systemPrompt = buildWizardSystemPrompt(currentPhase, { ...d }, i18n.language);
 
       setIsThinking(true);
       try {
@@ -400,7 +420,7 @@ export function OnboardingWizard() {
           const inferredTemplate = inferTemplate(d.platform);
           try {
             const project = await createProject({
-              name: d.projectName || 'Neues Projekt',
+              name: d.projectName || t('wizDefaultProject', 'New Project'),
               description: d.idea,
               ...(inferredTemplate && { template: inferredTemplate }),
             }).unwrap();
@@ -416,13 +436,13 @@ export function OnboardingWizard() {
           advancePhase(currentPhase + 1);
         }
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : 'Unbekannter Fehler';
+        const errorMsg = err instanceof Error ? err.message : t('wizUnknownError', 'Unknown error');
         setMessages((prev) => [
           ...prev,
           {
             id: makeId(),
             role: 'assistant',
-            content: `Entschuldigung, es gab einen Fehler: ${errorMsg}. Bitte versuche es erneut.`,
+            content: t('wizErrorMessage', 'Sorry, an error occurred: {{error}}. Please try again.', { error: errorMsg }),
             phase: currentPhase,
           },
         ]);
@@ -430,7 +450,7 @@ export function OnboardingWizard() {
         setIsThinking(false);
       }
     },
-    [phase, selectedModel, createProject, navigate, showToast, t, speakText, advancePhase],
+    [phase, selectedModel, createProject, navigate, showToast, t, i18n.language, speakText, advancePhase],
   );
 
   /* Keep sendRef in sync for speech recognition callbacks */
@@ -502,7 +522,7 @@ export function OnboardingWizard() {
     const recognition = new Ctor();
     recognition.continuous = true;
     recognition.interimResults = false;
-    recognition.lang = 'de-DE';
+    recognition.lang = i18n.language === 'en' ? 'en-US' : 'de-DE';
 
     let transcript = '';
 
@@ -542,7 +562,7 @@ export function OnboardingWizard() {
     } catch {
       showToast(t('voiceNotSupported', 'Voice input not supported in this browser'), 'warning');
     }
-  }, [isListening, showToast, t, stopSpeaking]);
+  }, [isListening, showToast, t, stopSpeaking, i18n.language]);
 
   /* ---- Close wizard ---- */
   const handleClose = useCallback(() => {
@@ -560,8 +580,6 @@ export function OnboardingWizard() {
   }, [isSpeaking, stopSpeaking]);
 
   /* ---- Phase label helper ---- */
-  const isEnglish = i18n.language === 'en';
-
   const isBusy = isThinking || isCreating;
 
   return (
@@ -575,8 +593,8 @@ export function OnboardingWizard() {
             type="button"
             className={`${styles.iconBtn} ${isSpeaking ? styles.iconBtnActive : ''}`}
             onClick={handleTtsToggle}
-            aria-label={ttsEnabled ? 'TTS deaktivieren' : 'TTS aktivieren'}
-            title={ttsEnabled ? 'TTS deaktivieren' : 'TTS aktivieren'}
+            aria-label={ttsEnabled ? t('disableTTS', 'Disable TTS') : t('enableTTS', 'Enable TTS')}
+            title={ttsEnabled ? t('disableTTS', 'Disable TTS') : t('enableTTS', 'Enable TTS')}
           >
             {ttsEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
           </button>
@@ -647,7 +665,7 @@ export function OnboardingWizard() {
                   {isDone ? <Check size={14} /> : <Icon size={14} />}
                 </div>
                 <span className={styles.stepLabel}>
-                  {isEnglish ? p.labelEn : p.labelDe}
+                  {t(p.i18nKey)}
                 </span>
                 {num < TOTAL_PHASES && <div className={styles.stepLine} />}
               </div>

@@ -19,7 +19,7 @@ const PHASE_I18N: Record<string, string> = {
   planning: 'summaryPlanning',
   ready: 'summaryReady',
   building: 'summaryBuilding',
-  built: 'built',
+  built: 'summaryBuilt',
   running: 'summaryRunning',
   deployed: 'summaryDeployed',
 };
@@ -43,10 +43,10 @@ export function DashboardSummary({ projects }: DashboardSummaryProps) {
     ? projects.find((p) => p.config.lifecycle !== 'deployed') ?? projects[0]
     : null;
 
-  // Overall readiness across all projects
-  const totalAuthored = projects.reduce((s, p) => s + p.readiness.authored, 0);
-  const totalApproved = projects.reduce((s, p) => s + p.readiness.approved, 0);
-  const overallReadiness = totalAuthored > 0 ? Math.round((totalApproved / totalAuthored) * 100) : 0;
+  // Overall readiness across all projects (average authored %)
+  const overallReadiness = projects.length > 0
+    ? Math.round(projects.reduce((s, p) => s + p.readiness.authored, 0) / projects.length)
+    : 0;
 
   return (
     <section className={styles.summary}>
@@ -66,7 +66,7 @@ export function DashboardSummary({ projects }: DashboardSummaryProps) {
       </div>
 
       {/* Overall readiness */}
-      {totalAuthored > 0 && (
+      {overallReadiness > 0 && (
         <div className={styles.readinessBlock}>
           <div className={styles.readinessHeader}>
             <span className={styles.readinessLabel}>{t('readinessLabel')}</span>

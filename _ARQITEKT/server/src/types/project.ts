@@ -181,6 +181,8 @@ export interface GateResult {
   gaps: Gap[];
   timestamp: string;
   overrideReason?: string;
+  /** True when all checks pass but confidence is below the auto-pass threshold. */
+  needsProbing?: boolean;
 }
 
 export interface PipelineStatus {

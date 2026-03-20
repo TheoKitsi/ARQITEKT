@@ -342,11 +342,6 @@ export async function* streamChatMessage(
   }
 }
 
-/** Invalidate cached config (e.g., after config reload). */
-export function resetLLMConfig(): void {
-  cachedConfig = null;
-}
-
 /**
  * List available AI models from all connected providers.
  * Fetches from GitHub Models and Anthropic in parallel.

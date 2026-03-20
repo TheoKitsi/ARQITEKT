@@ -85,7 +85,7 @@ const uiSlice = createSlice({
   },
 });
 
-export const { toggleTheme, setLanguage, toggleSidebar, toggleCommandPalette } =
+export const { toggleTheme, setLanguage, toggleCommandPalette } =
   uiSlice.actions;
 
 export const uiReducer = uiSlice.reducer;

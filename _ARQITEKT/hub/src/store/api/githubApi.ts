@@ -33,7 +33,7 @@ export interface GitHubConnectResponse {
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
 
-export const githubApi = baseApi.injectEndpoints({
+const githubApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getGithubStatus: builder.query<GitHubStatus, void>({
       query: () => '/github/status',

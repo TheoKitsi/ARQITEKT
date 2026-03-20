@@ -174,7 +174,7 @@ function evaluateBoundary(body: string, nodeType: string): number {
   // Cross-cutting and top-level types are less about boundary cases
   const lowBoundaryTypes = ['BC', 'INF', 'ADR', 'NTF', 'FBK'];
   if (lowBoundaryTypes.includes(nodeType)) {
-    return 70; // Neutral score — boundary cases less relevant here
+    return 90; // High neutral score — boundary cases less relevant for these types
   }
 
   const lowerBody = body.toLowerCase();

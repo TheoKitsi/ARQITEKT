@@ -136,33 +136,6 @@ export async function createFeedback(
 }
 
 /**
- * Read a single feedback item by ID.
- * Returns the full item including its markdown body.
- */
-export async function readFeedback(projectId: string, fbkId: string): Promise<FeedbackItem> {
-  if (!/^FBK-\d+$/.test(fbkId)) {
-    throw Object.assign(new Error(`Invalid feedback ID format: ${fbkId}`), { status: 400 });
-  }
-
-  const dir = await feedbackDir(projectId);
-  const filePath = join(dir, `${fbkId}.md`);
-
-  const content = await readFile(filePath, 'utf-8');
-  const { data: fm, body } = parseFrontmatter(content);
-
-  return {
-    id: (fm.id as string) || fbkId,
-    title: (fm.title as string) || fbkId,
-    description: body.trim(),
-    source: (fm.source as FeedbackItem['source']) || 'manual',
-    severity: (fm.severity as FeedbackItem['severity']) || 'wish',
-    status: (fm.status as FeedbackItem['status']) || 'open',
-    rating: fm.rating != null ? Number(fm.rating) : undefined,
-    createdAt: (fm.created as string) || '',
-  };
-}
-
-/**
  * Export feedback items as CSV string.
  */
 export async function exportFeedbackCsv(projectId: string): Promise<string> {

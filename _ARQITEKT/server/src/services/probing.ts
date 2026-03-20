@@ -154,7 +154,7 @@ export async function analyzeGaps(
 /**
  * Generate a probing question for a specific gap using the assigned agent.
  */
-export async function generateQuestion(
+async function generateQuestion(
   projectId: string,
   artifactId: string,
   gap: Gap,

@@ -332,13 +332,17 @@ export async function evaluateGate(projectId: string, gateId: GateId): Promise<G
   const allPassed = checks.every((c) => c.passed);
   const criticalFailed = checks.some((c) => !c.passed && c.severity === 'critical');
   let status: GateStatus;
+  let needsProbing = false;
 
   if (criticalFailed) {
     status = 'failed';
-  } else if (allPassed && confidence >= gateDef.autoPassThreshold) {
-    status = 'passed';
   } else if (allPassed) {
-    status = 'pending'; // Checks pass but confidence below threshold
+    // All structural checks pass → gate is passed.
+    // If confidence is below threshold, flag for probing but don't block.
+    status = 'passed';
+    if (confidence < gateDef.autoPassThreshold) {
+      needsProbing = true;
+    }
   } else {
     status = 'failed';
   }
@@ -353,6 +357,7 @@ export async function evaluateGate(projectId: string, gateId: GateId): Promise<G
     checks,
     gaps,
     timestamp: new Date().toISOString(),
+    ...(needsProbing && { needsProbing }),
   };
 }
 

@@ -51,7 +51,7 @@ export interface AIModel {
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
 
-export const chatApi = baseApi.injectEndpoints({
+const chatApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getChatConfig: builder.query<ChatConfig, void>({
       query: () => '/chat/config',
@@ -73,6 +73,5 @@ export const chatApi = baseApi.injectEndpoints({
 
 export const {
   useGetChatConfigQuery,
-  useSendMessageMutation,
   useGetModelsQuery,
 } = chatApi;

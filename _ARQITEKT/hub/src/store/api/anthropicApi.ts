@@ -20,7 +20,7 @@ export interface AnthropicConnectResponse {
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
 
-export const anthropicApi = baseApi.injectEndpoints({
+const anthropicApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAnthropicStatus: builder.query<AnthropicStatus, void>({
       query: () => '/anthropic/status',

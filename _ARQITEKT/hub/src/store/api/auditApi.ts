@@ -22,7 +22,7 @@ export interface AuditResponse {
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
 
-export const auditApi = baseApi.injectEndpoints({
+const auditApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAuditLog: builder.query<AuditResponse, { projectId: string; limit?: number; offset?: number }>({
       query: ({ projectId, limit = 50, offset = 0 }) =>

@@ -36,7 +36,7 @@ export interface WriteFileResult {
 /*  API                                                                */
 /* ------------------------------------------------------------------ */
 
-export const filesApi = baseApi.injectEndpoints({
+const filesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listFiles: builder.query<FileEntry[], string>({
       query: (projectId) => `/projects/${projectId}/files`,

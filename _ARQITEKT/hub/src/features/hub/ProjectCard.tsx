@@ -27,14 +27,16 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const { data: pipeline } = useGetPipelineQuery(project.id);
 
   // Find the current (first non-passed) gate
-  const currentGate = pipeline?.gates.find((g) => g.status !== 'passed');
+  const currentGate = pipeline?.gates.find(
+    (g) => g.status !== 'passed' && g.status !== 'overridden',
+  );
   const allGatesPassed = pipeline?.gates.length
     ? pipeline.gates.every((g) => g.status === 'passed' || g.status === 'overridden')
     : false;
 
-  // Readiness from project data
+  // Readiness from project data — show authored progress
   const { authored, approved } = project.readiness;
-  const readinessPercent = authored > 0 ? Math.round((approved / authored) * 100) : 0;
+  const readinessPercent = authored;
 
   // Poll app status for running apps to get real port
   const showAction = lifecycle === 'built' || lifecycle === 'building' || lifecycle === 'running' || lifecycle === 'deployed';
@@ -115,7 +117,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             />
           </div>
           <span className={styles.readinessHint}>
-            {t('readinessOf', { approved, authored })}
+            {t('readinessOfPercent', { approved, authored })}
           </span>
         </div>
       )}

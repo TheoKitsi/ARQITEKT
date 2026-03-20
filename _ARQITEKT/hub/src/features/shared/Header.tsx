@@ -4,8 +4,10 @@ import { Link, useMatch } from 'react-router-dom';
 import { Github, LogOut, Sun, Moon, ArrowUpCircle, Globe, Settings, User, ChevronDown } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { setLanguage, toggleTheme, type Language } from '@/store/slices/uiSlice';
-import { useGetGithubStatusQuery } from '@/store/api/githubApi';
+import { clearAuth } from '@/store/slices/authSlice';
+import { useGetGithubStatusQuery, useDisconnectGithubMutation } from '@/store/api/githubApi';
 import { useGetAuthStatusQuery, useLogoutMutation } from '@/store/api/authApi';
+import { useDisconnectAnthropicMutation } from '@/store/api/anthropicApi';
 import { useCheckUpdateQuery } from '@/store/api/hubApi';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 import { GitHubSetupModal } from './GitHubSetupModal';
@@ -20,10 +22,13 @@ export function Header() {
   const dispatch = useAppDispatch();
   const language = useAppSelector((s) => s.ui.language);
   const theme = useAppSelector((s) => s.ui.theme);
+  const sessionMode = useAppSelector((s) => s.auth.sessionMode);
   const { data: ghStatus } = useGetGithubStatusQuery();
   const { data: authStatus } = useGetAuthStatusQuery();
   const { data: updateInfo } = useCheckUpdateQuery(undefined, { pollingInterval: 3600000 });
   const [logout] = useLogoutMutation();
+  const [disconnectGithub] = useDisconnectGithubMutation();
+  const [disconnectAnthropic] = useDisconnectAnthropicMutation();
   const [showGithubSetup, setShowGithubSetup] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -38,7 +43,17 @@ export function Header() {
 
   const handleLogout = async () => {
     setMenuOpen(false);
-    await logout().unwrap();
+    try {
+      if (sessionMode === 'github' || isAuthEnabled) {
+        await logout().unwrap();
+        try { await disconnectGithub().unwrap(); } catch { /* best-effort */ }
+      } else if (sessionMode === 'anthropic') {
+        try { await disconnectAnthropic().unwrap(); } catch { /* best-effort */ }
+      }
+    } catch {
+      /* best-effort disconnect */
+    }
+    dispatch(clearAuth());
     window.location.href = '/';
   };
 
@@ -137,6 +152,30 @@ export function Header() {
                       <span className={styles.userHint}>{t('connectedViaGithub', 'Connected via GitHub')}</span>
                     </div>
                   </div>
+                ) : sessionMode === 'anthropic' ? (
+                  <div className={styles.userInfo}>
+                    <div className={styles.userAvatarFallback}><User size={20} /></div>
+                    <div className={styles.userDetails}>
+                      <span className={styles.userName}>Anthropic</span>
+                      <span className={styles.userHint}>{t('sessionAnthropic', 'Connected via Anthropic')}</span>
+                    </div>
+                  </div>
+                ) : sessionMode === 'explore' ? (
+                  <div className={styles.userInfo}>
+                    <div className={styles.userAvatarFallback}><User size={20} /></div>
+                    <div className={styles.userDetails}>
+                      <span className={styles.userName}>{t('startExploreTitle', 'Explore')}</span>
+                      <span className={styles.userHint}>{t('sessionExplore', 'Browse mode')}</span>
+                    </div>
+                  </div>
+                ) : sessionMode === 'developer' ? (
+                  <div className={styles.userInfo}>
+                    <div className={styles.userAvatarFallback}><User size={20} /></div>
+                    <div className={styles.userDetails}>
+                      <span className={styles.userName}>{t('startDevTitle', 'Developer')}</span>
+                      <span className={styles.userHint}>{t('sessionDev', 'Developer mode')}</span>
+                    </div>
+                  </div>
                 ) : (
                   <button
                     className={styles.dropdownItem}
@@ -182,8 +221,8 @@ export function Header() {
                 </button>
               </div>
 
-              {/* Logout (only when auth is enabled) */}
-              {isAuthEnabled && (
+              {/* Logout — always visible when a session mode is active */}
+              {sessionMode && (
                 <>
                   <div className={styles.dropdownDivider} />
                   <div className={styles.dropdownSection}>

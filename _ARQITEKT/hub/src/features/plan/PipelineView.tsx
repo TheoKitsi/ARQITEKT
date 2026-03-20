@@ -136,10 +136,11 @@ export function PipelineView({ projectId, onStageClick }: PipelineViewProps) {
                   <div className={`${styles.line} ${status === 'passed' || status === 'overridden' ? styles.linePassed : status === 'failed' ? styles.lineFailed : isLocked ? styles.lineLocked : ''}`} />
                   <button
                     type="button"
-                    className={`${styles.dot} ${styles[`dot_${status}`] ?? ''}`}
+                    className={`${styles.dot} ${gateResult?.needsProbing && status === 'passed' ? styles.dot_probing : styles[`dot_${status}`] ?? ''}`}
                     onClick={() => !isLocked && gateResult && setSelectedGate(gateResult)}
-                    aria-label={`G${gateId.charAt(1)}: ${status}`}
+                    aria-label={`G${gateId.charAt(1)}: ${status}${gateResult?.needsProbing ? ' (probing recommended)' : ''}`}
                     disabled={isLocked}
+                    title={gateResult?.needsProbing ? t('needsProbing') : undefined}
                   />
                 </>
               )}

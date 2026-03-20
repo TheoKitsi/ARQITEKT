@@ -86,10 +86,3 @@ export function getUsageSummary(sinceMs?: number, projectId?: string): UsageSumm
     recentEntries: filtered.slice(-20),
   };
 }
-
-/**
- * Clear all telemetry data.
- */
-export function clearUsage(): void {
-  entries.length = 0;
-}
