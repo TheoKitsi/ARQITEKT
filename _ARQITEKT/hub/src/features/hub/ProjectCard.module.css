@@ -62,14 +62,44 @@
   margin: 0;
 }
 
-/* ---- Imported project hint ---- */
+/* ---- Imported project / migrate ---- */
+.migrateSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
 .importedHint {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   font-style: italic;
   margin: 0;
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--color-border);
+}
+
+.migrateBtn {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  background: var(--color-brand-gold);
+  color: var(--color-surface-bg);
+  transition: filter var(--transition-fast);
+}
+
+.migrateBtn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.migrateBtn:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 /* ---- Stats bar ---- */

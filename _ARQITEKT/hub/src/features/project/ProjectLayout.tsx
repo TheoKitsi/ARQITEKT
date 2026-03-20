@@ -7,11 +7,15 @@ import {
   Rocket,
   Activity,
   ArrowLeft,
+  ArrowRightCircle,
 } from 'lucide-react';
 import { useGetProjectQuery } from '@/store/api/projectsApi';
+import { useMigrateProjectMutation } from '@/store/api/projectsApi';
 import { useGetReadinessQuery } from '@/store/api/requirementsApi';
 import { Spinner } from '@/components/ui/Spinner';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { Badge } from '@/components/ui/Badge';
+import { useToast } from '@/components/ui/Toast';
 import { RequirementsTree } from './RequirementsTree';
 import { SearchBox } from './SearchBox';
 import { ProgressTracker } from './ProgressTracker';
@@ -45,10 +49,26 @@ export function ProjectLayout() {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const { data: project, isLoading, isError } = useGetProjectQuery(projectId!);
   const { data: readiness } = useGetReadinessQuery(projectId!);
   const { data: tree } = useGetTreeQuery(projectId!);
+  const [migrateProject, { isLoading: migrating }] = useMigrateProjectMutation();
   const requirementsComplete = (readiness?.approved ?? 0) >= 100;
+
+  // Detect imported projects without ARQITEKT requirements structure
+  const hasRequirements = project
+    ? project.stats.bc + project.stats.sol + project.stats.us + project.stats.cmp + project.stats.fn > 0
+    : true; // default to true while loading
+
+  const handleMigrate = async () => {
+    try {
+      await migrateProject(projectId!).unwrap();
+      showToast(t('migrateSuccess'), 'success');
+    } catch {
+      showToast(t('migrateFailed'), 'error');
+    }
+  };
 
   /* ---- Tree → Dialog bridge (passed to Outlet context) ---- */
   const [openNode, setOpenNode] = useState<TreeNode | null>(null);
@@ -98,6 +118,39 @@ export function ProjectLayout() {
           <ArrowLeft size={14} />
           {t('backToProjects')}
         </Link>
+      </div>
+    );
+  }
+
+  /* ---- Migration gate: project has no ARQITEKT requirements ---- */
+  if (!hasRequirements) {
+    return (
+      <div className={styles.center}>
+        <div className={styles.migrateCard}>
+          <Link to="/" className={styles.backLink}>
+            <ArrowLeft size={14} />
+            {t('backToProjects')}
+          </Link>
+          <h2 className={styles.migrateTitle}>{project.config.name}</h2>
+          {project.config.description && (
+            <p className={styles.migrateDesc}>{project.config.description}</p>
+          )}
+          <Badge lifecycle={project.config.lifecycle}>{t(project.config.lifecycle)}</Badge>
+          <p className={styles.migrateExplain}>{t('migrateExplain')}</p>
+          <ul className={styles.migrateList}>
+            <li>{t('migrateStep1')}</li>
+            <li>{t('migrateStep2')}</li>
+            <li>{t('migrateStep3')}</li>
+          </ul>
+          <button
+            className={styles.migrateBtnLg}
+            onClick={handleMigrate}
+            disabled={migrating}
+          >
+            <ArrowRightCircle size={18} />
+            {migrating ? t('migrating') : t('migrateBtn')}
+          </button>
+        </div>
       </div>
     );
   }

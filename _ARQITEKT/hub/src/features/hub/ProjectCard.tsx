@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Play, ExternalLink, Globe, ShieldCheck, ShieldAlert, ShieldQuestion } from 'lucide-react';
+import { Play, ExternalLink, Globe, ShieldCheck, ShieldAlert, ShieldQuestion, ArrowRightCircle } from 'lucide-react';
 import type { Project } from '@/store/api/projectsApi';
+import { useMigrateProjectMutation } from '@/store/api/projectsApi';
 import { useAppStartMutation, useAppStatusQuery } from '@/store/api/deployApi';
 import { useGetPipelineQuery } from '@/store/api/pipelineApi';
 import { Badge, type LifecycleStage } from '@/components/ui/Badge';
@@ -22,6 +23,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const { showToast } = useToast();
   const lifecycle: LifecycleStage = project.config.lifecycle;
   const [startApp, { isLoading: starting }] = useAppStartMutation();
+  const [migrateProject, { isLoading: migrating }] = useMigrateProjectMutation();
 
   // Detect imported projects without ARQITEKT requirements structure
   const { bc, sol, us, cmp, fn } = project.stats;
@@ -79,6 +81,17 @@ export function ProjectCard({ project }: ProjectCardProps) {
     }
   };
 
+  const handleMigrate = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await migrateProject(project.id).unwrap();
+      showToast(t('migrateSuccess'), 'success');
+      navigate(`/projects/${project.id}/plan`);
+    } catch {
+      showToast(t('migrateFailed'), 'error');
+    }
+  };
+
   return (
     <article
       className={styles.card}
@@ -99,9 +112,19 @@ export function ProjectCard({ project }: ProjectCardProps) {
         {project.config.description || t('noDescription')}
       </p>
 
-      {/* Imported project hint — no ARQITEKT requirements */}
+      {/* Imported project — migrate to ARQITEKT */}
       {!hasRequirements && (
-        <p className={styles.importedHint}>{t('importedProject')}</p>
+        <div className={styles.migrateSection}>
+          <p className={styles.importedHint}>{t('importedProject')}</p>
+          <button
+            className={styles.migrateBtn}
+            onClick={handleMigrate}
+            disabled={migrating}
+          >
+            <ArrowRightCircle size={14} />
+            {migrating ? t('migrating') : t('migrateBtn')}
+          </button>
+        </div>
       )}
 
       {/* Stats bar — only for projects with requirements */}

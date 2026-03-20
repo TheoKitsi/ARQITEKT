@@ -516,6 +516,134 @@ export async function setLifecycle(projectId: string, stage: LifecycleStage): Pr
 }
 
 /* ------------------------------------------------------------------ */
+/*  Migrate imported project                                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Scaffold the ARQITEKT requirements structure into an existing project
+ * that was imported without it. Creates:
+ * - config/ directory with project.yaml (if missing)
+ * - requirements/ directory tree (solutions, user-stories, components, etc.)
+ * - requirements/templates/ with markdown scaffolds
+ * - A draft 00_BUSINESS_CASE.md from the project metadata
+ */
+export async function migrateProject(projectId: string): Promise<Project> {
+  const projectPath = await resolveProjectById(projectId);
+  await stat(projectPath); // throws if not exists
+
+  const registry = await loadRegistry();
+  const entry = registry.find((e) => e.id === projectId);
+  if (!entry) {
+    const err = new Error(`Project "${projectId}" not found in registry`) as Error & { status: number };
+    err.status = 404;
+    throw err;
+  }
+
+  // Read existing config (for name/description)
+  let projectConfig: ProjectConfig;
+  const configPath = join(projectPath, 'config', 'project.yaml');
+  try {
+    const content = await readFile(configPath, 'utf-8');
+    projectConfig = normalizeProjectConfig(parseYaml(content));
+  } catch {
+    // No config yet — create from registry entry
+    projectConfig = {
+      name: entry.name,
+      codename: entry.codename,
+      description: entry.description,
+      lifecycle: 'planning',
+    };
+    await mkdir(join(projectPath, 'config'), { recursive: true });
+    const configContent = `name: "${entry.name}"\ncodename: "${entry.codename}"\ndescription: "${entry.description || ''}"\nlifecycle: planning\n`;
+    await writeFile(configPath, configContent, 'utf-8');
+  }
+
+  // Scaffold requirements directories
+  const reqRoot = join(projectPath, 'requirements');
+  const dirs = [
+    'solutions', 'user-stories', 'components', 'functions',
+    'infrastructure', 'adrs', 'notifications', 'conversations',
+    'feedback', 'templates',
+  ];
+  for (const dir of dirs) {
+    await mkdir(join(reqRoot, dir), { recursive: true });
+  }
+
+  // Copy requirement templates from the hub template
+  const templateTemplatesDir = join(config.hubRoot, 'template', 'requirements', 'templates');
+  try {
+    const templateFiles = await readdir(templateTemplatesDir);
+    for (const file of templateFiles) {
+      if (file.endsWith('.md')) {
+        const destPath = join(reqRoot, 'templates', file);
+        try { await stat(destPath); } catch {
+          // Only copy if not already present
+          await cp(join(templateTemplatesDir, file), destPath);
+        }
+      }
+    }
+  } catch {
+    // Template dir not found — skip
+  }
+
+  // Create 00_BUSINESS_CASE.md if missing
+  const bcPath = join(reqRoot, '00_BUSINESS_CASE.md');
+  try {
+    await stat(bcPath);
+  } catch {
+    const name = projectConfig.name || entry.name;
+    const desc = projectConfig.description || entry.description || '';
+    const today = new Date().toISOString().slice(0, 10);
+    const bcContent = `---
+type: BusinessCase
+title: "${name}"
+status: draft
+version: "1.0"
+date: "${today}"
+---
+
+# BC-1: ${name}
+
+## 1. Business Objective
+
+${desc}
+
+## 2. Scope
+
+### In Scope
+
+<!-- Define what is included -->
+
+### Out of Scope
+
+<!-- Define what is excluded -->
+
+## 3. Target Users
+
+<!-- WHO uses this? -->
+
+## 4. Success Criteria
+
+<!-- HOW do we measure success? -->
+`;
+    await writeFile(bcPath, bcContent, 'utf-8');
+  }
+
+  // Return updated project
+  const stats = await getProjectStats(projectPath);
+  const readiness = await getReadiness(projectId).catch(() => ({ authored: 0, approved: 0 }));
+
+  return {
+    id: projectId,
+    path: projectPath,
+    mode: entry.mode,
+    config: projectConfig,
+    stats,
+    readiness,
+  };
+}
+
+/* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 

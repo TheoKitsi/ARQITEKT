@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listProjects, createProject, deleteProject, importProject, updateProjectMeta, renameProject, getLifecycle, setLifecycle, getRegistry, updateRegistryEntry, getProjectById } from '../services/projects.js';
+import { listProjects, createProject, deleteProject, importProject, migrateProject, updateProjectMeta, renameProject, getLifecycle, setLifecycle, getRegistry, updateRegistryEntry, getProjectById } from '../services/projects.js';
 import { createInvite, acceptInvite, listInvites, revokeInvite } from '../services/invites.js';
 import { validate, createProjectSchema, importProjectSchema, updateMetaSchema, renameProjectSchema, lifecycleSchema, updateRegistryEntrySchema, addMemberSchema, updateMemberRoleSchema, createInviteSchema } from '../middleware/validation.js';
 import { requireRole } from '../middleware/rbac.js';
@@ -153,6 +153,16 @@ projectsRouter.post('/:id/lifecycle', requireRole('editor'), validate(lifecycleS
     const { stage } = req.body;
     await setLifecycle(req.params.id as string, stage);
     res.json({ success: true, lifecycle: stage });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/projects/:id/migrate — scaffold ARQITEKT requirements structure
+projectsRouter.post('/:id/migrate', async (req, res, next) => {
+  try {
+    const project = await migrateProject(req.params.id as string);
+    res.json(project);
   } catch (err) {
     next(err);
   }

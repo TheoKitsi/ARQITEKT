@@ -27,6 +27,14 @@ vi.mock('@/store/api/pipelineApi', () => ({
   useGetPipelineQuery: () => ({ data: undefined }),
 }));
 
+vi.mock('@/store/api/projectsApi', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return {
+    ...actual,
+    useMigrateProjectMutation: () => [vi.fn(), { isLoading: false }],
+  };
+});
+
 vi.mock('lucide-react', () => ({
   Play: (props: Record<string, unknown>) => <svg data-testid="icon-play" {...props} />,
   ExternalLink: (props: Record<string, unknown>) => <svg data-testid="icon-external" {...props} />,
@@ -34,6 +42,7 @@ vi.mock('lucide-react', () => ({
   ShieldCheck: (props: Record<string, unknown>) => <svg data-testid="icon-shield-check" {...props} />,
   ShieldAlert: (props: Record<string, unknown>) => <svg data-testid="icon-shield-alert" {...props} />,
   ShieldQuestion: (props: Record<string, unknown>) => <svg data-testid="icon-shield-question" {...props} />,
+  ArrowRightCircle: (props: Record<string, unknown>) => <svg data-testid="icon-arrow-right" {...props} />,
 }));
 
 vi.mock('@/components/ui/Badge', () => ({

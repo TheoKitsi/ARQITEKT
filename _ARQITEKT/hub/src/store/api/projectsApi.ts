@@ -175,6 +175,17 @@ export const projectsApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: 'Project', id: 'LIST' }],
     }),
 
+    migrateProject: builder.mutation<Project, string>({
+      query: (id) => ({
+        url: `/projects/${id}/migrate`,
+        method: 'POST',
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: 'Project', id },
+        { type: 'Project', id: 'LIST' },
+      ],
+    }),
+
     updateProjectMeta: builder.mutation<Project, UpdateProjectMetaRequest>({
       query: ({ id, config }) => ({
         url: `/projects/${id}/meta`,
@@ -286,6 +297,7 @@ export const {
   useCreateProjectMutation,
   useDeleteProjectMutation,
   useImportProjectMutation,
+  useMigrateProjectMutation,
   useUpdateProjectMetaMutation,
   useRenameProjectMutation,
   useGetRegistryQuery,
