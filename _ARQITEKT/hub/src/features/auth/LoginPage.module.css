@@ -1,9 +1,15 @@
+/* ================================================================
+   ARQITEKT — Start Page
+   Premium, clean login with 4 provider options
+   ================================================================ */
+
 .container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   background: var(--color-surface);
+  padding: var(--space-4);
 }
 
 .card {
@@ -11,18 +17,20 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-5);
-  padding: var(--space-8);
+  padding: var(--space-8) var(--space-6);
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   text-align: center;
-  max-width: 400px;
+  max-width: 480px;
   width: 100%;
 }
 
+/* ---- Brand ---- */
+
 .logo {
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
   border-radius: var(--radius-lg);
 }
 
@@ -30,18 +38,144 @@
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--color-text);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   margin: 0;
 }
 
 .subtitle {
   color: var(--color-text-secondary);
-  font-size: 0.95rem;
+  font-size: var(--font-size-sm);
+  margin: 0;
+  max-width: 360px;
+  line-height: var(--line-height-normal);
+}
+
+/* ---- Option cards ---- */
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.option:hover {
+  border-color: var(--color-gold, #FFD700);
+  background-color: var(--color-surface-bg3);
+}
+
+.optionExpanded {
+  flex-direction: column;
+  cursor: default;
+  gap: var(--space-3);
+}
+
+.optionRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.optionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.optionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.optionDesc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  line-height: var(--line-height-normal);
+}
+
+/* ---- Badges ---- */
+
+.badge {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--radius-full, 99px);
+  background: color-mix(in srgb, var(--color-gold, #FFD700) 15%, transparent);
+  color: var(--color-gold, #FFD700);
+}
+
+.badgeMuted {
+  background: color-mix(in srgb, var(--color-text-tertiary) 12%, transparent);
+  color: var(--color-text-tertiary);
+}
+
+.badgeDev {
+  background: color-mix(in srgb, #58a6ff 15%, transparent);
+  color: #58a6ff;
+}
+
+/* ---- API key row (Anthropic) ---- */
+
+.apiKeyRow {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.apiKeyRow input {
+  flex: 1;
+  min-width: 0;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
   margin: 0;
 }
 
+/* ---- Footer hint ---- */
+
 .hint {
   color: var(--color-text-tertiary);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   margin: 0;
+  max-width: 380px;
+  line-height: var(--line-height-normal);
 }
