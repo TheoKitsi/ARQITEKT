@@ -6,9 +6,17 @@ import { useGetProjectsQuery } from '@/store/api/projectsApi';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { ProjectCard } from './ProjectCard';
+import { DashboardSummary } from './DashboardSummary';
 import { CreateProjectModal } from '@/features/shared/CreateProjectModal';
 import { ImportProjectModal } from '@/features/shared/ImportProjectModal';
 import styles from './HubDashboard.module.css';
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                          */
+/* ------------------------------------------------------------------ */
+
+const LIFECYCLE_FILTERS = ['all', 'planning', 'ready', 'building', 'built', 'running', 'deployed'] as const;
+type LifecycleFilter = (typeof LIFECYCLE_FILTERS)[number];
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -22,24 +30,29 @@ export function HubDashboard() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'lifecycle'>('name');
+  const [lifecycleFilter, setLifecycleFilter] = useState<LifecycleFilter>('all');
 
   const filtered = useMemo(() => {
     if (!projects) return [];
     const q = search.toLowerCase();
-    const list = q
+    let list = q
       ? projects.filter(
           (p) =>
             p.config.name.toLowerCase().includes(q) ||
             (p.config.description ?? '').toLowerCase().includes(q),
         )
       : [...projects];
+    // Lifecycle filter
+    if (lifecycleFilter !== 'all') {
+      list = list.filter((p) => p.config.lifecycle === lifecycleFilter);
+    }
     list.sort((a, b) =>
       sortBy === 'name'
         ? a.config.name.localeCompare(b.config.name)
         : (a.config.lifecycle ?? '').localeCompare(b.config.lifecycle ?? ''),
     );
     return list;
-  }, [projects, search, sortBy]);
+  }, [projects, search, sortBy, lifecycleFilter]);
 
   return (
     <main className={styles.page}>
@@ -76,6 +89,27 @@ export function HubDashboard() {
       {/* Project Grid */}
       <section className={styles.content}>
         <h2 className={styles.sectionTitle}>{t('projects')}</h2>
+
+        {/* Dashboard summary */}
+        {!isLoading && !isError && projects && projects.length > 0 && (
+          <DashboardSummary projects={projects} />
+        )}
+
+        {/* Lifecycle filter chips */}
+        {!isLoading && !isError && projects && projects.length > 0 && (
+          <div className={styles.filterRow}>
+            {LIFECYCLE_FILTERS.map((f) => (
+              <button
+                key={f}
+                type="button"
+                className={`${styles.filterChip} ${lifecycleFilter === f ? styles.filterChipActive : ''}`}
+                onClick={() => setLifecycleFilter(f)}
+              >
+                {f === 'all' ? t('filterAllProjects') : t(f)}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Search & Sort */}
         {!isLoading && !isError && projects && projects.length > 0 && (

@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Play, ExternalLink, Globe } from 'lucide-react';
+import { Play, ExternalLink, Globe, ShieldCheck, ShieldAlert, ShieldQuestion } from 'lucide-react';
 import type { Project } from '@/store/api/projectsApi';
 import { useAppStartMutation, useAppStatusQuery } from '@/store/api/deployApi';
+import { useGetPipelineQuery } from '@/store/api/pipelineApi';
 import { Badge, type LifecycleStage } from '@/components/ui/Badge';
 import { useToast } from '@/components/ui/Toast';
 import styles from './ProjectCard.module.css';
@@ -21,6 +22,19 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const { showToast } = useToast();
   const lifecycle: LifecycleStage = project.config.lifecycle;
   const [startApp, { isLoading: starting }] = useAppStartMutation();
+
+  // Pipeline gate status
+  const { data: pipeline } = useGetPipelineQuery(project.id);
+
+  // Find the current (first non-passed) gate
+  const currentGate = pipeline?.gates.find((g) => g.status !== 'passed');
+  const allGatesPassed = pipeline?.gates.length
+    ? pipeline.gates.every((g) => g.status === 'passed' || g.status === 'overridden')
+    : false;
+
+  // Readiness from project data
+  const { authored, approved } = project.readiness;
+  const readinessPercent = authored > 0 ? Math.round((approved / authored) * 100) : 0;
 
   // Poll app status for running apps to get real port
   const showAction = lifecycle === 'built' || lifecycle === 'building' || lifecycle === 'running' || lifecycle === 'deployed';
@@ -86,6 +100,53 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <StatItem label={t('statCMP')} value={project.stats.cmp} />
         <StatItem label={t('statFN')} value={project.stats.fn} />
       </div>
+
+      {/* Readiness bar */}
+      {authored > 0 && (
+        <div className={styles.readiness}>
+          <div className={styles.readinessHeader}>
+            <span className={styles.readinessLabel}>{t('readinessLabel')}</span>
+            <span className={styles.readinessValue}>{readinessPercent}%</span>
+          </div>
+          <div className={styles.readinessTrack}>
+            <div
+              className={styles.readinessFill}
+              style={{ width: `${readinessPercent}%` }}
+            />
+          </div>
+          <span className={styles.readinessHint}>
+            {t('readinessOf', { approved, authored })}
+          </span>
+        </div>
+      )}
+
+      {/* Gate indicator */}
+      {pipeline && (
+        <div className={styles.gateRow}>
+          {allGatesPassed ? (
+            <>
+              <ShieldCheck size={14} className={styles.gatePassed} />
+              <span className={styles.gateText}>{t('gateStatusPassed')}</span>
+            </>
+          ) : currentGate ? (
+            <>
+              {currentGate.status === 'failed' ? (
+                <ShieldAlert size={14} className={styles.gateFailed} />
+              ) : (
+                <ShieldQuestion size={14} className={styles.gatePending} />
+              )}
+              <span className={styles.gateText}>
+                {currentGate.name}
+              </span>
+              <span className={`${styles.gateStatus} ${
+                currentGate.status === 'failed' ? styles.gateStatusRed : styles.gateStatusYellow
+              }`}>
+                {currentGate.status === 'failed' ? t('gateStatusFailed') : t('gateStatusPending')}
+              </span>
+            </>
+          ) : null}
+        </div>
+      )}
 
       {/* Action button */}
       {showAction && (

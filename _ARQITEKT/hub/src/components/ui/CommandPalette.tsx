@@ -17,7 +17,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { toggleCommandPalette } from '@/store/slices/uiSlice';
+import { toggleCommandPalette, toggleTheme } from '@/store/slices/uiSlice';
 import styles from './CommandPalette.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -77,6 +77,7 @@ export function CommandPalette() {
         icon: <Settings size={16} />,
         action: () => {
           dispatch(toggleCommandPalette());
+          navigate('/');
         },
       },
       {
@@ -84,6 +85,7 @@ export function CommandPalette() {
         label: t('toggleTheme', 'Toggle Theme'),
         icon: <Moon size={16} />,
         action: () => {
+          dispatch(toggleTheme());
           dispatch(toggleCommandPalette());
         },
       },
@@ -93,6 +95,7 @@ export function CommandPalette() {
         icon: <FileText size={16} />,
         action: () => {
           dispatch(toggleCommandPalette());
+          window.open('https://github.com/TheoKitsi/ARQITEKT', '_blank', 'noopener');
         },
       },
     ],
