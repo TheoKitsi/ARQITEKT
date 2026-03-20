@@ -2,10 +2,10 @@ import { Router } from 'express';
 import { buildTree, getStats, getReadiness, validateProject, setRequirementStatus } from '../services/requirements.js';
 import { getArtifactContent, updateArtifactContent } from '../services/requirementHelpers.js';
 import { importRequirementsCsv } from '../services/importService.js';
-import { validate, validateQuery, setStatusSchema, searchQuerySchema, nextUsIdQuerySchema, updateContentSchema, createBusinessCaseSchema, createSolutionSchema, createUserStorySchema } from '../middleware/validation.js';
+import { validate, validateQuery, setStatusSchema, searchQuerySchema, nextUsIdQuerySchema, updateContentSchema, createBusinessCaseSchema, createSolutionSchema, createUserStorySchema, createComponentSchema, createFunctionSchema } from '../middleware/validation.js';
 import { recordAudit } from '../services/audit.js';
 import { requireRole } from '../middleware/rbac.js';
-import { createBusinessCase, createSolution, createUserStory } from '../services/artifactCreation.js';
+import { createBusinessCase, createSolution, createUserStory, createComponent, createFunction } from '../services/artifactCreation.js';
 
 export const requirementsRouter = Router();
 
@@ -214,6 +214,34 @@ requirementsRouter.post('/:id/solutions/:solId/user-stories', requireRole('edito
     const { title, notes, mode } = req.body;
     const result = await createUserStory(projectId, solutionId, title, notes, mode);
     recordAudit(projectId, 'requirement.created', req.ip ?? 'unknown', result.id, { type: 'US', title }).catch(() => {});
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/projects/:id/user-stories/:usId/components — create a new component under a user story
+requirementsRouter.post('/:id/user-stories/:usId/components', requireRole('editor'), validate(createComponentSchema), async (req, res, next) => {
+  try {
+    const projectId = req.params.id as string;
+    const userStoryId = req.params.usId as string;
+    const { title, notes, mode } = req.body;
+    const result = await createComponent(projectId, userStoryId, title, notes, mode);
+    recordAudit(projectId, 'requirement.created', req.ip ?? 'unknown', result.id, { type: 'CMP', title }).catch(() => {});
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/projects/:id/components/:cmpId/functions — create a new function under a component
+requirementsRouter.post('/:id/components/:cmpId/functions', requireRole('editor'), validate(createFunctionSchema), async (req, res, next) => {
+  try {
+    const projectId = req.params.id as string;
+    const componentId = req.params.cmpId as string;
+    const { title, notes, mode } = req.body;
+    const result = await createFunction(projectId, componentId, title, notes, mode);
+    recordAudit(projectId, 'requirement.created', req.ip ?? 'unknown', result.id, { type: 'FN', title }).catch(() => {});
     res.status(201).json(result);
   } catch (err) {
     next(err);

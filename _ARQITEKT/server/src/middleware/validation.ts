@@ -64,6 +64,18 @@ export const createUserStorySchema = z.object({
   mode: z.enum(['discuss', 'direct']),
 });
 
+export const createComponentSchema = z.object({
+  title: z.string().min(1).max(200),
+  notes: z.string().max(2000).optional(),
+  mode: z.enum(['discuss', 'direct']),
+});
+
+export const createFunctionSchema = z.object({
+  title: z.string().min(1).max(200),
+  notes: z.string().max(2000).optional(),
+  mode: z.enum(['discuss', 'direct']),
+});
+
 /* ------------------------------------------------------------------ */
 /*  Chat schemas                                                       */
 /* ------------------------------------------------------------------ */

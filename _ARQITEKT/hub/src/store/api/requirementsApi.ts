@@ -86,6 +86,22 @@ export interface CreateUserStoryRequest {
   mode: 'discuss' | 'direct';
 }
 
+export interface CreateComponentRequest {
+  projectId: string;
+  userStoryId: string;
+  title: string;
+  notes?: string;
+  mode: 'discuss' | 'direct';
+}
+
+export interface CreateFunctionRequest {
+  projectId: string;
+  componentId: string;
+  title: string;
+  notes?: string;
+  mode: 'discuss' | 'direct';
+}
+
 export interface SetStatusRequest {
   projectId: string;
   nodeId: string;
@@ -243,6 +259,30 @@ export const requirementsApi = baseApi.injectEndpoints({
       ],
     }),
 
+    createComponent: builder.mutation<TreeNode, CreateComponentRequest>({
+      query: ({ projectId, userStoryId, ...body }) => ({
+        url: `/projects/${projectId}/user-stories/${userStoryId}/components`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [
+        { type: 'Requirements', id: projectId },
+        { type: 'Requirements', id: `${projectId}-stats` },
+      ],
+    }),
+
+    createFunction: builder.mutation<TreeNode, CreateFunctionRequest>({
+      query: ({ projectId, componentId, ...body }) => ({
+        url: `/projects/${projectId}/components/${componentId}/functions`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_result, _error, { projectId }) => [
+        { type: 'Requirements', id: projectId },
+        { type: 'Requirements', id: `${projectId}-stats` },
+      ],
+    }),
+
     validateProject: builder.mutation<ValidationResult, string>({
       query: (projectId) => ({
         url: `/projects/${projectId}/validate`,
@@ -302,6 +342,8 @@ export const {
   useCreateBusinessCaseMutation,
   useCreateSolutionMutation,
   useCreateUserStoryMutation,
+  useCreateComponentMutation,
+  useCreateFunctionMutation,
   useValidateProjectMutation,
   useImportCsvMutation,
   useGetArtifactContentQuery,

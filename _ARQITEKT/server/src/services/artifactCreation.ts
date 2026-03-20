@@ -231,3 +231,145 @@ date: "${date}"
 
   return { id: 'BC-1', title, type: 'BC', status: 'draft', children: [] as never[] };
 }
+
+/* ------------------------------------------------------------------ */
+/*  Create Component                                                   */
+/* ------------------------------------------------------------------ */
+
+export async function createComponent(
+  projectId: string,
+  userStoryId: string,
+  title: string,
+  notes?: string,
+  _mode?: 'discuss' | 'direct',
+): Promise<{ id: string; title: string; type: string; status: string; children: never[] }> {
+  const projectPath = await resolveProjectById(projectId);
+  const cmpDir = join(projectPath, 'requirements', 'components');
+
+  await mkdir(cmpDir, { recursive: true });
+
+  let cmpFiles: string[];
+  try {
+    cmpFiles = await readdir(cmpDir);
+  } catch {
+    cmpFiles = [];
+  }
+
+  // Extract US number from userStoryId (e.g. "US-1.2" → "1.2")
+  const usNum = userStoryId.replace(/^US-/, '');
+  const existingForUS = cmpFiles.filter(
+    (f) => f.endsWith('.md') && f.startsWith(`CMP-${usNum}.`),
+  ).length;
+
+  const cmpNum = existingForUS + 1;
+  const cmpId = `CMP-${usNum}.${cmpNum}`;
+  const date = todayISO();
+
+  const body = `---
+type: Component
+id: "${cmpId}"
+title: "${title}"
+status: draft
+version: "1.0"
+date: "${date}"
+parent: "${userStoryId}"
+---
+
+# ${cmpId}: ${title}
+
+> **Parent**: [${userStoryId}](../user-stories/${userStoryId}_*.md)
+> **Date**: ${date}
+
+---
+
+## Component Description
+
+${notes || '<!-- Describe this technical module, its responsibilities, and boundaries. -->'}
+
+---
+
+## Interfaces
+
+<!-- What APIs, events, or contracts does this component expose or consume? -->
+
+---
+`;
+
+  const filename = `${cmpId}_${sanitizeFilename(title)}.md`;
+  await writeFile(join(cmpDir, filename), body, 'utf-8');
+
+  return { id: cmpId, title, type: 'CMP', status: 'draft', children: [] as never[] };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Create Function                                                    */
+/* ------------------------------------------------------------------ */
+
+export async function createFunction(
+  projectId: string,
+  componentId: string,
+  title: string,
+  notes?: string,
+  _mode?: 'discuss' | 'direct',
+): Promise<{ id: string; title: string; type: string; status: string; children: never[] }> {
+  const projectPath = await resolveProjectById(projectId);
+  const fnDir = join(projectPath, 'requirements', 'functions');
+
+  await mkdir(fnDir, { recursive: true });
+
+  let fnFiles: string[];
+  try {
+    fnFiles = await readdir(fnDir);
+  } catch {
+    fnFiles = [];
+  }
+
+  // Extract CMP number from componentId (e.g. "CMP-1.2.1" → "1.2.1")
+  const cmpNum = componentId.replace(/^CMP-/, '');
+  const existingForCMP = fnFiles.filter(
+    (f) => f.endsWith('.md') && f.startsWith(`FN-${cmpNum}.`),
+  ).length;
+
+  const fnNum = existingForCMP + 1;
+  const fnId = `FN-${cmpNum}.${fnNum}`;
+  const date = todayISO();
+
+  const body = `---
+type: Function
+id: "${fnId}"
+title: "${title}"
+status: draft
+version: "1.0"
+date: "${date}"
+parent: "${componentId}"
+---
+
+# ${fnId}: ${title}
+
+> **Parent**: [${componentId}](../components/${componentId}_*.md)
+> **Date**: ${date}
+
+---
+
+## Description
+
+${notes || '<!-- Describe the atomic behavior this function implements. -->'}
+
+---
+
+## Pre-conditions
+
+- <!-- What must be true before this function executes? -->
+
+## Post-conditions
+
+- <!-- What is guaranteed after this function completes? -->
+
+---
+`;
+
+  const filename = `${fnId}_${sanitizeFilename(title)}.md`;
+  await writeFile(join(fnDir, filename), body, 'utf-8');
+
+  return { id: fnId, title, type: 'FN', status: 'draft', children: [] as never[] };
+}

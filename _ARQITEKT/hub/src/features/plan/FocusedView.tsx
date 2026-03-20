@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pencil, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Pencil, ArrowRight, CheckCircle2, Plus } from 'lucide-react';
 import type { TreeNode } from '@/store/api/requirementsApi';
 import { useGetTreeQuery, useGetStatsQuery, useGetReadinessQuery, useCreateBusinessCaseMutation } from '@/store/api/requirementsApi';
 import { Badge } from '@/components/ui/Badge';
@@ -14,6 +14,7 @@ export interface FocusedViewProps {
   projectId: string;
   selectedNode: TreeNode | null;
   onOpenNode: (node: TreeNode) => void;
+  onAddChild: (parentNode: TreeNode) => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -34,7 +35,7 @@ const STATUS_VARIANT: Record<string, 'default' | 'warning' | 'success'> = {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function FocusedView({ projectId, selectedNode, onOpenNode }: FocusedViewProps) {
+export function FocusedView({ projectId, selectedNode, onOpenNode, onAddChild }: FocusedViewProps) {
   const { t } = useTranslation();
   const { data: tree } = useGetTreeQuery(projectId);
   const { data: stats } = useGetStatsQuery(projectId);
@@ -80,12 +81,10 @@ export function FocusedView({ projectId, selectedNode, onOpenNode }: FocusedView
     return search(tree);
   }, [tree]);
 
-  /* Get Started click: open the first artifact of the needed type */
+  /* Get Started click: open the first artifact of the needed type, or create it */
   const handleGetStarted = useCallback(async () => {
     const targetType = nextHint.type;
     if (!targetType) return;
-
-    // If the tree is not loaded yet, bail
     if (!tree) return;
 
     // Try to find an existing node of the target type
@@ -106,12 +105,26 @@ export function FocusedView({ projectId, selectedNode, onOpenNode }: FocusedView
       return;
     }
 
-    // If no node of the target type exists but BC exists, open BC so user can navigate
+    // For SOL/US/CMP/FN: find the nearest parent and trigger the add-child flow
+    // SOL needs BC, US needs SOL, CMP needs US, FN needs CMP
+    const parentTypeMap: Record<string, string> = {
+      SOL: 'BC', US: 'SOL', CMP: 'US', FN: 'CMP',
+    };
+    const parentType = parentTypeMap[targetType];
+    if (parentType) {
+      const parentNode = findByType(parentType);
+      if (parentNode) {
+        onAddChild(parentNode);
+        return;
+      }
+    }
+
+    // Fallback: open BC if it exists
     const bcNode = findByType('BC');
     if (bcNode) {
       onOpenNode(bcNode);
     }
-  }, [nextHint.type, tree, findByType, onOpenNode, createBC, projectId]);
+  }, [nextHint.type, tree, findByType, onOpenNode, onAddChild, createBC, projectId]);
 
   /* ---- Welcome screen → Guided Card ---- */
   if (!fullNode) {
@@ -157,6 +170,12 @@ export function FocusedView({ projectId, selectedNode, onOpenNode }: FocusedView
   /* ---- Node context ---- */
   const children = fullNode.children;
 
+  /* Which types support adding children? */
+  const canAddChild = ['BC', 'SOL', 'US', 'CMP'].includes(fullNode.type);
+  const childTypeLabel: Record<string, string> = {
+    BC: t('statSOL'), SOL: t('statUS'), US: t('statCMP'), CMP: t('statFN'),
+  };
+
   return (
     <section className={styles.focused}>
       {/* Selected node header */}
@@ -172,33 +191,52 @@ export function FocusedView({ projectId, selectedNode, onOpenNode }: FocusedView
         >
           <Pencil size={14} />
         </button>
+        {canAddChild && (
+          <button
+            type="button"
+            className={styles.addChildBtn}
+            onClick={() => onAddChild(fullNode)}
+            aria-label={t('addChild')}
+          >
+            <Plus size={14} /> {childTypeLabel[fullNode.type]}
+          </button>
+        )}
       </div>
 
       {/* Children cards */}
-      {children.length > 0 ? (
-        <div className={styles.childGrid}>
-          {children.map((child) => (
-            <button
-              key={child.id}
-              type="button"
-              className={styles.childCard}
-              onClick={() => onOpenNode(child)}
-            >
-              <div className={styles.childHeader}>
-                <Badge variant={TYPE_VARIANT[child.type] ?? 'default'}>{child.type}</Badge>
-                <span className={styles.childId}>{child.id}</span>
-                <Badge variant={STATUS_VARIANT[child.status] ?? 'default'}>{child.status}</Badge>
-              </div>
-              <span className={styles.childTitle}>{child.title}</span>
-              {child.children.length > 0 && (
-                <span className={styles.childSub}>
-                  {child.children.length} {t('detailChildren')}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      ) : (
+      <div className={styles.childGrid}>
+        {children.map((child) => (
+          <button
+            key={child.id}
+            type="button"
+            className={styles.childCard}
+            onClick={() => onOpenNode(child)}
+          >
+            <div className={styles.childHeader}>
+              <Badge variant={TYPE_VARIANT[child.type] ?? 'default'}>{child.type}</Badge>
+              <span className={styles.childId}>{child.id}</span>
+              <Badge variant={STATUS_VARIANT[child.status] ?? 'default'}>{child.status}</Badge>
+            </div>
+            <span className={styles.childTitle}>{child.title}</span>
+            {child.children.length > 0 && (
+              <span className={styles.childSub}>
+                {child.children.length} {t('detailChildren')}
+              </span>
+            )}
+          </button>
+        ))}
+        {canAddChild && (
+          <button
+            type="button"
+            className={styles.addCard}
+            onClick={() => onAddChild(fullNode)}
+          >
+            <Plus size={20} />
+            <span>{t('addChild')}</span>
+          </button>
+        )}
+      </div>
+      {children.length === 0 && !canAddChild && (
         <p className={styles.emptyChildren}>{t('noRequirements')}</p>
       )}
     </section>

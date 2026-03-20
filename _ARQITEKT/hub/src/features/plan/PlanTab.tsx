@@ -6,6 +6,8 @@ import { FocusedView } from './FocusedView';
 import { RequirementDialog } from './RequirementDialog';
 import { AddSolutionModal } from './AddSolutionModal';
 import { AddUserStoryModal } from './AddUserStoryModal';
+import { AddComponentModal } from './AddComponentModal';
+import { AddFunctionModal } from './AddFunctionModal';
 import { ValidationOverlay } from './ValidationOverlay';
 import { ProbingDialog } from './ProbingDialog';
 import { Modal } from '@/components/ui/Modal';
@@ -37,6 +39,8 @@ export function PlanTab() {
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
   const [showAddSol, setShowAddSol] = useState(false);
   const [showAddUS, setShowAddUS] = useState<string | null>(null);
+  const [showAddCmp, setShowAddCmp] = useState<string | null>(null);
+  const [showAddFn, setShowAddFn] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
   const [probingArtifactId, setProbingArtifactId] = useState<string | null>(null);
   const [showIdeaDialog, setShowIdeaDialog] = useState(false);
@@ -78,6 +82,24 @@ export function PlanTab() {
     }
   }, [tree, handleOpenNode]);
 
+  /* When user clicks "+" to add a child under a parent node */
+  const handleAddChild = useCallback((parentNode: TreeNode) => {
+    switch (parentNode.type) {
+      case 'BC':
+        setShowAddSol(true);
+        break;
+      case 'SOL':
+        setShowAddUS(parentNode.id);
+        break;
+      case 'US':
+        setShowAddCmp(parentNode.id);
+        break;
+      case 'CMP':
+        setShowAddFn(parentNode.id);
+        break;
+    }
+  }, []);
+
   return (
     <div className={styles.tab}>
       <PipelineView projectId={projectId!} onStageClick={handleStageClick} />
@@ -87,6 +109,7 @@ export function PlanTab() {
           projectId={projectId!}
           selectedNode={selectedNode ?? dialogNode}
           onOpenNode={handleOpenNode}
+          onAddChild={handleAddChild}
         />
       </section>
 
@@ -111,6 +134,22 @@ export function PlanTab() {
         onClose={() => setShowAddUS(null)}
         projectId={projectId!}
         solutionId={showAddUS ?? ''}
+      />
+
+      {/* Add Component modal */}
+      <AddComponentModal
+        isOpen={!!showAddCmp}
+        onClose={() => setShowAddCmp(null)}
+        projectId={projectId!}
+        userStoryId={showAddCmp ?? ''}
+      />
+
+      {/* Add Function modal */}
+      <AddFunctionModal
+        isOpen={!!showAddFn}
+        onClose={() => setShowAddFn(null)}
+        projectId={projectId!}
+        componentId={showAddFn ?? ''}
       />
 
       {/* Validation overlay */}
