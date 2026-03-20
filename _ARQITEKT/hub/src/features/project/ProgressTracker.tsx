@@ -35,7 +35,7 @@ type StepKey = (typeof STEPS)[number];
 
 function deriveCompletedSteps(readiness: ReadinessResult | undefined): number {
   if (!readiness) return 0;
-  const raw = Math.floor((readiness.score / 100) * STEPS.length);
+  const raw = Math.floor((readiness.authored / 100) * STEPS.length);
   return Math.min(raw, STEPS.length);
 }
 
@@ -50,7 +50,7 @@ function deriveNextStepHint(
   if (stats.us === 0) return t('nsCreateUS');
   if (stats.cmp === 0) return t('nsDefineCmp');
   if (stats.fn === 0) return t('nsSpecifyFn');
-  if (readiness.score < 100) return t('nsReview');
+  if (readiness.authored < 100) return t('nsReview');
   return null;
 }
 
@@ -106,7 +106,7 @@ export function ProgressTracker({ projectId, onNextStep }: ProgressTrackerProps)
 
   const percent = useMemo(() => {
     if (!readiness) return 0;
-    return Math.round(readiness.score);
+    return Math.round(readiness.authored);
   }, [readiness]);
 
   const nextHint = useMemo(

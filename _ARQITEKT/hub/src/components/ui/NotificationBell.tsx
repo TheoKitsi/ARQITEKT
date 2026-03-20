@@ -28,7 +28,7 @@ const severityColor: Record<string, string> = {
 /* ------------------------------------------------------------------ */
 
 interface Props {
-  projectId: string;
+  projectId?: string;
 }
 
 export function NotificationBell({ projectId }: Props) {
@@ -36,8 +36,8 @@ export function NotificationBell({ projectId }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const { data: countData } = useGetUnreadCountQuery(projectId, { pollingInterval: 15_000 });
-  const { data: listData } = useGetNotificationsQuery({ projectId }, { skip: !open });
+  const { data: countData } = useGetUnreadCountQuery(projectId!, { pollingInterval: 15_000, skip: !projectId });
+  const { data: listData } = useGetNotificationsQuery({ projectId: projectId! }, { skip: !open || !projectId });
   const [markRead] = useMarkNotificationReadMutation();
   const [markAll] = useMarkAllReadMutation();
   const [deleteNotif] = useDeleteNotificationMutation();
@@ -55,7 +55,7 @@ export function NotificationBell({ projectId }: Props) {
   }, [open]);
 
   const handleItemClick = (n: Notification) => {
-    if (!n.read) {
+    if (!n.read && projectId) {
       markRead({ projectId, notificationId: n.id });
     }
   };
@@ -79,7 +79,7 @@ export function NotificationBell({ projectId }: Props) {
             {unread > 0 && (
               <button
                 className={styles.markAll}
-                onClick={() => markAll(projectId)}
+                onClick={() => projectId && markAll(projectId)}
                 type="button"
               >
                 <CheckCheck size={14} />
@@ -89,7 +89,9 @@ export function NotificationBell({ projectId }: Props) {
           </div>
 
           <div className={styles.list}>
-            {(!listData?.items || listData.items.length === 0) ? (
+            {!projectId ? (
+              <div className={styles.empty}>{t('selectProjectForNotifications')}</div>
+            ) : (!listData?.items || listData.items.length === 0) ? (
               <div className={styles.empty}>{t('noNotifications')}</div>
             ) : (
               listData.items.map((n) => (
@@ -115,7 +117,7 @@ export function NotificationBell({ projectId }: Props) {
                         className={styles.actionBtn}
                         onClick={(e) => {
                           e.stopPropagation();
-                          markRead({ projectId, notificationId: n.id });
+                          projectId && markRead({ projectId, notificationId: n.id });
                         }}
                         aria-label={t('markAsRead')}
                         type="button"
@@ -127,7 +129,7 @@ export function NotificationBell({ projectId }: Props) {
                       className={styles.actionBtn}
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteNotif({ projectId, notificationId: n.id });
+                        projectId && deleteNotif({ projectId, notificationId: n.id });
                       }}
                       aria-label={t('deleteBtn')}
                       type="button"

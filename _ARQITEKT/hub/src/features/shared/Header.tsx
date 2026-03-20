@@ -88,8 +88,8 @@ export function Header() {
 
       {/* Right: actions */}
       <div className={styles.actions}>
-        {/* Notification bell (visible when inside a project) */}
-        {activeProjectId && <NotificationBell projectId={activeProjectId} />}
+        {/* Notification bell (always visible; shows empty hint when no project) */}
+        <NotificationBell projectId={activeProjectId} />
 
         {/* Update available banner */}
         {updateInfo?.updateAvailable && (

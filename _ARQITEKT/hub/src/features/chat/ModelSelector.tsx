@@ -1,21 +1,13 @@
 import { useTranslation } from 'react-i18next';
+import { Github } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { setModel } from '@/store/slices/chatSlice';
 import { useGetModelsQuery } from '@/store/api/chatApi';
+import { useGetGithubStatusQuery } from '@/store/api/githubApi';
+import { useGetAuthStatusQuery } from '@/store/api/authApi';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
 import styles from './ModelSelector.module.css';
-
-/* ------------------------------------------------------------------ */
-/*  Fallback models when API is unavailable                            */
-/* ------------------------------------------------------------------ */
-
-const fallbackModels = [
-  { id: 'claude-sonnet', name: 'Claude Sonnet', provider: 'Anthropic', contextWindow: 200000, available: true },
-  { id: 'claude-opus', name: 'Claude Opus', provider: 'Anthropic', contextWindow: 200000, available: true },
-  { id: 'gpt-4o', name: 'GPT-4o', provider: 'OpenAI', contextWindow: 128000, available: true },
-  { id: 'local', name: 'Local', provider: 'Local', contextWindow: 8000, available: true },
-];
 
 /* ------------------------------------------------------------------ */
 /*  Provider badge variants                                            */
@@ -46,9 +38,24 @@ export function ModelSelector() {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const currentModel = useAppSelector((s) => s.chat.model);
-  const { data: models, isLoading, isError } = useGetModelsQuery();
+  const { data: ghStatus } = useGetGithubStatusQuery();
+  const { data: authStatus } = useGetAuthStatusQuery();
+  const isConnected = (authStatus?.authEnabled && authStatus?.authenticated) || ghStatus?.connected;
+  const { data: models, isLoading, isError } = useGetModelsQuery(undefined, { skip: !isConnected });
 
-  const availableModels = isError || !models ? fallbackModels : models;
+  /* Voice/speech transcription uses browser SpeechRecognition, not LLM — exempt from auth gate */
+  if (!isConnected) {
+    return (
+      <div className={styles.wrapper}>
+        <div className={styles.authHint}>
+          <Github size={14} />
+          <span>{t('signInForModels')}</span>
+        </div>
+      </div>
+    );
+  }
+
+  const availableModels = isError || !models ? [] : models;
   const selectedModel = availableModels.find((m) => m.id === currentModel);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

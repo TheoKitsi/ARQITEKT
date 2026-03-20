@@ -36,8 +36,6 @@ export type RequirementStatus =
   | 'implemented';
 
 export interface RequirementsStats {
-  total: number;
-  byStatus: Record<RequirementStatus, number>;
   bc: number;
   sol: number;
   us: number;
@@ -46,22 +44,13 @@ export interface RequirementsStats {
   inf: number;
   adr: number;
   ntf: number;
-  solutions: number;
-  userStories: number;
-  requirements: number;
-  completionPercent: number;
+  conv: number;
+  fbk: number;
 }
 
 export interface ReadinessResult {
-  ready: boolean;
-  score: number;
-  issues: ReadinessIssue[];
-}
-
-export interface ReadinessIssue {
-  severity: 'error' | 'warning' | 'info';
-  message: string;
-  nodeId?: string;
+  authored: number;
+  approved: number;
 }
 
 export interface ValidationResult {

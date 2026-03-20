@@ -46,7 +46,7 @@ export function ProjectLayout() {
   const location = useLocation();
   const { data: project, isLoading, isError } = useGetProjectQuery(projectId!);
   const { data: readiness } = useGetReadinessQuery(projectId!);
-  const requirementsComplete = (readiness?.score ?? 0) >= 100;
+  const requirementsComplete = (readiness?.authored ?? 0) >= 100;
 
   /* ---- Tree → Dialog bridge (passed to Outlet context) ---- */
   const [openNode, setOpenNode] = useState<TreeNode | null>(null);
