@@ -19,6 +19,7 @@ import styles from './PipelineView.module.css';
 
 export interface PipelineViewProps {
   projectId: string;
+  onStageClick?: (stage: string) => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -50,7 +51,7 @@ const GATE_BETWEEN: Record<string, GateId> = {
 /*  Component — compact dot strip                                      */
 /* ------------------------------------------------------------------ */
 
-export function PipelineView({ projectId }: PipelineViewProps) {
+export function PipelineView({ projectId, onStageClick }: PipelineViewProps) {
   const { t } = useTranslation();
   const { data: pipeline, isLoading, isError, refetch } = useGetPipelineQuery(projectId);
   const [evaluateGate, { isLoading: isEvaluating }] = useEvaluateGateMutation();
@@ -101,7 +102,13 @@ export function PipelineView({ projectId }: PipelineViewProps) {
           return (
             <div key={stage} className={styles.segment}>
               {/* Stage label */}
-              <span className={styles.stageLabel}>{t(STAGE_KEYS[stage] ?? stage)}</span>
+              <button
+                type="button"
+                className={styles.stageLabel}
+                onClick={() => onStageClick?.(stage)}
+              >
+                {t(STAGE_KEYS[stage] ?? stage)}
+              </button>
 
               {/* Gate dot */}
               {gateId && (

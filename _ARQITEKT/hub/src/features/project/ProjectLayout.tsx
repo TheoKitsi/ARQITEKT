@@ -9,6 +9,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { useGetProjectQuery } from '@/store/api/projectsApi';
+import { useGetReadinessQuery } from '@/store/api/requirementsApi';
 import { Spinner } from '@/components/ui/Spinner';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { RequirementsTree } from './RequirementsTree';
@@ -44,6 +45,8 @@ export function ProjectLayout() {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
   const { data: project, isLoading, isError } = useGetProjectQuery(projectId!);
+  const { data: readiness } = useGetReadinessQuery(projectId!);
+  const requirementsComplete = (readiness?.score ?? 0) >= 100;
 
   /* ---- Tree → Dialog bridge (passed to Outlet context) ---- */
   const [openNode, setOpenNode] = useState<TreeNode | null>(null);
@@ -112,18 +115,23 @@ export function ProjectLayout() {
 
         {/* Tab bar */}
         <nav className={styles.tabBar} aria-label={t('projectTabs')}>
-          {tabs.map((tab) => (
-            <NavLink
-              key={tab.to}
-              to={tab.to}
-              className={({ isActive }) =>
-                `${styles.tab} ${isActive ? styles.tabActive : ''}`
-              }
-            >
-              {tab.icon}
-              <span>{t(tab.labelKey)}</span>
-            </NavLink>
-          ))}
+          {tabs.map((tab) => {
+            const isPlan = tab.to === 'plan';
+            const dimmed = !isPlan && !requirementsComplete;
+            return (
+              <NavLink
+                key={tab.to}
+                to={tab.to}
+                className={({ isActive }) =>
+                  `${styles.tab} ${isActive ? styles.tabActive : ''} ${dimmed ? styles.tabDimmed : ''}`
+                }
+                title={dimmed ? t('completeRequirementsFirst') : undefined}
+              >
+                {tab.icon}
+                <span>{t(tab.labelKey)}</span>
+              </NavLink>
+            );
+          })}
         </nav>
 
         {/* Content */}

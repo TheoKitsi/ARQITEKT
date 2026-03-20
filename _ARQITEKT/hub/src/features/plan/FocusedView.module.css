@@ -19,6 +19,92 @@
   line-height: 1.5;
 }
 
+/* ---- Guided Card (welcome state) ---- */
+.guidedCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  background-color: var(--color-surface-bg2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+}
+
+.guidedTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.guidedHint {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.guidedProgress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.guidedTrack {
+  flex: 1;
+  height: 6px;
+  background-color: var(--color-surface-bg4);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.guidedFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-brand-gold), #ffc800);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-normal);
+}
+
+.guidedPct {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand-gold);
+  min-width: 36px;
+  text-align: right;
+}
+
+.guidedCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background-color: var(--color-brand-gold);
+  color: var(--color-surface-bg1);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
+  align-self: center;
+}
+
+.guidedCta:hover {
+  background-color: #ffc800;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.guidedCta:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: 2px;
+}
+
 /* ---- Focused section ---- */
 .focused {
   display: flex;

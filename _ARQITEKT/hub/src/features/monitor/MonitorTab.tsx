@@ -9,6 +9,7 @@ import { LogViewerPanel } from './LogViewerPanel';
 import { LlmUsagePanel } from './LlmUsagePanel';
 import { MembersPanel } from './MembersPanel';
 import { FeedbackModal } from '@/features/shared/FeedbackModal';
+import { TraceabilityPanel } from '@/features/plan/TraceabilityPanel';
 import styles from './MonitorTab.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -24,6 +25,7 @@ export function MonitorTab() {
       <AppStatusPanel />
       <LogViewerPanel />
       <BaselinePanel />
+      <TraceabilityPanel projectId={projectId!} />
       <FeedbackPanel onAddFeedback={() => setFeedbackModalOpen(true)} />
       <ValidationPanel />
       <LlmUsagePanel />

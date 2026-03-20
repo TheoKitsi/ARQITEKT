@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pencil } from 'lucide-react';
+import { Pencil, ArrowRight } from 'lucide-react';
 import type { TreeNode } from '@/store/api/requirementsApi';
-import { useGetTreeQuery } from '@/store/api/requirementsApi';
+import { useGetTreeQuery, useGetStatsQuery, useGetReadinessQuery } from '@/store/api/requirementsApi';
 import { Badge } from '@/components/ui/Badge';
 import styles from './FocusedView.module.css';
 
@@ -37,6 +37,19 @@ const STATUS_VARIANT: Record<string, 'default' | 'warning' | 'success'> = {
 export function FocusedView({ projectId, selectedNode, onOpenNode }: FocusedViewProps) {
   const { t } = useTranslation();
   const { data: tree } = useGetTreeQuery(projectId);
+  const { data: stats } = useGetStatsQuery(projectId);
+  const { data: readiness } = useGetReadinessQuery(projectId);
+
+  /* Derive next step hint from stats */
+  const nextHint = useMemo(() => {
+    if (!stats) return { label: t('onboardHint'), type: '' };
+    if (!stats.total || stats.total === 0) return { label: t('progressStep1'), type: 'BC' };
+    if (!stats.sol) return { label: t('progressStep2'), type: 'SOL' };
+    if (!stats.us) return { label: t('progressStep3'), type: 'US' };
+    if (!stats.cmp) return { label: t('progressStep4'), type: 'CMP' };
+    if (!stats.fn) return { label: t('progressStep5'), type: 'FN' };
+    return { label: t('progressStep6'), type: 'CODE' };
+  }, [stats, t]);
 
   /* Find full node with children from tree data */
   const fullNode = useMemo(() => {
@@ -52,11 +65,30 @@ export function FocusedView({ projectId, selectedNode, onOpenNode }: FocusedView
     return findById(tree);
   }, [selectedNode, tree]);
 
-  /* ---- Welcome screen ---- */
+  /* ---- Welcome screen → Guided Card ---- */
   if (!fullNode) {
     return (
       <div className={styles.welcome}>
-        <p className={styles.welcomeText}>{t('onboardHint')}</p>
+        <div className={styles.guidedCard}>
+          <h3 className={styles.guidedTitle}>{t('planNextStep')}</h3>
+          <p className={styles.guidedHint}>{nextHint.label}</p>
+          {readiness != null && (
+            <div className={styles.guidedProgress}>
+              <div className={styles.guidedTrack}>
+                <div
+                  className={styles.guidedFill}
+                  style={{ width: `${Math.min(readiness.score ?? 0, 100)}%` }}
+                />
+              </div>
+              <span className={styles.guidedPct}>
+                {Math.round(readiness.score ?? 0)}%
+              </span>
+            </div>
+          )}
+          <button type="button" className={styles.guidedCta} onClick={() => {/* tree selection handled by sidebar */}}>
+            {t('getStarted')} <ArrowRight size={14} />
+          </button>
+        </div>
       </div>
     );
   }

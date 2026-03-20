@@ -5,8 +5,8 @@
 .card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
+  gap: var(--space-3);
+  padding: var(--space-4);
   background-color: var(--color-surface-bg2);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -21,7 +21,7 @@
 }
 
 .title {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -35,7 +35,7 @@
 }
 
 .compactItem {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -55,7 +55,7 @@
   padding: 0;
   margin-top: var(--space-1);
   cursor: pointer;
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);
   font-family: inherit;
 }
@@ -78,9 +78,9 @@
 }
 
 .catName {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  width: 64px;
+  width: 80px;
   flex-shrink: 0;
   overflow: hidden;
   text-overflow: ellipsis;

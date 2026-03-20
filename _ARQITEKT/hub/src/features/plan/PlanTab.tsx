@@ -6,7 +6,6 @@ import { RequirementDialog } from './RequirementDialog';
 import { AddSolutionModal } from './AddSolutionModal';
 import { AddUserStoryModal } from './AddUserStoryModal';
 import { ValidationOverlay } from './ValidationOverlay';
-import { TraceabilityPanel } from './TraceabilityPanel';
 import { ProbingDialog } from './ProbingDialog';
 import type { TreeNode } from '@/store/api/requirementsApi';
 import styles from './PlanTab.module.css';
@@ -51,8 +50,6 @@ export function PlanTab() {
   return (
     <div className={styles.tab}>
       <PipelineView projectId={projectId!} />
-
-      <TraceabilityPanel projectId={projectId!} />
 
       <section className={styles.flowArea}>
         <FocusedView
