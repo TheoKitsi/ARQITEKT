@@ -14,6 +14,21 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
+vi.mock('@/components/ui/Toast', () => ({
+  useToast: () => ({ showToast: vi.fn() }),
+}));
+
+vi.mock('@/store/api/deployApi', () => ({
+  useAppStartMutation: () => [vi.fn(), { isLoading: false }],
+  useAppStatusQuery: () => ({ data: undefined }),
+}));
+
+vi.mock('lucide-react', () => ({
+  Play: (props: Record<string, unknown>) => <svg data-testid="icon-play" {...props} />,
+  ExternalLink: (props: Record<string, unknown>) => <svg data-testid="icon-external" {...props} />,
+  Globe: (props: Record<string, unknown>) => <svg data-testid="icon-globe" {...props} />,
+}));
+
 vi.mock('@/components/ui/Badge', () => ({
   Badge: ({ children, lifecycle }: { children: React.ReactNode; lifecycle?: string }) => (
     <span data-testid="badge" data-lifecycle={lifecycle}>

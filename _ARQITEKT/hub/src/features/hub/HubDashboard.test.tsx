@@ -22,6 +22,7 @@ vi.mock('lucide-react', () => ({
   FolderPlus: (props: Record<string, unknown>) => <svg data-testid="icon-folder-plus" {...props} />,
   Download: (props: Record<string, unknown>) => <svg data-testid="icon-download" {...props} />,
   Sparkles: (props: Record<string, unknown>) => <svg data-testid="icon-sparkles" {...props} />,
+  Search: (props: Record<string, unknown>) => <svg data-testid="icon-search" {...props} />,
 }));
 
 vi.mock('@/components/ui/Button', () => ({
@@ -167,7 +168,7 @@ describe('HubDashboard', () => {
     expect(screen.getByText('onboardHint')).toBeInTheDocument();
   });
 
-  it('renders the hub title', () => {
+  it('renders the projects section title', () => {
     mockUseGetProjectsQuery.mockReturnValue({
       data: mockProjects,
       isLoading: false,
@@ -176,10 +177,10 @@ describe('HubDashboard', () => {
     });
 
     render(<HubDashboard />);
-    expect(screen.getByText('ARQITEKT Hub')).toBeInTheDocument();
+    expect(screen.getByText('projects')).toBeInTheDocument();
   });
 
-  it('renders the hub subtitle', () => {
+  it('renders the search input', () => {
     mockUseGetProjectsQuery.mockReturnValue({
       data: mockProjects,
       isLoading: false,
@@ -188,7 +189,7 @@ describe('HubDashboard', () => {
     });
 
     render(<HubDashboard />);
-    expect(screen.getByText('hubSubFull')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('searchProjects')).toBeInTheDocument();
   });
 
   it('does not show spinner when not loading', () => {

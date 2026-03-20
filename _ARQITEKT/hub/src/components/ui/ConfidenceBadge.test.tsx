@@ -1,6 +1,13 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ConfidenceBadge } from './ConfidenceBadge';
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, params?: Record<string, string>) =>
+      key === 'confidenceLabel' ? `Confidence: ${params?.score}` : key,
+  }),
+}));
+
 describe('ConfidenceBadge', () => {
   it('renders "--" when score is null', () => {
     render(<ConfidenceBadge score={null} />);

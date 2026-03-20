@@ -1,4 +1,0 @@
-id: saas-api
-name: SaaS Backend API
-description: RESTful API service with multi-tenancy, auth, webhooks, and billing integration. Pre-configured for Node.js or Python.
-artifacts: 16

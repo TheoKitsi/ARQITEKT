@@ -44,6 +44,6 @@ projects:
   - id: 001_ARQITEKT_ME
     name: Arqitekt.me
     codename: ARQITEKT_ME
-    mode: local
-    path: 001_ARQITEKT_ME
+    mode: external
+    path: C:\Users\kitsi\Desktop\ARQITEKT_PROJECTS\001_ARQITEKT_ME
     description: A light Version of Arqitekt
