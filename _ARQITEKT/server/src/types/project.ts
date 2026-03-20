@@ -147,7 +147,7 @@ export interface ProjectsRegistry {
 
 export type GateId = 'G0_IDEA_TO_BC' | 'G1_BC_TO_SOL' | 'G2_SOL_TO_US' | 'G3_US_TO_CMP' | 'G4_CMP_TO_FN' | 'G5_FN_TO_CODE';
 
-export type GateStatus = 'passed' | 'failed' | 'pending' | 'overridden';
+export type GateStatus = 'passed' | 'failed' | 'pending' | 'overridden' | 'locked';
 
 export type AgentType = 'socratic' | 'devils_advocate' | 'constraint' | 'example' | 'boundary';
 

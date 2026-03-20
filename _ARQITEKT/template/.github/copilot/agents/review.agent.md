@@ -70,6 +70,21 @@ You are the **ARQITEKT Review Agent**. You analyze requirements for completeness
 - [ ] Race conditions / concurrency
 - [ ] Data migration / backwards compatibility
 
+### 7. Metaketten Compliance
+
+Read `metaketten.instructions.md` and check each artifact against its applicable Metaketten phase and verification level:
+
+- [ ] Artifact has correct Metaketten phase assignment
+- [ ] All validation rules V-001–V-025 pass for the artifact's scope
+- [ ] Confidence score meets gate threshold (see metaketten.instructions.md Section 2)
+- [ ] V-021: US acceptance criteria use concrete Given/When/Then values
+- [ ] V-022: FN has explicit pre/post-conditions
+- [ ] V-023: No contradictions between sibling FN specifications
+- [ ] V-024: User-facing US has UISpec artifact
+- [ ] V-025: BC has estimated_effort and business_value (low severity)
+- [ ] Baseline drift report is clean (no regressions)
+- [ ] Traceability matrix has no orphans
+
 ## Modes
 
 | Command | Action |

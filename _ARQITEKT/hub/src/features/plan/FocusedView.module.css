@@ -89,7 +89,7 @@
   gap: var(--space-2);
   padding: var(--space-3) var(--space-5);
   background-color: var(--color-brand-gold);
-  color: var(--color-surface-bg1);
+  color: var(--color-brand-anthracite);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);

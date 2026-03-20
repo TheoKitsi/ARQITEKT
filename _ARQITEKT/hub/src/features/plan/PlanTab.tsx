@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useParams, useOutletContext } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PipelineView } from './PipelineView';
 import { FocusedView } from './FocusedView';
 import { RequirementDialog } from './RequirementDialog';
@@ -7,7 +8,9 @@ import { AddSolutionModal } from './AddSolutionModal';
 import { AddUserStoryModal } from './AddUserStoryModal';
 import { ValidationOverlay } from './ValidationOverlay';
 import { ProbingDialog } from './ProbingDialog';
-import type { TreeNode } from '@/store/api/requirementsApi';
+import { Modal } from '@/components/ui/Modal';
+import { useGetProjectQuery } from '@/store/api/projectsApi';
+import { useGetTreeQuery, type TreeNode } from '@/store/api/requirementsApi';
 import styles from './PlanTab.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -26,6 +29,9 @@ export interface PlanOutletContext {
 export function PlanTab() {
   const { projectId } = useParams<{ projectId: string }>();
   const ctx = useOutletContext<PlanOutletContext | undefined>();
+  const { t } = useTranslation();
+  const { data: project } = useGetProjectQuery(projectId!);
+  const { data: tree } = useGetTreeQuery(projectId!);
 
   /* selectedNode = focused in FocusedView; dialogNode = open in RequirementDialog */
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
@@ -33,6 +39,7 @@ export function PlanTab() {
   const [showAddUS, setShowAddUS] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
   const [probingArtifactId, setProbingArtifactId] = useState<string | null>(null);
+  const [showIdeaDialog, setShowIdeaDialog] = useState(false);
 
   /* If tree pushes a node via context, show it in the dialog */
   const dialogNode = ctx?.openNode ?? null;
@@ -47,9 +54,33 @@ export function PlanTab() {
     }
   }, [ctx]);
 
+  /* When user clicks a stage label in the pipeline strip */
+  const handleStageClick = useCallback((stage: string) => {
+    if (stage === 'IDEA') {
+      setShowIdeaDialog(true);
+      return;
+    }
+
+    // Find first node of the target artifact type
+    if (!tree) return;
+    const findByType = (nodes: TreeNode[], type: string): TreeNode | null => {
+      for (const n of nodes) {
+        if (n.type === type) return n;
+        const child = findByType(n.children, type);
+        if (child) return child;
+      }
+      return null;
+    };
+
+    const node = findByType(tree, stage);
+    if (node) {
+      handleOpenNode(node);
+    }
+  }, [tree, handleOpenNode]);
+
   return (
     <div className={styles.tab}>
-      <PipelineView projectId={projectId!} />
+      <PipelineView projectId={projectId!} onStageClick={handleStageClick} />
 
       <section className={styles.flowArea}>
         <FocusedView
@@ -96,6 +127,26 @@ export function PlanTab() {
         projectId={projectId!}
         artifactId={probingArtifactId ?? ''}
       />
+
+      {/* Idea dialog — shows project name + description */}
+      <Modal
+        isOpen={showIdeaDialog}
+        onClose={() => setShowIdeaDialog(false)}
+        title={t('ideaDialogTitle')}
+      >
+        <div className={styles.ideaContent}>
+          <div className={styles.ideaField}>
+            <span className={styles.ideaLabel}>{t('ideaName')}</span>
+            <span className={styles.ideaValue}>{project?.config.name ?? '—'}</span>
+          </div>
+          <div className={styles.ideaField}>
+            <span className={styles.ideaLabel}>{t('ideaDescription')}</span>
+            <span className={styles.ideaValue}>
+              {project?.config.description || t('ideaNoDescription')}
+            </span>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

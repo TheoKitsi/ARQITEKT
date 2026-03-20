@@ -119,6 +119,17 @@ entities:
     crossCutting: true
     description: "User feedback from manual input, app store reviews, or in-app reports"
 
+  - name: UISpec
+    prefix: UI
+    pattern: "UI-{sol}.{us}.{n}"
+    directory: requirements/ui-specs/
+    filename: "UI-{sol}.{us}.{n}_{title}.md"
+    template: requirements/templates/ui-spec.md
+    allowedParents: [UserStory]
+    allowedChildren: []
+    crossCutting: false
+    description: "UI specification for user-facing features: screens, components, data bindings, navigation"
+
 # ----------------------------------------------------------------------------
 # Relationship Types
 # ----------------------------------------------------------------------------
@@ -280,6 +291,40 @@ validation:
       scope: Function
       check: "content.edge_cases.count >= 3"
 
+    # --- Metaketten v2.0 Validation Rules ---
+
+    - id: V-021
+      rule: "US acceptance criteria must follow Given/When/Then with concrete values"
+      scope: UserStory
+      check: "content.acceptance_criteria Given/When/Then contain specific values, not vague terms"
+      metakettenPhase: 2
+
+    - id: V-022
+      rule: "FN pre/post-conditions must be explicitly stated"
+      scope: Function
+      check: "content contains explicit PRE and POST condition sections"
+      metakettenPhase: 4
+
+    - id: V-023
+      rule: "No logical contradictions between sibling FN specifications"
+      scope: Function
+      check: "LLM: sibling FN pre/post-conditions do not contradict each other"
+      metakettenPhase: 2
+
+    - id: V-024
+      rule: "User-facing US must have at least one UISpec artifact"
+      scope: UserStory
+      check: "children.UISpec.count >= 1 OR content references UI-* artifact"
+      metakettenPhase: 6
+
+    - id: V-025
+      rule: "BC should have estimated_effort and business_value in frontmatter"
+      scope: BusinessCase
+      check: "frontmatter.estimated_effort AND frontmatter.business_value are present"
+      severity: low
+      metakettenPhase: 9
+      roadmap: true
+
 # ----------------------------------------------------------------------------
 # Pipeline Gates (Metaketten-Framework)
 # ----------------------------------------------------------------------------
@@ -364,6 +409,19 @@ gates:
       - "All parent statuses are at least 'approved'"
       - "Child status does not exceed parent (V-005)"
 
+  - id: G6_CODE_TO_DEPLOY
+    name: "Code → Deployment"
+    from: CODE
+    to: DEPLOY
+    riskLevel: critical
+    autoPassThreshold: 95
+    agents: [constraint, boundary]
+    mandatoryChecks:
+      - "All artifacts have status >= approved"
+      - "Baseline exists and drift report is clean"
+      - "All validation rules V-001 through V-025 pass"
+      - "Traceability matrix has no orphans"
+
 # ----------------------------------------------------------------------------
 # Agent Configuration Reference
 # ----------------------------------------------------------------------------
@@ -396,3 +454,36 @@ integrity:
   traceability:
     expectChildrenFor: [SOL, US, CMP]
     crossCuttingTypes: [INF, ADR, NTF, FBK]
+
+# ----------------------------------------------------------------------------
+# Optional Roadmap Frontmatter Fields (Metaketten v2.0 — Phases 9-10)
+# ----------------------------------------------------------------------------
+# These fields are optional and support Economic Viability (Phase 9)
+# and Organizational Readiness (Phase 10) analysis.
+# ----------------------------------------------------------------------------
+roadmapFields:
+  economicViability:
+    - name: estimated_effort
+      type: string
+      values: [XS, S, M, L, XL]
+      description: "Development effort estimate"
+      appliesTo: [BusinessCase, Solution, UserStory]
+    - name: business_value
+      type: integer
+      range: [1, 5]
+      description: "Business value score (1=nice-to-have, 5=critical)"
+      appliesTo: [BusinessCase, Solution]
+    - name: mvp_priority
+      type: boolean
+      description: "Whether this artifact belongs to the Minimum Viable Product"
+      appliesTo: [Solution, UserStory]
+  organizationalReadiness:
+    - name: required_skills
+      type: array
+      description: "Technical skills needed for implementation"
+      appliesTo: [Component, Function]
+    - name: team_impact
+      type: string
+      values: [low, medium, high]
+      description: "Impact on team workflow and skill requirements"
+      appliesTo: [Solution, Component]

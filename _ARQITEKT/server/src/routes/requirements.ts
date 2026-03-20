@@ -2,9 +2,10 @@ import { Router } from 'express';
 import { buildTree, getStats, getReadiness, validateProject, setRequirementStatus } from '../services/requirements.js';
 import { getArtifactContent, updateArtifactContent } from '../services/requirementHelpers.js';
 import { importRequirementsCsv } from '../services/importService.js';
-import { validate, validateQuery, setStatusSchema, searchQuerySchema, nextUsIdQuerySchema, updateContentSchema } from '../middleware/validation.js';
+import { validate, validateQuery, setStatusSchema, searchQuerySchema, nextUsIdQuerySchema, updateContentSchema, createSolutionSchema, createUserStorySchema } from '../middleware/validation.js';
 import { recordAudit } from '../services/audit.js';
 import { requireRole } from '../middleware/rbac.js';
+import { createSolution, createUserStory } from '../services/artifactCreation.js';
 
 export const requirementsRouter = Router();
 
@@ -174,6 +175,33 @@ requirementsRouter.put('/:id/requirements/:artifactId/content', requireRole('edi
     await updateArtifactContent(req.params.id as string, req.params.artifactId as string, content, title);
     recordAudit(req.params.id as string, 'requirement.edited', req.ip ?? 'unknown', req.params.artifactId as string, { title }).catch(() => {});
     res.json({ success: true, artifactId: req.params.artifactId });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/projects/:id/solutions — create a new solution
+requirementsRouter.post('/:id/solutions', requireRole('editor'), validate(createSolutionSchema), async (req, res, next) => {
+  try {
+    const projectId = req.params.id as string;
+    const { title, notes, mode } = req.body;
+    const result = await createSolution(projectId, title, notes, mode);
+    recordAudit(projectId, 'requirement.created', req.ip ?? 'unknown', result.id, { type: 'SOL', title }).catch(() => {});
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/projects/:id/solutions/:solId/user-stories — create a new user story under a solution
+requirementsRouter.post('/:id/solutions/:solId/user-stories', requireRole('editor'), validate(createUserStorySchema), async (req, res, next) => {
+  try {
+    const projectId = req.params.id as string;
+    const solutionId = req.params.solId as string;
+    const { title, notes, mode } = req.body;
+    const result = await createUserStory(projectId, solutionId, title, notes, mode);
+    recordAudit(projectId, 'requirement.created', req.ip ?? 'unknown', result.id, { type: 'US', title }).catch(() => {});
+    res.status(201).json(result);
   } catch (err) {
     next(err);
   }

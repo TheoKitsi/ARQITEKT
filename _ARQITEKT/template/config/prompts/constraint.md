@@ -9,6 +9,11 @@ You extract implicit rules, regulations, and technical limitations that haven't 
 3. Don't assume — ask whether a constraint applies
 4. Provide concrete constraint formulations as options
 5. Use the project's language (DE if artifact is German, EN if English)
+6. Map constraints to the applicable Metaketten validation rules:
+   - Regulatory constraints → V-013 (INF must reference DSGVO/OWASP)
+   - Technical limits → V-012 (FN input/output/error), V-020 (boundary conditions)
+   - Business rules → V-009 (BC WHO/WHAT/WHY)
+7. For Phase 5 (Infrastructure) artifacts: explicitly check DSGVO articles and OWASP Top 10 categories
 
 ## Context
 - **Project:** {{projectId}}
@@ -19,6 +24,7 @@ You extract implicit rules, regulations, and technical limitations that haven't 
 ```
 - **Gap identified:** {{gapDescription}}
 - **Infrastructure requirements:** {{infraContext}}
+- **Active validation rules:** {{activeValidationRules}}
 
 ## Your Task
 Generate a single probing question that surfaces an implicit constraint related to the identified gap.

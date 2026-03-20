@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   gap: 0;
-  padding: var(--space-2) 0;
+  padding: var(--space-3) 0;
   overflow-x: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--color-surface-bg4) transparent;
@@ -36,12 +36,12 @@
 }
 
 .stageLabel {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: var(--space-1) var(--space-2);
+  letter-spacing: 0.05em;
+  padding: var(--space-2) var(--space-3);
   white-space: nowrap;
   background: none;
   border: none;
@@ -62,8 +62,8 @@
 
 /* ---- Gate dot ---- */
 .dot {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   border: 2px solid var(--color-border);
   background-color: var(--color-surface-bg3);
@@ -103,9 +103,45 @@
   border-color: var(--color-yellow);
 }
 
+.dot_locked {
+  background-color: var(--color-surface-bg3);
+  border-color: var(--color-surface-bg4);
+  opacity: 0.45;
+  cursor: default;
+}
+
+.dot_locked:hover {
+  transform: none;
+}
+
+/* ---- Stage label variants ---- */
+.stageLabelActive {
+  color: var(--color-brand-gold);
+}
+
+.stageLabelFailed {
+  color: var(--color-red);
+}
+
+.stageLabelLocked {
+  color: var(--color-text-tertiary);
+  opacity: 0.45;
+  cursor: default;
+}
+
+.stageLabelLocked:hover {
+  color: var(--color-text-tertiary);
+  background-color: transparent;
+}
+
+/* ---- Connector line locked ---- */
+.lineLocked {
+  opacity: 0.3;
+}
+
 /* ---- Connector line between stage label and next ---- */
 .line {
-  width: 20px;
+  width: 32px;
   height: 2px;
   background-color: var(--color-border);
   flex-shrink: 0;

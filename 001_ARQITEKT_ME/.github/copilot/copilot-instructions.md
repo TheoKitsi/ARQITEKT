@@ -74,12 +74,26 @@ requirements/
 - **Edge cases documented** — as a table in the SOL file
 - **INF references** — every CMP should reference relevant INFs (WCAG, OWASP, DSGVO)
 
+## Metaketten Framework
+
+This workspace uses the **Metaketten-Framework v2.0** — a 10-phase verification pipeline that governs all requirement creation, modification, and review.
+
+**Read `metaketten.instructions.md` before processing any requirement artifact.** It defines:
+- 10 phases (Phase 0: Init → Phase 10: Org Readiness)
+- 7 gates (G0–G6) with mandatory checks and confidence thresholds
+- 6 verification levels (L1–L6)
+- 25 validation rules (V-001 to V-025)
+- 4-dimension confidence scoring (structural/semantic/consistency/boundary)
+- 5 probing agents (socratic, devils_advocate, constraint, example, boundary)
+
+**Core Rule**: Every requirement modification must be evaluated against the Metaketten verification pipeline. Check the applicable gate, run validation rules V-001–V-025 for the artifact's scope, and verify confidence before proceeding.
+
 ## Agents
 
 This workspace has specialized agents:
-- **@discover** — Interview & Business Case generation
-- **@architect** — Requirement hierarchy generation (SOL -> US -> CMP -> FN)
-- **@review** — Review requirements, find gaps, polish
-- **@export** — Requirement tree, Jira export, code scaffold
+- **@discover** — Interview & Business Case generation (Phase 1: Semantische Dekonstruktion)
+- **@architect** — Requirement hierarchy generation SOL -> US -> CMP -> FN (Phase 3: Architektur-Dekomposition)
+- **@review** — Review requirements, find gaps, Metaketten compliance (Phases 2-6)
+- **@export** — Requirement tree, Jira export, code scaffold (baseline/drift-aware)
 
 Use the appropriate agent for each task.

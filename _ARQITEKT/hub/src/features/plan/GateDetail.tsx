@@ -35,6 +35,7 @@ const STATUS_VARIANT: Record<string, 'success' | 'error' | 'default' | 'warning'
   failed: 'error',
   pending: 'default',
   overridden: 'warning',
+  locked: 'default',
 };
 
 const SEVERITY_CLASS: Record<RiskLevel, string> = {

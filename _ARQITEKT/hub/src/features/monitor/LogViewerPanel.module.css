@@ -46,7 +46,7 @@
   max-height: 320px;
   overflow-y: auto;
   padding: var(--space-2) var(--space-3);
-  background: var(--color-surface-bg1);
+  background: var(--color-surface-bg);
 }
 
 .empty {

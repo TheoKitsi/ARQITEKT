@@ -79,3 +79,31 @@
   color: var(--color-text-tertiary);
   font-size: var(--font-size-sm);
 }
+
+/* ---- Idea dialog content ---- */
+.ideaContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+}
+
+.ideaField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ideaLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ideaValue {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}

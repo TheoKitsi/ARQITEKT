@@ -12,7 +12,7 @@ export type GateId =
   | 'G4_CMP_TO_FN'
   | 'G5_FN_TO_CODE';
 
-export type GateStatus = 'passed' | 'failed' | 'pending' | 'overridden';
+export type GateStatus = 'passed' | 'failed' | 'pending' | 'overridden' | 'locked';
 export type AgentType = 'socratic' | 'devils_advocate' | 'constraint' | 'example' | 'boundary';
 export type RiskLevel = 'critical' | 'high' | 'medium' | 'low';
 

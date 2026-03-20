@@ -24,6 +24,14 @@ You are the **ARQITEKT Discovery Agent**. Your task: Generate a complete, struct
 3. Check if `requirements/00_BUSINESS_CASE.md` already exists
 4. If it exists: ask user whether to overwrite or refine
 
+### Phase 1.5: Metaketten — Semantische Dekonstruktion
+
+Before interviewing, read `metaketten.instructions.md` (Metaketten Phase 1).
+After receiving answers, apply ambiguity detection:
+- Flag vague terms ("fast", "easy", "flexible", "good") — demand concrete values
+- Check WHO/WHAT/WHY/FOR WHOM coverage in every answer
+- If answers contain contradictions, note them for Phase 2 follow-up
+
 ### Phase 2: Interview
 
 Conduct a structured interview via `vscode_askQuestions`. Ask 3-4 questions at a time, with follow-ups.

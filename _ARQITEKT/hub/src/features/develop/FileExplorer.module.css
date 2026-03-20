@@ -232,7 +232,7 @@
   padding: 0 var(--space-1);
   border: 1px solid var(--color-brand-gold);
   border-radius: var(--radius-sm);
-  background: var(--color-surface-bg1);
+  background: var(--color-surface-bg);
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
   font-family: inherit;

@@ -362,11 +362,32 @@ export async function evaluateGate(projectId: string, gateId: GateId): Promise<G
 export async function getProjectPipeline(projectId: string): Promise<PipelineStatus> {
   const definitions = await loadGateDefinitions();
   const gates: GateResult[] = [];
+  let locked = false;
 
   for (const def of definitions) {
+    if (locked) {
+      // Previous gate not passed — mark subsequent gates as locked
+      gates.push({
+        gateId: def.id,
+        name: def.name,
+        from: def.from,
+        to: def.to,
+        status: 'locked',
+        confidence: 0,
+        checks: [],
+        gaps: [],
+        timestamp: new Date().toISOString(),
+      });
+      continue;
+    }
+
     try {
       const result = await evaluateGate(projectId, def.id);
       gates.push(result);
+      // If this gate is not passed/overridden, lock all subsequent gates
+      if (result.status !== 'passed' && result.status !== 'overridden') {
+        locked = true;
+      }
     } catch {
       // Return a pending result for gates that error
       gates.push({
@@ -380,6 +401,7 @@ export async function getProjectPipeline(projectId: string): Promise<PipelineSta
         gaps: [],
         timestamp: new Date().toISOString(),
       });
+      locked = true;
     }
   }
 
@@ -411,6 +433,13 @@ export async function overrideGate(
   if (result.status === 'passed') {
     throw Object.assign(
       new Error(`Gate ${gateId} already passed — no override needed`),
+      { status: 400 },
+    );
+  }
+
+  if (result.status === 'locked') {
+    throw Object.assign(
+      new Error(`Gate ${gateId} is locked — complete the prerequisite gate first`),
       { status: 400 },
     );
   }

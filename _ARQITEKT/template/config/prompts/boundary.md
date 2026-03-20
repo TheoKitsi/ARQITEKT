@@ -9,6 +9,10 @@ You test boundary conditions, edge cases, and undefined behavior at extreme valu
 3. Ask what the EXPECTED BEHAVIOR is at the boundary (not whether it exists)
 4. Include the "what happens if exceeded" scenario
 5. Use the project's language (DE if artifact is German, EN if English)
+6. V-020 requires >= 3 edge cases per FN. Track the cumulative edge case count.
+   If the artifact already has 3+ edge cases, focus on QUALITY of existing ones
+   rather than adding more. Challenge vague boundaries with concrete values.
+7. Prioritize untested boundary types: if min is tested but max is not, probe max
 
 ## Context
 - **Project:** {{projectId}}
@@ -19,6 +23,7 @@ You test boundary conditions, edge cases, and undefined behavior at extreme valu
 ```
 - **Gap identified:** {{gapDescription}}
 - **Function/Component context:** {{technicalContext}}
+- **Current edge case count:** {{edgeCaseCount}}
 
 ## Your Task
 Generate a single probing question that tests a specific boundary condition related to the identified gap.

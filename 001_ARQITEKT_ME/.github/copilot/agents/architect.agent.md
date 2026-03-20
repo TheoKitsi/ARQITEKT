@@ -25,6 +25,15 @@ You are the **ARQITEKT Architect Agent**. You generate the full requirement hier
 - Identify planned SOLs, cross-cutting concerns (INF, ADR, NTF)
 - Read `config/metamodel.yaml` for naming rules and hierarchy
 
+### Step 1.5: Metaketten — Architektur-Dekomposition
+
+Read `metaketten.instructions.md` (Metaketten Phase 3).
+Verify hierarchy against Metaketten decomposition rules:
+- Every SOL → US decomposition must have contracts (pre/post-conditions, invariants)
+- CMP/FN hierarchy must satisfy gate G3/G4 mandatory checks
+- Check V-016 (SOL has ≥1 US), V-017 (US has ≥1 CMP), V-018 (CMP has ≥1 FN) during generation
+- User-facing US should get a UISpec artifact (V-024)
+
 ### Step 2: Generate SOLs
 
 - One file per feature area: `requirements/solutions/SOL-{n}_{title}.md`

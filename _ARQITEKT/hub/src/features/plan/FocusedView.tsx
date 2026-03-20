@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pencil, ArrowRight, CheckCircle2 } from 'lucide-react';
 import type { TreeNode } from '@/store/api/requirementsApi';
@@ -65,6 +65,41 @@ export function FocusedView({ projectId, selectedNode, onOpenNode }: FocusedView
     return findById(tree);
   }, [selectedNode, tree]);
 
+  /* Find first node of a given type in tree */
+  const findByType = useCallback((type: string): TreeNode | null => {
+    if (!tree) return null;
+    const search = (nodes: TreeNode[]): TreeNode | null => {
+      for (const n of nodes) {
+        if (n.type === type) return n;
+        const child = search(n.children);
+        if (child) return child;
+      }
+      return null;
+    };
+    return search(tree);
+  }, [tree]);
+
+  /* Get Started click: open the first artifact of the needed type */
+  const handleGetStarted = useCallback(() => {
+    const targetType = nextHint.type;
+    if (!targetType || !tree) return;
+
+    // For BC: find the BC node and open it for editing
+    const node = findByType(targetType);
+    if (node) {
+      onOpenNode(node);
+      return;
+    }
+
+    // If no node of the target type exists but BC exists, open BC so user can navigate
+    if (targetType !== 'BC') {
+      const bcNode = findByType('BC');
+      if (bcNode) {
+        onOpenNode(bcNode);
+      }
+    }
+  }, [nextHint.type, tree, findByType, onOpenNode]);
+
   /* ---- Welcome screen → Guided Card ---- */
   if (!fullNode) {
     const readinessPercent = readiness?.authored ?? 0;
@@ -97,7 +132,7 @@ export function FocusedView({ projectId, selectedNode, onOpenNode }: FocusedView
             </div>
           )}
           {!nextHint.done && (
-            <button type="button" className={styles.guidedCta} onClick={() => {/* tree selection handled by sidebar */}}>
+            <button type="button" className={styles.guidedCta} onClick={handleGetStarted}>
               {t('getStarted')} <ArrowRight size={14} />
             </button>
           )}

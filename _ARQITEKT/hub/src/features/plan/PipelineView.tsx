@@ -99,13 +99,35 @@ export function PipelineView({ projectId, onStageClick }: PipelineViewProps) {
           const gateResult = gateId ? getGateResult(gateId) : undefined;
           const status = gateResult?.status ?? 'pending';
 
+          // Determine stage label style based on preceding gate
+          const prevStage = STAGE_ORDER[i - 1];
+          const prevGateKey = prevStage ? `${prevStage}-${stage}` : undefined;
+          const prevGateId = prevGateKey ? GATE_BETWEEN[prevGateKey] : undefined;
+          const prevGateResult = prevGateId ? getGateResult(prevGateId) : undefined;
+          const prevStatus = prevGateResult?.status;
+
+          let labelClass = styles.stageLabel;
+          if (i === 0) {
+            // IDEA is always active
+            labelClass = `${styles.stageLabel} ${styles.stageLabelActive}`;
+          } else if (prevStatus === 'locked') {
+            labelClass = `${styles.stageLabel} ${styles.stageLabelLocked}`;
+          } else if (prevStatus === 'passed' || prevStatus === 'overridden') {
+            labelClass = `${styles.stageLabel} ${styles.stageLabelActive}`;
+          } else if (prevStatus === 'failed') {
+            labelClass = `${styles.stageLabel} ${styles.stageLabelFailed}`;
+          }
+
+          const isLocked = status === 'locked';
+
           return (
             <div key={stage} className={styles.segment}>
               {/* Stage label */}
               <button
                 type="button"
-                className={styles.stageLabel}
+                className={labelClass}
                 onClick={() => onStageClick?.(stage)}
+                disabled={i !== 0 && prevStatus === 'locked'}
               >
                 {t(STAGE_KEYS[stage] ?? stage)}
               </button>
@@ -113,12 +135,13 @@ export function PipelineView({ projectId, onStageClick }: PipelineViewProps) {
               {/* Gate dot */}
               {gateId && (
                 <>
-                  <div className={`${styles.line} ${status === 'passed' || status === 'overridden' ? styles.linePassed : status === 'failed' ? styles.lineFailed : ''}`} />
+                  <div className={`${styles.line} ${status === 'passed' || status === 'overridden' ? styles.linePassed : status === 'failed' ? styles.lineFailed : isLocked ? styles.lineLocked : ''}`} />
                   <button
                     type="button"
                     className={`${styles.dot} ${styles[`dot_${status}`] ?? ''}`}
-                    onClick={() => gateResult && setSelectedGate(gateResult)}
+                    onClick={() => !isLocked && gateResult && setSelectedGate(gateResult)}
                     aria-label={`G${gateId.charAt(1)}: ${status}`}
+                    disabled={isLocked}
                   />
                 </>
               )}
