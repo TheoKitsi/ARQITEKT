@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import {
@@ -26,19 +26,10 @@ import {
   useBuildDeployMutation,
   useGithubActionsMutation,
 } from '@/store/api/deployApi';
+import { useGetGithubStatusQuery } from '@/store/api/githubApi';
+import { useGetModelsQuery } from '@/store/api/chatApi';
 import { RepoStatusPanel } from './RepoStatusPanel';
 import styles from './DeployTab.module.css';
-
-/* ------------------------------------------------------------------ */
-/*  Constants                                                          */
-/* ------------------------------------------------------------------ */
-
-const CODEGEN_MODELS = [
-  { value: 'deepseek-chat', label: 'DeepSeek Chat' },
-  { value: 'gpt-4o', label: 'GPT-4o' },
-  { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-  { value: 'o3-mini', label: 'o3-mini' },
-];
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -47,6 +38,8 @@ const CODEGEN_MODELS = [
 export function DeployTab() {
   const { t } = useTranslation();
   const { projectId } = useParams<{ projectId: string }>();
+  const { data: ghStatus } = useGetGithubStatusQuery();
+  const { data: models } = useGetModelsQuery(undefined, { skip: !ghStatus?.connected });
   const [scaffold, { isLoading: scaffolding }] = useScaffoldMutation();
   const [codegen, { isLoading: generating }] = useCodegenMutation();
   const [githubPush] = useGithubPushMutation();
@@ -54,8 +47,13 @@ export function DeployTab() {
   const [buildDeploy, { isLoading: building }] = useBuildDeployMutation();
   const [githubActions, { isLoading: settingUpCI }] = useGithubActionsMutation();
 
+  const modelOptions = useMemo(
+    () => (models ?? []).map((m) => ({ value: m.id, label: m.name })),
+    [models],
+  );
+
   const [showCodegenModal, setShowCodegenModal] = useState(false);
-  const [codegenModel, setCodegenModel] = useState('deepseek-chat');
+  const [codegenModel, setCodegenModel] = useState('');
   const [logs, setLogs] = useState<string[]>([]);
   const [showLogs, setShowLogs] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ key: string; action: () => void } | null>(null);
@@ -263,15 +261,27 @@ export function DeployTab() {
       {/* Codegen Model Selector Modal */}
       <Modal isOpen={showCodegenModal} onClose={() => setShowCodegenModal(false)} title={t('deployCodegenTitle')}>
         <div className={styles.modalColumn}>
-          <Select
-            label={t('model')}
-            value={codegenModel}
-            onChange={(e) => setCodegenModel(e.target.value)}
-            options={CODEGEN_MODELS}
-          />
-          <Button variant="gold" onClick={handleCodegen} loading={generating}>
-            {t('deployCodegenBtn')}
-          </Button>
+          {ghStatus?.connected ? (
+            <>
+              <Select
+                label={t('model')}
+                value={codegenModel || modelOptions[0]?.value || ''}
+                onChange={(e) => setCodegenModel(e.target.value)}
+                options={modelOptions}
+              />
+              <Button variant="gold" onClick={handleCodegen} loading={generating} disabled={!modelOptions.length}>
+                {t('deployCodegenBtn')}
+              </Button>
+            </>
+          ) : (
+            <div className={styles.githubLogin}>
+              <Github size={24} />
+              <p>{t('githubLoginRequired')}</p>
+              <Button variant="gold" onClick={() => { window.location.href = '/api/auth/github'; }}>
+                {t('githubLoginBtn')}
+              </Button>
+            </div>
+          )}
         </div>
       </Modal>
 

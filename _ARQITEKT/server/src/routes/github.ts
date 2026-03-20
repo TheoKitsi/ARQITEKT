@@ -7,7 +7,7 @@ export const githubRouter = Router();
 // GET /api/github/status
 githubRouter.get('/status', async (_req, res, next) => {
   try {
-    const status = await getGithubStatus();
+    const { token: _token, ...status } = await getGithubStatus();
     res.json(status);
   } catch (err) {
     next(err);

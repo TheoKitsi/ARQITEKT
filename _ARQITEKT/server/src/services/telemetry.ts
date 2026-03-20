@@ -12,6 +12,7 @@ export interface UsageEntry {
   totalTokens: number;
   latencyMs: number;
   streaming: boolean;
+  projectId?: string;
 }
 
 export interface UsageSummary {
@@ -46,13 +47,18 @@ export function estimateTokens(text: string): number {
 }
 
 /**
- * Get usage summary, optionally filtered by time window.
+ * Get usage summary, optionally filtered by time window and/or project.
  * @param sinceMs - Only include entries after this timestamp (default: all)
+ * @param projectId - Only include entries for this project (default: all)
  */
-export function getUsageSummary(sinceMs?: number): UsageSummary {
-  const filtered = sinceMs
+export function getUsageSummary(sinceMs?: number, projectId?: string): UsageSummary {
+  let filtered = sinceMs
     ? entries.filter((e) => e.timestamp >= sinceMs)
     : entries;
+
+  if (projectId) {
+    filtered = filtered.filter((e) => e.projectId === projectId);
+  }
 
   const byModel: Record<string, { calls: number; tokens: number }> = {};
   let totalPrompt = 0;

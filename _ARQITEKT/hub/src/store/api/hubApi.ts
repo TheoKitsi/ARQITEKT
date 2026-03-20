@@ -78,8 +78,11 @@ export const hubApi = baseApi.injectEndpoints({
       invalidatesTags: ['Hub'],
     }),
 
-    getLlmUsage: builder.query<LlmUsageSummary, void>({
-      query: () => '/hub/llm/usage',
+    getLlmUsage: builder.query<LlmUsageSummary, { projectId?: string } | void>({
+      query: (arg) => {
+        const projectId = arg && 'projectId' in arg ? arg.projectId : undefined;
+        return projectId ? `/hub/llm/usage?projectId=${encodeURIComponent(projectId)}` : '/hub/llm/usage';
+      },
     }),
 
     getStarterTemplates: builder.query<StarterTemplate[], void>({

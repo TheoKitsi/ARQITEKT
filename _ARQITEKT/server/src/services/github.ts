@@ -76,6 +76,7 @@ export async function getGithubStatus(): Promise<GitHubStatus> {
       connected: true,
       username: user.login,
       avatarUrl: user.avatar_url,
+      token,
     };
   } catch {
     return { connected: false };

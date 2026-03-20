@@ -133,7 +133,8 @@ hubRouter.get('/health', async (_req, res) => {
 // GET /api/hub/llm/usage — LLM token usage summary
 hubRouter.get('/llm/usage', (_req, res) => {
   const since = _req.query.since ? Number(_req.query.since) : undefined;
-  const summary = getUsageSummary(since);
+  const projectId = typeof _req.query.projectId === 'string' ? _req.query.projectId : undefined;
+  const summary = getUsageSummary(since, projectId);
   res.json(summary);
 });
 

@@ -348,17 +348,48 @@ export function resetLLMConfig(): void {
 }
 
 /**
- * List available AI models.
+ * List available AI models from GitHub Models API.
+ * Requires a valid GitHub token — returns empty list if not connected.
  */
 export async function listModels(): Promise<
   Array<{ id: string; name: string; provider: string; contextWindow: number; available: boolean }>
 > {
-  return [
-    { id: 'gpt-4o', name: 'GPT-4o', provider: 'GitHub Models', contextWindow: 128000, available: true },
-    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'GitHub Models', contextWindow: 128000, available: true },
-    { id: 'o3-mini', name: 'o3-mini', provider: 'GitHub Models', contextWindow: 200000, available: true },
-    { id: 'claude-sonnet', name: 'Claude Sonnet', provider: 'GitHub Models', contextWindow: 200000, available: true },
-    { id: 'DeepSeek-R1', name: 'DeepSeek R1', provider: 'GitHub Models', contextWindow: 64000, available: true },
-    { id: 'deepseek-chat', name: 'DeepSeek Chat', provider: 'DeepSeek', contextWindow: 64000, available: true },
-  ];
+  const { getGithubStatus } = await import('./github.js');
+  const status = await getGithubStatus();
+
+  if (!status.connected || !status.token) {
+    return [];
+  }
+
+  try {
+    const response = await fetch('https://models.inference.ai.azure.com/models', {
+      headers: { Authorization: `Bearer ${status.token}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+
+    if (!response.ok) {
+      log.warn(`GitHub Models API returned ${response.status}`);
+      return [];
+    }
+
+    const data = (await response.json()) as Array<{
+      id: string;
+      name?: string;
+      model_type?: string;
+      context_window?: number;
+    }>;
+
+    return data
+      .filter((m) => m.model_type === 'chat' || !m.model_type)
+      .map((m) => ({
+        id: m.id,
+        name: m.name ?? m.id,
+        provider: 'GitHub Models',
+        contextWindow: m.context_window ?? 128_000,
+        available: true,
+      }));
+  } catch (err) {
+    log.warn({ err }, 'Failed to fetch models from GitHub Models API');
+    return [];
+  }
 }

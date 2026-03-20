@@ -537,6 +537,8 @@
   "llmCalls": "Aufrufe",
   "llmTokens": "Tokens",
   "llmAvgLatency": "Durchschn. Latenz",
+  "githubLoginRequired": "Verbinde dein GitHub-Konto, um KI-Modelle zu nutzen.",
+  "githubLoginBtn": "Bei GitHub anmelden",
   "somethingWentWrong": "Etwas ist schiefgelaufen",
   "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten.",
   "tryAgain": "Erneut versuchen",

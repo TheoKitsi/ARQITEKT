@@ -1,15 +1,43 @@
 import { useTranslation } from 'react-i18next';
-import { Activity } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { Activity, Github } from 'lucide-react';
 import { useGetLlmUsageQuery } from '@/store/api/hubApi';
+import { useGetGithubStatusQuery } from '@/store/api/githubApi';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import styles from './LlmUsagePanel.module.css';
 
 export function LlmUsagePanel() {
   const { t } = useTranslation();
-  const { data, isLoading } = useGetLlmUsageQuery(undefined, {
-    pollingInterval: 30_000,
-  });
+  const { projectId } = useParams<{ projectId: string }>();
+  const { data: ghStatus } = useGetGithubStatusQuery();
+  const { data, isLoading } = useGetLlmUsageQuery(
+    projectId ? { projectId } : undefined,
+    { pollingInterval: 30_000, skip: !ghStatus?.connected },
+  );
+
+  if (!ghStatus?.connected) {
+    return (
+      <Card>
+        <Card.Header>
+          <div className={styles.titleRow}>
+            <Activity size={18} />
+            <span>{t('llmUsageTitle', 'LLM Usage')}</span>
+          </div>
+        </Card.Header>
+        <Card.Body>
+          <div className={styles.githubLogin}>
+            <Github size={24} />
+            <p>{t('githubLoginRequired')}</p>
+            <Button variant="gold" onClick={() => { window.location.href = '/api/auth/github'; }}>
+              {t('githubLoginBtn')}
+            </Button>
+          </div>
+        </Card.Body>
+      </Card>
+    );
+  }
 
   return (
     <Card>

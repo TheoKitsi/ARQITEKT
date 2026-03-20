@@ -537,6 +537,8 @@
   "llmCalls": "Calls",
   "llmTokens": "Tokens",
   "llmAvgLatency": "Avg Latency",
+  "githubLoginRequired": "Connect your GitHub account to use AI models.",
+  "githubLoginBtn": "Log in to GitHub",
   "somethingWentWrong": "Something went wrong",
   "unexpectedError": "An unexpected error occurred.",
   "tryAgain": "Try Again",
