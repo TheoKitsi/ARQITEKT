@@ -1,43 +1,20 @@
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { Activity, Github } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { useGetLlmUsageQuery } from '@/store/api/hubApi';
-import { useGetGithubStatusQuery } from '@/store/api/githubApi';
+import { ProviderLoginGate, useAnyProviderConnected } from '@/components/ui/ProviderLoginGate';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import styles from './LlmUsagePanel.module.css';
 
 export function LlmUsagePanel() {
   const { t } = useTranslation();
   const { projectId } = useParams<{ projectId: string }>();
-  const { data: ghStatus } = useGetGithubStatusQuery();
+  const hasProvider = useAnyProviderConnected();
   const { data, isLoading } = useGetLlmUsageQuery(
     projectId ? { projectId } : undefined,
-    { pollingInterval: 30_000, skip: !ghStatus?.connected },
+    { pollingInterval: 30_000, skip: !hasProvider },
   );
-
-  if (!ghStatus?.connected) {
-    return (
-      <Card>
-        <Card.Header>
-          <div className={styles.titleRow}>
-            <Activity size={18} />
-            <span>{t('llmUsageTitle', 'LLM Usage')}</span>
-          </div>
-        </Card.Header>
-        <Card.Body>
-          <div className={styles.githubLogin}>
-            <Github size={24} />
-            <p>{t('githubLoginRequired')}</p>
-            <Button variant="gold" onClick={() => { window.location.href = '/api/auth/github'; }}>
-              {t('githubLoginBtn')}
-            </Button>
-          </div>
-        </Card.Body>
-      </Card>
-    );
-  }
 
   return (
     <Card>
@@ -48,13 +25,14 @@ export function LlmUsagePanel() {
         </div>
       </Card.Header>
       <Card.Body>
-        {isLoading || !data ? (
-          <Spinner size="sm" />
-        ) : data.totalCalls === 0 ? (
-          <p className={styles.empty}>{t('llmUsageEmpty', 'No LLM calls recorded yet.')}</p>
-        ) : (
-          <>
-            <div className={styles.statsGrid}>
+        <ProviderLoginGate>
+          {isLoading || !data ? (
+            <Spinner size="sm" />
+          ) : data.totalCalls === 0 ? (
+            <p className={styles.empty}>{t('llmUsageEmpty', 'No LLM calls recorded yet.')}</p>
+          ) : (
+            <>
+              <div className={styles.statsGrid}>
               <div className={styles.stat}>
                 <span className={styles.statValue}>{data.totalCalls}</span>
                 <span className={styles.statLabel}>{t('llmCalls', 'Calls')}</span>
@@ -87,6 +65,7 @@ export function LlmUsagePanel() {
             )}
           </>
         )}
+        </ProviderLoginGate>
       </Card.Body>
     </Card>
   );

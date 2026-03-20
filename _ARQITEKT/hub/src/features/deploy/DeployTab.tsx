@@ -26,8 +26,8 @@ import {
   useBuildDeployMutation,
   useGithubActionsMutation,
 } from '@/store/api/deployApi';
-import { useGetGithubStatusQuery } from '@/store/api/githubApi';
 import { useGetModelsQuery } from '@/store/api/chatApi';
+import { useAnyProviderConnected } from '@/components/ui/ProviderLoginGate';
 import { RepoStatusPanel } from './RepoStatusPanel';
 import styles from './DeployTab.module.css';
 
@@ -38,8 +38,8 @@ import styles from './DeployTab.module.css';
 export function DeployTab() {
   const { t } = useTranslation();
   const { projectId } = useParams<{ projectId: string }>();
-  const { data: ghStatus } = useGetGithubStatusQuery();
-  const { data: models } = useGetModelsQuery(undefined, { skip: !ghStatus?.connected });
+  const hasProvider = useAnyProviderConnected();
+  const { data: models } = useGetModelsQuery(undefined, { skip: !hasProvider });
   const [scaffold, { isLoading: scaffolding }] = useScaffoldMutation();
   const [codegen, { isLoading: generating }] = useCodegenMutation();
   const [githubPush] = useGithubPushMutation();
@@ -261,7 +261,7 @@ export function DeployTab() {
       {/* Codegen Model Selector Modal */}
       <Modal isOpen={showCodegenModal} onClose={() => setShowCodegenModal(false)} title={t('deployCodegenTitle')}>
         <div className={styles.modalColumn}>
-          {ghStatus?.connected ? (
+          {hasProvider ? (
             <>
               <Select
                 label={t('model')}
@@ -276,7 +276,7 @@ export function DeployTab() {
           ) : (
             <div className={styles.githubLogin}>
               <Github size={24} />
-              <p>{t('githubLoginRequired')}</p>
+              <p>{t('providerRequired')}</p>
               <Button variant="gold" onClick={() => { window.location.href = '/api/auth/github'; }}>
                 {t('githubLoginBtn')}
               </Button>

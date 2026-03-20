@@ -35,6 +35,6 @@ const baseQueryWithRetry = retry(baseQueryWithReauth, { maxRetries: 2 });
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithRetry,
-  tagTypes: ['Project', 'Registry', 'Requirements', 'Feedback', 'GitHub', 'Hub', 'Auth', 'Pipeline', 'Probing', 'Baseline', 'Traceability', 'Notifications', 'Audit'],
+  tagTypes: ['Project', 'Registry', 'Requirements', 'Feedback', 'GitHub', 'Anthropic', 'Hub', 'Auth', 'Pipeline', 'Probing', 'Baseline', 'Traceability', 'Notifications', 'Audit'],
   endpoints: () => ({}),
 });

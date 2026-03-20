@@ -348,10 +348,25 @@ export function resetLLMConfig(): void {
 }
 
 /**
- * List available AI models from GitHub Models API.
- * Requires a valid GitHub token — returns empty list if not connected.
+ * List available AI models from all connected providers.
+ * Fetches from GitHub Models and Anthropic in parallel.
+ * Returns empty list if no provider is connected.
  */
 export async function listModels(): Promise<
+  Array<{ id: string; name: string; provider: string; contextWindow: number; available: boolean }>
+> {
+  const [githubModels, anthropicModels] = await Promise.all([
+    listGithubModels(),
+    listAnthropicModels(),
+  ]);
+
+  return [...githubModels, ...anthropicModels];
+}
+
+/**
+ * Fetch models from GitHub Models API.
+ */
+async function listGithubModels(): Promise<
   Array<{ id: string; name: string; provider: string; contextWindow: number; available: boolean }>
 > {
   const { getGithubStatus } = await import('./github.js');
@@ -392,4 +407,14 @@ export async function listModels(): Promise<
     log.warn({ err }, 'Failed to fetch models from GitHub Models API');
     return [];
   }
+}
+
+/**
+ * Fetch models from Anthropic API.
+ */
+async function listAnthropicModels(): Promise<
+  Array<{ id: string; name: string; provider: string; contextWindow: number; available: boolean }>
+> {
+  const { listAnthropicModels: fetchList } = await import('./anthropic.js');
+  return fetchList();
 }

@@ -3,8 +3,7 @@ import { Github } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { setModel } from '@/store/slices/chatSlice';
 import { useGetModelsQuery } from '@/store/api/chatApi';
-import { useGetGithubStatusQuery } from '@/store/api/githubApi';
-import { useGetAuthStatusQuery } from '@/store/api/authApi';
+import { useAnyProviderConnected } from '@/components/ui/ProviderLoginGate';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
 import styles from './ModelSelector.module.css';
@@ -38,9 +37,7 @@ export function ModelSelector() {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const currentModel = useAppSelector((s) => s.chat.model);
-  const { data: ghStatus } = useGetGithubStatusQuery();
-  const { data: authStatus } = useGetAuthStatusQuery();
-  const isConnected = (authStatus?.authEnabled && authStatus?.authenticated) || ghStatus?.connected;
+  const isConnected = useAnyProviderConnected();
   const { data: models, isLoading, isError } = useGetModelsQuery(undefined, { skip: !isConnected });
 
   /* Voice/speech transcription uses browser SpeechRecognition, not LLM — exempt from auth gate */

@@ -15,6 +15,7 @@ import { requirementsRouter } from './routes/requirements.js';
 import { deployRouter } from './routes/deploy.js';
 import { chatRouter } from './routes/chat.js';
 import { githubRouter } from './routes/github.js';
+import { anthropicRouter } from './routes/anthropic.js';
 import { feedbackRouter } from './routes/feedback.js';
 import { filesRouter } from './routes/files.js';
 import { hubRouter } from './routes/hub.js';
@@ -48,7 +49,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https://avatars.githubusercontent.com"],
-      connectSrc: ["'self'", "ws:", "wss:", "https://api.github.com", "https://models.inference.ai.azure.com"],
+      connectSrc: ["'self'", "ws:", "wss:", "https://api.github.com", "https://models.inference.ai.azure.com", "https://api.anthropic.com"],
     },
   },
 }));
@@ -84,6 +85,7 @@ app.use('/api/projects', notificationsRouter);
 app.use('/api/projects', auditRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/github', githubRouter);
+app.use('/api/anthropic', anthropicRouter);
 app.use('/api/hub', hubRouter);
 
 // Health check

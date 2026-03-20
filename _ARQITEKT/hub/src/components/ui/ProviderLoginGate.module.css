@@ -1,0 +1,92 @@
+/* ================================================================
+   ProviderLoginGate — multi-provider auth gate
+   ================================================================ */
+
+.gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.description {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  max-width: 420px;
+}
+
+.providers {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 560px;
+}
+
+.provider {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-bg);
+}
+
+.providerHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-primary);
+}
+
+.providerName {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+}
+
+.providerDesc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  line-height: var(--line-height-normal);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.apiKeyRow {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.apiKeyRow input {
+  flex: 1;
+  min-width: 0;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+}
+
+/* -- Responsive: Stack on narrow screens -- */
+@media (max-width: 540px) {
+  .providers {
+    flex-direction: column;
+  }
+
+  .divider {
+    justify-content: center;
+  }
+}

@@ -148,6 +148,10 @@ export const connectGithubSchema = z.object({
   token: z.string().min(1).max(200),
 });
 
+export const connectAnthropicSchema = z.object({
+  apiKey: z.string().min(1).max(200),
+});
+
 /* ------------------------------------------------------------------ */
 /*  Conversation schemas                                               */
 /* ------------------------------------------------------------------ */
