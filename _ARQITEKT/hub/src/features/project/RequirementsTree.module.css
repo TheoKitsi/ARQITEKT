@@ -47,6 +47,82 @@
   background-color: var(--color-border);
 }
 
+/* ---- Section toggle (collapsible cross-cutting) ---- */
+.sectionToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-1);
+  margin-top: var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.sectionToggle:hover {
+  background-color: var(--color-surface-bg3);
+  color: var(--color-text-secondary);
+}
+
+.sectionToggle:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: -2px;
+}
+
+.sectionCount {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  background-color: var(--color-surface-bg3);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-full);
+  min-width: 18px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- Edit button on tree row ---- */
+.editBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.nodeRow:hover .editBtn {
+  display: inline-flex;
+}
+
+.editBtn:hover {
+  background-color: rgba(255, 215, 0, 0.15);
+  color: var(--color-brand-gold);
+}
+
+.editBtn:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: 1px;
+}
+
 /* ---- Tree list ---- */
 .treeList {
   list-style: none;

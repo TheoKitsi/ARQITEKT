@@ -4,6 +4,7 @@ import { Play, ExternalLink, Globe } from 'lucide-react';
 import type { Project } from '@/store/api/projectsApi';
 import { useAppStartMutation, useAppStatusQuery } from '@/store/api/deployApi';
 import { Badge, type LifecycleStage } from '@/components/ui/Badge';
+import { useToast } from '@/components/ui/Toast';
 import styles from './ProjectCard.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -17,6 +18,7 @@ export interface ProjectCardProps {
 export function ProjectCard({ project }: ProjectCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const lifecycle: LifecycleStage = project.config.lifecycle;
   const [startApp, { isLoading: starting }] = useAppStartMutation();
 
@@ -38,10 +40,17 @@ export function ProjectCard({ project }: ProjectCardProps) {
     }
   };
 
-  const handleAction = (e: React.MouseEvent) => {
+  const handleAction = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (lifecycle === 'built' || lifecycle === 'building') {
-      startApp(project.id);
+      try {
+        const result = await startApp(project.id).unwrap();
+        if (!result.success) {
+          showToast(result.message ?? t('appStartFailed', 'Failed to start app'), 'error');
+        }
+      } catch {
+        showToast(t('appStartFailed', 'Failed to start app. Has the app been scaffolded?'), 'error');
+      }
     } else if (lifecycle === 'running') {
       const port = appStatus?.port ?? 8080;
       window.open(`http://localhost:${port}`, '_blank', 'noopener');

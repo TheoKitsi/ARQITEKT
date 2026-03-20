@@ -1,9 +1,8 @@
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { StatsBar } from './StatsBar';
+import { useState, useCallback } from 'react';
+import { useParams, useOutletContext } from 'react-router-dom';
 import { PipelineView } from './PipelineView';
-import { FlowView } from './FlowView';
-import { RequirementDetail } from './RequirementDetail';
+import { FocusedView } from './FocusedView';
+import { RequirementDialog } from './RequirementDialog';
 import { AddSolutionModal } from './AddSolutionModal';
 import { AddUserStoryModal } from './AddUserStoryModal';
 import { ValidationOverlay } from './ValidationOverlay';
@@ -13,39 +12,61 @@ import type { TreeNode } from '@/store/api/requirementsApi';
 import styles from './PlanTab.module.css';
 
 /* ------------------------------------------------------------------ */
+/*  Outlet context type (provided by ProjectLayout)                    */
+/* ------------------------------------------------------------------ */
+
+export interface PlanOutletContext {
+  openNode: TreeNode | null;
+  setOpenNode: (node: TreeNode | null) => void;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
 export function PlanTab() {
   const { projectId } = useParams<{ projectId: string }>();
+  const ctx = useOutletContext<PlanOutletContext | undefined>();
+
+  /* selectedNode = focused in FocusedView; dialogNode = open in RequirementDialog */
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
   const [showAddSol, setShowAddSol] = useState(false);
-  const [showAddUS, setShowAddUS] = useState<string | null>(null); // solutionId
+  const [showAddUS, setShowAddUS] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
   const [probingArtifactId, setProbingArtifactId] = useState<string | null>(null);
 
+  /* If tree pushes a node via context, show it in the dialog */
+  const dialogNode = ctx?.openNode ?? null;
+  const closeDialog = useCallback(() => ctx?.setOpenNode(null), [ctx]);
+
+  /* When user clicks a child card in FocusedView, open the dialog */
+  const handleOpenNode = useCallback((node: TreeNode) => {
+    if (ctx) {
+      ctx.setOpenNode(node);
+    } else {
+      setSelectedNode(node);
+    }
+  }, [ctx]);
+
   return (
     <div className={styles.tab}>
-      <StatsBar projectId={projectId!} />
-
       <PipelineView projectId={projectId!} />
 
       <TraceabilityPanel projectId={projectId!} />
 
       <section className={styles.flowArea}>
-        <FlowView
+        <FocusedView
           projectId={projectId!}
-          onSelectNode={setSelectedNode}
-          onAddUS={(solId) => setShowAddUS(solId)}
+          selectedNode={selectedNode ?? dialogNode}
+          onOpenNode={handleOpenNode}
         />
       </section>
 
-      {/* Detail slide-in */}
-      <RequirementDetail
-        node={selectedNode}
+      {/* Requirement edit dialog (centered modal with Monaco) */}
+      <RequirementDialog
+        node={dialogNode}
         projectId={projectId!}
-        onClose={() => setSelectedNode(null)}
-        onValidate={() => setShowValidation(true)}
+        onClose={closeDialog}
         onProbe={(artifactId) => setProbingArtifactId(artifactId)}
       />
 

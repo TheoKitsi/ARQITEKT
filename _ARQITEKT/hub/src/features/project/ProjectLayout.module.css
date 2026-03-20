@@ -19,7 +19,7 @@
   background-color: var(--color-surface-bg2);
   border-right: 1px solid var(--color-border);
   overflow-y: auto;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .backLink {
@@ -48,7 +48,7 @@
 }
 
 .treeNav {
-  flex: 1;
+  /* Don't let tree expand to push progress/summary down */
 }
 
 .treePlaceholder {

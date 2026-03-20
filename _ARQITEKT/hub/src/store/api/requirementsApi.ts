@@ -98,6 +98,21 @@ export interface SetStatusRequest {
   status: RequirementStatus;
 }
 
+export interface ArtifactContent {
+  title: string;
+  status: string;
+  type: string;
+  body: string;
+  frontmatter: Record<string, unknown>;
+}
+
+export interface UpdateContentRequest {
+  projectId: string;
+  artifactId: string;
+  content: string;
+  title?: string;
+}
+
 export interface SearchResult {
   nodeId: string;
   title: string;
@@ -241,6 +256,29 @@ export const requirementsApi = baseApi.injectEndpoints({
         { type: 'Requirements', id: projectId },
       ],
     }),
+
+    getArtifactContent: builder.query<ArtifactContent, { projectId: string; artifactId: string }>({
+      query: ({ projectId, artifactId }) =>
+        `/projects/${projectId}/requirements/${encodeURIComponent(artifactId)}/content`,
+      providesTags: (_result, _error, { projectId, artifactId }) => [
+        { type: 'Requirements', id: `${projectId}-content-${artifactId}` },
+      ],
+    }),
+
+    updateContent: builder.mutation<{ success: boolean; artifactId: string }, UpdateContentRequest>({
+      query: ({ projectId, artifactId, content, title }) => ({
+        url: `/projects/${projectId}/requirements/${encodeURIComponent(artifactId)}/content`,
+        method: 'PUT',
+        body: { content, title },
+      }),
+      invalidatesTags: (_result, _error, { projectId, artifactId }) => [
+        { type: 'Requirements', id: projectId },
+        { type: 'Requirements', id: `${projectId}-stats` },
+        { type: 'Requirements', id: `${projectId}-readiness` },
+        { type: 'Requirements', id: `${projectId}-content-${artifactId}` },
+        { type: 'Pipeline', id: `${projectId}-confidence` },
+      ],
+    }),
   }),
 });
 
@@ -258,4 +296,6 @@ export const {
   useCreateUserStoryMutation,
   useValidateProjectMutation,
   useImportCsvMutation,
+  useGetArtifactContentQuery,
+  useUpdateContentMutation,
 } = requirementsApi;

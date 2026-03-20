@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GitBranch, AlertTriangle, Search, X } from 'lucide-react';
+import { GitBranch, AlertTriangle, Search, X, ChevronDown, ChevronRight } from 'lucide-react';
 import {
   useGetTraceabilityQuery,
   useGetImpactQuery,
@@ -26,6 +26,7 @@ export function TraceabilityPanel({ projectId }: TraceabilityPanelProps) {
   const { t } = useTranslation();
   const { data: matrix, isLoading, isError, refetch } = useGetTraceabilityQuery(projectId);
   const [selectedArtifact, setSelectedArtifact] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   if (isLoading) {
     return (
@@ -56,15 +57,25 @@ export function TraceabilityPanel({ projectId }: TraceabilityPanelProps) {
 
   return (
     <section className={styles.panel}>
-      <header className={styles.header}>
+      <header
+        className={styles.header}
+        onClick={() => setExpanded((p) => !p)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded((p) => !p); } }}
+        aria-expanded={expanded}
+      >
+        {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         <GitBranch size={16} />
         <h3 className={styles.title}>{t('traceability')}</h3>
         <Badge variant="info">{t('traceLinks', { n: matrix.links.length })}</Badge>
       </header>
 
-      {/* Orphans summary */}
-      <div className={styles.section}>
-        <h4 className={styles.sectionTitle}>{t('traceOrphans')}</h4>
+      {expanded && (
+        <>
+          {/* Orphans summary */}
+          <div className={styles.section}>
+            <h4 className={styles.sectionTitle}>{t('traceOrphans')}</h4>
         {matrix.orphans.length === 0 ? (
           <p className={styles.emptyText}>{t('traceOrphansNone')}</p>
         ) : (
@@ -161,6 +172,9 @@ export function TraceabilityPanel({ projectId }: TraceabilityPanelProps) {
         </div>
       </div>
 
+        </>
+      )}
+
       {/* Impact analysis slide-in */}
       {selectedArtifact && (
         <ImpactDetail
@@ -185,10 +199,15 @@ interface ImpactDetailProps {
 
 function ImpactDetail({ projectId, artifactId, onClose }: ImpactDetailProps) {
   const { t } = useTranslation();
-  const { data: impact, isLoading } = useGetImpactQuery({ projectId, artifactId });
+  const { data: impact, isLoading, isError } = useGetImpactQuery({ projectId, artifactId });
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [artifactId]);
 
   return (
-    <div className={styles.impactPanel}>
+    <div className={styles.impactPanel} ref={panelRef}>
       <div className={styles.impactHeader}>
         <h4 className={styles.impactTitle}>
           {t('impactAnalysis')}: <span className={styles.mono}>{artifactId}</span>
@@ -200,6 +219,8 @@ function ImpactDetail({ projectId, artifactId, onClose }: ImpactDetailProps) {
 
       {isLoading ? (
         <Spinner size="sm" />
+      ) : isError ? (
+        <p className={styles.emptyText}>{t('impactError', 'Could not load impact analysis.')}</p>
       ) : impact ? (
         <div className={styles.impactBody}>
           <div className={styles.impactRow}>

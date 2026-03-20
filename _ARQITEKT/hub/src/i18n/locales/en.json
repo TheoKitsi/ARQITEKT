@@ -557,5 +557,7 @@
   "userMenu": "User menu",
   "connectedViaGithub": "Connected via GitHub",
   "settings": "Settings",
-  "githubSettings": "GitHub Settings"
+  "githubSettings": "GitHub Settings",
+  "appStartFailed": "Failed to start app. Has it been scaffolded?",
+  "impactError": "Could not load impact analysis."
 }

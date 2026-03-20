@@ -22,7 +22,7 @@ export interface PipelineViewProps {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Stage definitions (entities between gates)                         */
+/*  Stage / gate maps                                                  */
 /* ------------------------------------------------------------------ */
 
 const STAGE_KEYS: Record<string, string> = {
@@ -47,7 +47,7 @@ const GATE_BETWEEN: Record<string, GateId> = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Component                                                          */
+/*  Component — compact dot strip                                      */
 /* ------------------------------------------------------------------ */
 
 export function PipelineView({ projectId }: PipelineViewProps) {
@@ -56,12 +56,7 @@ export function PipelineView({ projectId }: PipelineViewProps) {
   const [evaluateGate, { isLoading: isEvaluating }] = useEvaluateGateMutation();
   const [selectedGate, setSelectedGate] = useState<GateResult | null>(null);
 
-  const handleGateClick = useCallback((gate: GateResult) => {
-    setSelectedGate(gate);
-  }, []);
-
   const handleRefresh = useCallback(async () => {
-    // Re-evaluate all gates sequentially
     const gateIds: GateId[] = [
       'G0_IDEA_TO_BC', 'G1_BC_TO_SOL', 'G2_SOL_TO_US',
       'G3_US_TO_CMP', 'G4_CMP_TO_FN', 'G5_FN_TO_CODE',
@@ -88,26 +83,49 @@ export function PipelineView({ projectId }: PipelineViewProps) {
     return (
       <div className={styles.center}>
         <span className={styles.errorText}>{t('errorLoad')}</span>
-        <Button variant="text" size="sm" onClick={() => refetch()}>
-          {t('refresh')}
-        </Button>
       </div>
     );
   }
 
   return (
     <div className={styles.pipeline}>
-      {/* Toolbar */}
-      <div className={styles.toolbar}>
-        <span className={styles.toolbarTitle}>{t('pipeline')}</span>
-        <div className={styles.overallScore}>
-          {pipeline && (
-            <ConfidenceBadge score={pipeline.overallConfidence} />
-          )}
+      {/* Compact dot strip */}
+      <div className={styles.stages}>
+        {STAGE_ORDER.map((stage, i) => {
+          const nextStage = STAGE_ORDER[i + 1];
+          const gateKey = `${stage}-${nextStage}`;
+          const gateId = nextStage ? GATE_BETWEEN[gateKey] : undefined;
+          const gateResult = gateId ? getGateResult(gateId) : undefined;
+          const status = gateResult?.status ?? 'pending';
+
+          return (
+            <div key={stage} className={styles.segment}>
+              {/* Stage label */}
+              <span className={styles.stageLabel}>{t(STAGE_KEYS[stage] ?? stage)}</span>
+
+              {/* Gate dot */}
+              {gateId && (
+                <>
+                  <div className={`${styles.line} ${status === 'passed' || status === 'overridden' ? styles.linePassed : status === 'failed' ? styles.lineFailed : ''}`} />
+                  <button
+                    type="button"
+                    className={`${styles.dot} ${styles[`dot_${status}`] ?? ''}`}
+                    onClick={() => gateResult && setSelectedGate(gateResult)}
+                    aria-label={`G${gateId.charAt(1)}: ${status}`}
+                  />
+                </>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Right side: overall + refresh */}
+        <div className={styles.meta}>
+          {pipeline && <ConfidenceBadge score={pipeline.overallConfidence} />}
           <Button
             variant="text"
             size="sm"
-            icon={<RefreshCw size={14} />}
+            icon={<RefreshCw size={12} />}
             onClick={handleRefresh}
             loading={isEvaluating}
           >
@@ -116,95 +134,12 @@ export function PipelineView({ projectId }: PipelineViewProps) {
         </div>
       </div>
 
-      {/* Horizontal pipeline */}
-      <div className={styles.stages}>
-        {STAGE_ORDER.map((stage, i) => {
-          const nextStage = STAGE_ORDER[i + 1];
-          const gateKey = `${stage}-${nextStage}`;
-          const gateId = nextStage ? GATE_BETWEEN[gateKey] : undefined;
-          const gateResult = gateId ? getGateResult(gateId) : undefined;
-
-          return (
-            <StageSegment
-              key={stage}
-              label={t(STAGE_KEYS[stage] ?? stage)}
-              gateResult={gateResult}
-              gateId={gateId}
-              showConnector={!!nextStage}
-              onGateClick={handleGateClick}
-            />
-          );
-        })}
-      </div>
-
-      {/* Gate detail slide-in */}
+      {/* Gate detail slide-in (kept) */}
       <GateDetail
         gate={selectedGate}
         projectId={projectId}
         onClose={() => setSelectedGate(null)}
       />
     </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  StageSegment – one entity label + optional gate + connector        */
-/* ------------------------------------------------------------------ */
-
-interface StageSegmentProps {
-  label: string;
-  gateResult?: GateResult;
-  gateId?: GateId;
-  showConnector: boolean;
-  onGateClick: (gate: GateResult) => void;
-}
-
-function StageSegment({ label, gateResult, gateId, showConnector, onGateClick }: StageSegmentProps) {
-  const status = gateResult?.status ?? 'pending';
-
-  const statusClass = {
-    passed: styles.gatePassed,
-    failed: styles.gateFailed,
-    pending: styles.gatePending,
-    overridden: styles.gateOverridden,
-  }[status];
-
-  const connectorClass = status === 'passed' || status === 'overridden'
-    ? styles.connectorPassed
-    : status === 'failed'
-      ? styles.connectorFailed
-      : '';
-
-  const gateNumber = gateId ? gateId.charAt(1) : '';
-
-  return (
-    <>
-      {/* Entity stage */}
-      <div className={styles.stage}>
-        <span className={styles.stageLabel}>{label}</span>
-        <ConfidenceBadge score={gateResult?.confidence ?? null} />
-      </div>
-
-      {/* Gate + connector */}
-      {showConnector && (
-        <>
-          <div className={[styles.connector, connectorClass].filter(Boolean).join(' ')} />
-          <div
-            className={[styles.gate, statusClass].filter(Boolean).join(' ')}
-            onClick={gateResult ? () => onGateClick(gateResult) : undefined}
-            onKeyDown={gateResult ? (e) => { if (e.key === 'Enter') onGateClick(gateResult); } : undefined}
-            role="button"
-            tabIndex={0}
-            aria-label={`Gate ${gateNumber}: ${status}`}
-          >
-            <div className={styles.gateCircle}>
-              {status === 'passed' ? '\u2713' : status === 'failed' ? '\u2717' : `G${gateNumber}`}
-            </div>
-            <span className={styles.gateId}>G{gateNumber}</span>
-          </div>
-          <div className={[styles.connector, connectorClass].filter(Boolean).join(' ')} />
-        </>
-      )}
-    </>
   );
 }

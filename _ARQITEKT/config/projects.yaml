@@ -41,3 +41,9 @@ projects:
     path: C:\Users\kitsi\Desktop\ARQITEKT_PROJECTS\006_SCS_PLAY
     github: TheoKitsi/scs-play
     description: Gamified social card game PWA with touch gestures, Firebase auth, and 7 game modes
+  - id: 001_ARQITEKT_ME
+    name: Arqitekt.me
+    codename: ARQITEKT_ME
+    mode: local
+    path: 001_ARQITEKT_ME
+    description: A light Version of Arqitekt

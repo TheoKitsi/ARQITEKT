@@ -1,6 +1,6 @@
 import { useState, useCallback, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ChevronDown, Pencil } from 'lucide-react';
 import { useGetTreeQuery, type TreeNode } from '@/store/api/requirementsApi';
 import { Spinner } from '@/components/ui/Spinner';
 import styles from './RequirementsTree.module.css';
@@ -13,6 +13,8 @@ export interface RequirementsTreeProps {
   projectId: string;
   selectedId?: string;
   onSelect?: (node: TreeNode) => void;
+  /** Called when user wants to open/edit an artifact (edit icon click). */
+  onOpen?: (node: TreeNode) => void;
 }
 
 /** Metamodel node types that belong to the main hierarchy. */
@@ -89,6 +91,7 @@ interface TreeNodeRowProps {
   selectedId?: string;
   onToggle: (id: string) => void;
   onSelect: (node: TreeNode) => void;
+  onOpen?: (node: TreeNode) => void;
   onKeyDown: (e: KeyboardEvent<HTMLDivElement>, node: TreeNode) => void;
 }
 
@@ -99,6 +102,7 @@ function TreeNodeRow({
   selectedId,
   onToggle,
   onSelect,
+  onOpen,
   onKeyDown,
 }: TreeNodeRowProps) {
   const hierarchyChildren = (node.children ?? []).filter((c) =>
@@ -163,6 +167,17 @@ function TreeNodeRow({
           title={node.status}
           aria-label={node.status}
         />
+        {onOpen && (
+          <button
+            className={styles.editBtn}
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onOpen(node); }}
+            aria-label={`Edit ${node.title}`}
+            tabIndex={-1}
+          >
+            <Pencil size={12} />
+          </button>
+        )}
       </div>
 
       {hasChildren && isExpanded && (
@@ -176,6 +191,7 @@ function TreeNodeRow({
               selectedId={selectedId}
               onToggle={onToggle}
               onSelect={onSelect}
+              onOpen={onOpen}
               onKeyDown={onKeyDown}
             />
           ))}
@@ -193,6 +209,7 @@ interface CrossCuttingRowProps {
   node: TreeNode;
   selectedId?: string;
   onSelect: (node: TreeNode) => void;
+  onOpen?: (node: TreeNode) => void;
   onKeyDown: (e: KeyboardEvent<HTMLDivElement>, node: TreeNode) => void;
 }
 
@@ -200,6 +217,7 @@ function CrossCuttingRow({
   node,
   selectedId,
   onSelect,
+  onOpen,
   onKeyDown,
 }: CrossCuttingRowProps) {
   const isSelected = selectedId === node.id;
@@ -242,6 +260,17 @@ function CrossCuttingRow({
           title={node.status}
           aria-label={node.status}
         />
+        {onOpen && (
+          <button
+            className={styles.editBtn}
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onOpen(node); }}
+            aria-label={`Edit ${node.title}`}
+            tabIndex={-1}
+          >
+            <Pencil size={12} />
+          </button>
+        )}
       </div>
     </li>
   );
@@ -255,11 +284,13 @@ export function RequirementsTree({
   projectId,
   selectedId: controlledSelectedId,
   onSelect,
+  onOpen,
 }: RequirementsTreeProps) {
   const { t } = useTranslation();
   const { data: tree, isLoading, isError } = useGetTreeQuery(projectId);
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [crossCuttingOpen, setCrossCuttingOpen] = useState(false);
   const [internalSelectedId, setInternalSelectedId] = useState<string | undefined>();
 
   const selectedId = controlledSelectedId ?? internalSelectedId;
@@ -396,29 +427,40 @@ export function RequirementsTree({
               selectedId={selectedId}
               onToggle={handleToggle}
               onSelect={handleSelect}
+              onOpen={onOpen}
               onKeyDown={handleKeyDown}
             />
           ))}
         </ul>
       )}
 
-      {/* Cross-cutting concerns: INF, ADR, NTF, FBK */}
+      {/* Cross-cutting concerns: INF, ADR, NTF, FBK — collapsed by default */}
       {crossCutting.length > 0 && (
         <>
-          <div className={styles.sectionLabel}>
-            {t('crossCutting', 'Cross-cutting')}
-          </div>
-          <ul className={styles.treeList} role="group">
-            {crossCutting.map((node) => (
-              <CrossCuttingRow
-                key={node.id}
-                node={node}
-                selectedId={selectedId}
-                onSelect={handleSelect}
-                onKeyDown={handleKeyDown}
-              />
-            ))}
-          </ul>
+          <button
+            className={styles.sectionToggle}
+            onClick={() => setCrossCuttingOpen((p) => !p)}
+            type="button"
+            aria-expanded={crossCuttingOpen}
+          >
+            {crossCuttingOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+            <span>{t('crossCutting', 'Cross-cutting')}</span>
+            <span className={styles.sectionCount}>{crossCutting.length}</span>
+          </button>
+          {crossCuttingOpen && (
+            <ul className={styles.treeList} role="group">
+              {crossCutting.map((node) => (
+                <CrossCuttingRow
+                  key={node.id}
+                  node={node}
+                  selectedId={selectedId}
+                  onSelect={handleSelect}
+                  onOpen={onOpen}
+                  onKeyDown={handleKeyDown}
+                />
+              ))}
+            </ul>
+          )}
         </>
       )}
     </div>

@@ -1,0 +1,4 @@
+id: mobile-app
+name: Mobile Application
+description: Cross-platform mobile app with auth, offline support, and push notifications. Pre-configured for Flutter or React Native.
+artifacts: 15

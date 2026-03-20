@@ -1,6 +1,7 @@
-import { readFile, readdir, stat } from 'fs/promises';
+import { readFile, readdir, stat, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { parseFrontmatter } from './frontmatter.js';
+import { resolveProjectById } from './projects.js';
 import type { RequirementStatus } from '../types/project.js';
 
 /**
@@ -58,4 +59,73 @@ export async function findArtifactFile(
   }
 
   return null;
+}
+
+/**
+ * Read the full content (frontmatter + markdown body) of an artifact.
+ */
+export async function getArtifactContent(
+  projectId: string,
+  artifactId: string
+): Promise<{ title: string; status: string; type: string; body: string; frontmatter: Record<string, unknown> }> {
+  const reqPath = join(await resolveProjectById(projectId), 'requirements');
+  const result = await findArtifactFile(reqPath, artifactId);
+
+  if (!result) {
+    const err = new Error(`Artifact "${artifactId}" not found in project "${projectId}"`) as Error & { status: number };
+    err.status = 404;
+    throw err;
+  }
+
+  const { data: fm, body } = parseFrontmatter(result.content);
+  return {
+    title: fmString(fm, 'title'),
+    status: fmString(fm, 'status') || 'idea',
+    type: fmString(fm, 'type'),
+    body,
+    frontmatter: fm,
+  };
+}
+
+/**
+ * Update the markdown body (and optionally title) of an artifact.
+ */
+export async function updateArtifactContent(
+  projectId: string,
+  artifactId: string,
+  newBody: string,
+  newTitle?: string
+): Promise<void> {
+  const reqPath = join(await resolveProjectById(projectId), 'requirements');
+  const result = await findArtifactFile(reqPath, artifactId);
+
+  if (!result) {
+    const err = new Error(`Artifact "${artifactId}" not found in project "${projectId}"`) as Error & { status: number };
+    err.status = 404;
+    throw err;
+  }
+
+  const { filePath, content } = result;
+
+  // Rebuild frontmatter section, updating title if provided
+  const fmLines: string[] = [];
+  const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (fmMatch) {
+    for (const line of fmMatch[1]!.split('\n')) {
+      const colonIdx = line.indexOf(':');
+      if (colonIdx === -1) {
+        fmLines.push(line);
+        continue;
+      }
+      const key = line.substring(0, colonIdx).trim();
+      if (key === 'title' && newTitle) {
+        fmLines.push(`title: "${newTitle.replace(/"/g, '\\"')}"`);
+      } else {
+        fmLines.push(line);
+      }
+    }
+  }
+
+  const updatedContent = `---\n${fmLines.join('\n')}\n---\n${newBody}`;
+  await writeFile(filePath, updatedContent, 'utf-8');
 }

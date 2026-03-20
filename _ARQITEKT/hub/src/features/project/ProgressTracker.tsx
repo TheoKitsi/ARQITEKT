@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check } from 'lucide-react';
-import { useGetReadinessQuery, type ReadinessResult } from '@/store/api/requirementsApi';
+import { Check, ArrowRight } from 'lucide-react';
+import { useGetReadinessQuery, useGetStatsQuery, type ReadinessResult, type RequirementsStats } from '@/store/api/requirementsApi';
 import { Spinner } from '@/components/ui/Spinner';
 import styles from './ProgressTracker.module.css';
 
@@ -11,10 +11,11 @@ import styles from './ProgressTracker.module.css';
 
 export interface ProgressTrackerProps {
   projectId: string;
+  onNextStep?: (hint: string) => void;
 }
 
 /* ------------------------------------------------------------------ */
-/*  Step definitions (i18n keys)                                       */
+/*  Step definitions — Phase 1 only (6 steps)                          */
 /* ------------------------------------------------------------------ */
 
 const STEPS = [
@@ -24,10 +25,6 @@ const STEPS = [
   'nsDefineCmp',
   'nsSpecifyFn',
   'nsReview',
-  'nsStartDev',
-  'nsScaffold',
-  'nsStartApp',
-  'nsDeploy',
 ] as const;
 
 type StepKey = (typeof STEPS)[number];
@@ -36,15 +33,25 @@ type StepKey = (typeof STEPS)[number];
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-/**
- * Derive how many steps are completed based on the readiness score.
- * The score is a 0-100 number; we distribute it evenly across 10 steps.
- */
 function deriveCompletedSteps(readiness: ReadinessResult | undefined): number {
   if (!readiness) return 0;
-  // Map 0-100 score onto 0-10 steps
   const raw = Math.floor((readiness.score / 100) * STEPS.length);
   return Math.min(raw, STEPS.length);
+}
+
+function deriveNextStepHint(
+  stats: RequirementsStats | undefined,
+  readiness: ReadinessResult | undefined,
+  t: (key: string) => string,
+): string | null {
+  if (!stats || !readiness) return null;
+  if (stats.bc === 0) return t('nsCreateBC');
+  if (stats.sol === 0) return t('nsDeriveSol');
+  if (stats.us === 0) return t('nsCreateUS');
+  if (stats.cmp === 0) return t('nsDefineCmp');
+  if (stats.fn === 0) return t('nsSpecifyFn');
+  if (readiness.score < 100) return t('nsReview');
+  return null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -87,9 +94,10 @@ function StepItem({ index, labelKey, state }: StepItemProps) {
 /*  ProgressTracker                                                    */
 /* ------------------------------------------------------------------ */
 
-export function ProgressTracker({ projectId }: ProgressTrackerProps) {
+export function ProgressTracker({ projectId, onNextStep }: ProgressTrackerProps) {
   const { t } = useTranslation();
   const { data: readiness, isLoading, isError } = useGetReadinessQuery(projectId);
+  const { data: stats } = useGetStatsQuery(projectId);
 
   const completedCount = useMemo(
     () => deriveCompletedSteps(readiness),
@@ -100,6 +108,11 @@ export function ProgressTracker({ projectId }: ProgressTrackerProps) {
     if (!readiness) return 0;
     return Math.round(readiness.score);
   }, [readiness]);
+
+  const nextHint = useMemo(
+    () => deriveNextStepHint(stats, readiness, t),
+    [stats, readiness, t],
+  );
 
   /* ---------- Loading state ---------- */
   if (isLoading) {
@@ -119,15 +132,10 @@ export function ProgressTracker({ projectId }: ProgressTrackerProps) {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <span className={styles.title}>{t('trackerTitle', 'Progress')}</span>
-      </div>
-
       {/* Progress bar */}
       <div className={styles.progressBarWrap}>
         <div className={styles.progressLabel}>
-          <span>{t('progressTitle', 'Progress')}</span>
+          <span>{t('trackerTitle', 'Progress')}</span>
           <span className={styles.progressPercent}>{percent}%</span>
         </div>
         <div className={styles.progressTrack}>
@@ -142,6 +150,18 @@ export function ProgressTracker({ projectId }: ProgressTrackerProps) {
           />
         </div>
       </div>
+
+      {/* Next step CTA */}
+      {nextHint && (
+        <button
+          className={styles.nextStep}
+          onClick={() => onNextStep?.(nextHint)}
+          type="button"
+        >
+          <ArrowRight size={14} />
+          <span className={styles.nextStepLabel}>{t('planNextStep', 'Next')}: {nextHint}</span>
+        </button>
+      )}
 
       {/* Steps */}
       <div className={styles.stepsList}>

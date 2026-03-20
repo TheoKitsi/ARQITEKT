@@ -557,5 +557,7 @@
   "userMenu": "Benutzermenue",
   "connectedViaGithub": "Verbunden ueber GitHub",
   "settings": "Einstellungen",
-  "githubSettings": "GitHub-Einstellungen"
+  "githubSettings": "GitHub-Einstellungen",
+  "appStartFailed": "App konnte nicht gestartet werden. Wurde sie bereits generiert?",
+  "impactError": "Impact-Analyse konnte nicht geladen werden."
 }

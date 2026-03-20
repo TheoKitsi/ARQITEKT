@@ -27,33 +27,43 @@
   letter-spacing: 0.05em;
 }
 
-/* ---- Stats grid ---- */
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* ---- Compact inline stats ---- */
+.compactStats {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 
-.stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
+.compactItem {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
 }
 
-.statValue {
+.compactValue {
   font-family: var(--font-mono);
-  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-brand-gold);
 }
 
-.statLabel {
+/* ---- Collapsible categories ---- */
+.catToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: var(--space-1);
+  cursor: pointer;
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
+  font-family: inherit;
 }
 
-/* ---- Categories ---- */
+.catToggle:hover {
+  color: var(--color-text-secondary);
+}
+
 .categories {
   display: flex;
   flex-direction: column;

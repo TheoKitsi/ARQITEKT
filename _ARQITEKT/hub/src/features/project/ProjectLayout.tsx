@@ -1,3 +1,4 @@
+import { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, NavLink, Outlet, Link, useLocation } from 'react-router-dom';
 import {
@@ -14,6 +15,7 @@ import { RequirementsTree } from './RequirementsTree';
 import { SearchBox } from './SearchBox';
 import { ProgressTracker } from './ProgressTracker';
 import { BCSummaryCard } from './BCSummaryCard';
+import type { TreeNode } from '@/store/api/requirementsApi';
 import styles from './ProjectLayout.module.css';
 
 /* ------------------------------------------------------------------ */
@@ -42,6 +44,14 @@ export function ProjectLayout() {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
   const { data: project, isLoading, isError } = useGetProjectQuery(projectId!);
+
+  /* ---- Tree → Dialog bridge (passed to Outlet context) ---- */
+  const [openNode, setOpenNode] = useState<TreeNode | null>(null);
+  const outletContext = useMemo(() => ({ openNode, setOpenNode }), [openNode]);
+
+  const handleTreeOpen = useCallback((node: TreeNode) => {
+    setOpenNode(node);
+  }, []);
 
   if (isLoading) {
     return (
@@ -77,7 +87,7 @@ export function ProjectLayout() {
         <SearchBox projectId={projectId!} />
 
         <nav className={styles.treeNav} aria-label={t('requirements')}>
-          <RequirementsTree projectId={projectId!} />
+          <RequirementsTree projectId={projectId!} onOpen={handleTreeOpen} />
         </nav>
 
         <ProgressTracker projectId={projectId!} />
@@ -118,7 +128,7 @@ export function ProjectLayout() {
 
         {/* Content */}
         <div className={styles.content}>
-          <Outlet />
+          <Outlet context={outletContext} />
         </div>
       </div>
     </div>

@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { buildTree, getStats, getReadiness, validateProject, setRequirementStatus } from '../services/requirements.js';
+import { getArtifactContent, updateArtifactContent } from '../services/requirementHelpers.js';
 import { importRequirementsCsv } from '../services/importService.js';
-import { validate, validateQuery, setStatusSchema, searchQuerySchema, nextUsIdQuerySchema } from '../middleware/validation.js';
+import { validate, validateQuery, setStatusSchema, searchQuerySchema, nextUsIdQuerySchema, updateContentSchema } from '../middleware/validation.js';
 import { recordAudit } from '../services/audit.js';
 import { requireRole } from '../middleware/rbac.js';
 
@@ -151,6 +152,28 @@ requirementsRouter.post('/:id/import-csv', requireRole('editor'), async (req, re
       return;
     }
     res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/projects/:id/requirements/:artifactId/content
+requirementsRouter.get('/:id/requirements/:artifactId/content', async (req, res, next) => {
+  try {
+    const data = await getArtifactContent(req.params.id as string, req.params.artifactId as string);
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/projects/:id/requirements/:artifactId/content
+requirementsRouter.put('/:id/requirements/:artifactId/content', requireRole('editor'), validate(updateContentSchema), async (req, res, next) => {
+  try {
+    const { content, title } = req.body;
+    await updateArtifactContent(req.params.id as string, req.params.artifactId as string, content, title);
+    recordAudit(req.params.id as string, 'requirement.edited', req.ip ?? 'unknown', req.params.artifactId as string, { title }).catch(() => {});
+    res.json({ success: true, artifactId: req.params.artifactId });
   } catch (err) {
     next(err);
   }

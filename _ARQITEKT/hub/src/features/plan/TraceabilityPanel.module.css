@@ -18,6 +18,15 @@
   align-items: center;
   gap: var(--space-2);
   color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+  padding: var(--space-1) 0;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast);
+}
+
+.header:hover {
+  color: var(--color-text-primary);
 }
 
 .title {
@@ -167,8 +176,12 @@
   margin-top: var(--space-3);
   padding: var(--space-3);
   background-color: var(--color-surface-bg);
-  border: 1px solid var(--color-border-strong);
+  border: 2px solid var(--color-brand-gold);
   border-radius: var(--radius-md);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  box-shadow: var(--shadow-md);
 }
 
 .impactHeader {
