@@ -62,6 +62,16 @@
   margin: 0;
 }
 
+/* ---- Imported project hint ---- */
+.importedHint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
 /* ---- Stats bar ---- */
 .stats {
   display: flex;

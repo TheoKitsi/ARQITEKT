@@ -23,10 +23,17 @@ vi.mock('@/store/api/deployApi', () => ({
   useAppStatusQuery: () => ({ data: undefined }),
 }));
 
+vi.mock('@/store/api/pipelineApi', () => ({
+  useGetPipelineQuery: () => ({ data: undefined }),
+}));
+
 vi.mock('lucide-react', () => ({
   Play: (props: Record<string, unknown>) => <svg data-testid="icon-play" {...props} />,
   ExternalLink: (props: Record<string, unknown>) => <svg data-testid="icon-external" {...props} />,
   Globe: (props: Record<string, unknown>) => <svg data-testid="icon-globe" {...props} />,
+  ShieldCheck: (props: Record<string, unknown>) => <svg data-testid="icon-shield-check" {...props} />,
+  ShieldAlert: (props: Record<string, unknown>) => <svg data-testid="icon-shield-alert" {...props} />,
+  ShieldQuestion: (props: Record<string, unknown>) => <svg data-testid="icon-shield-question" {...props} />,
 }));
 
 vi.mock('@/components/ui/Badge', () => ({
@@ -52,6 +59,7 @@ function makeProject(overrides: Partial<Project> = {}): Project {
   return {
     id: '001_SOCIAL',
     path: '001_SOCIAL',
+    mode: 'local',
     config: {
       name: 'SOCIAL',
       codename: 'SOCIAL',

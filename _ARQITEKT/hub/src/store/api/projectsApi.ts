@@ -37,6 +37,7 @@ export interface ProjectReadiness {
 export interface Project {
   id: string;
   path: string;
+  mode: 'local' | 'external';
   config: ProjectConfig;
   stats: ProjectStats;
   readiness: ProjectReadiness;

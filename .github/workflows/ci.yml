@@ -105,22 +105,5 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
 
-  # --- E2E (runs after unit tests pass) ---
-  e2e:
-    name: E2E Tests
-    needs: [hub-test, server-test]
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: _ARQITEKT/hub
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: _ARQITEKT/hub/package-lock.json
-      - run: npm ci
-      - run: cd ../server && npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npx playwright test
+  # --- E2E (local only — requires project workspace data on disk) ---
+  # To run locally: cd _ARQITEKT/hub && npx playwright test

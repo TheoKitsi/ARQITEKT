@@ -181,6 +181,7 @@
   "fbkRating": "Rating",
   "fbkDesc": "Description",
   "noDescription": "No description",
+  "importedProject": "Imported project — not managed via ARQITEKT pipeline",
   "runApp": "Run",
   "openApp": "Open",
   "viewLive": "View Live",

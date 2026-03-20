@@ -23,8 +23,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const lifecycle: LifecycleStage = project.config.lifecycle;
   const [startApp, { isLoading: starting }] = useAppStartMutation();
 
-  // Pipeline gate status
-  const { data: pipeline } = useGetPipelineQuery(project.id);
+  // Detect imported projects without ARQITEKT requirements structure
+  const { bc, sol, us, cmp, fn } = project.stats;
+  const hasRequirements = bc + sol + us + cmp + fn > 0;
+
+  // Pipeline gate status — skip for projects without requirements
+  const { data: pipeline } = useGetPipelineQuery(project.id, { skip: !hasRequirements });
 
   // Find the current (first non-passed) gate
   const currentGate = pipeline?.gates.find(
@@ -95,16 +99,23 @@ export function ProjectCard({ project }: ProjectCardProps) {
         {project.config.description || t('noDescription')}
       </p>
 
-      {/* Stats bar */}
-      <div className={styles.stats}>
-        <StatItem label={t('statSOL')} value={project.stats.sol} />
-        <StatItem label={t('statUS')} value={project.stats.us} />
-        <StatItem label={t('statCMP')} value={project.stats.cmp} />
-        <StatItem label={t('statFN')} value={project.stats.fn} />
-      </div>
+      {/* Imported project hint — no ARQITEKT requirements */}
+      {!hasRequirements && (
+        <p className={styles.importedHint}>{t('importedProject')}</p>
+      )}
 
-      {/* Readiness bar */}
-      {authored > 0 && (
+      {/* Stats bar — only for projects with requirements */}
+      {hasRequirements && (
+        <div className={styles.stats}>
+          <StatItem label={t('statSOL')} value={project.stats.sol} />
+          <StatItem label={t('statUS')} value={project.stats.us} />
+          <StatItem label={t('statCMP')} value={project.stats.cmp} />
+          <StatItem label={t('statFN')} value={project.stats.fn} />
+        </div>
+      )}
+
+      {/* Readiness bar — only for projects with requirements */}
+      {hasRequirements && authored > 0 && (
         <div className={styles.readiness}>
           <div className={styles.readinessHeader}>
             <span className={styles.readinessLabel}>{t('readinessLabel')}</span>
@@ -122,8 +133,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </div>
       )}
 
-      {/* Gate indicator */}
-      {pipeline && (
+      {/* Gate indicator — only for projects with requirements */}
+      {hasRequirements && pipeline && (
         <div className={styles.gateRow}>
           {allGatesPassed ? (
             <>

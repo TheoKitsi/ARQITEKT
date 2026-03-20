@@ -35,6 +35,7 @@ export interface ProjectConfig {
 export interface Project {
   id: string;
   path: string;
+  mode: ProjectMode;
   config: ProjectConfig;
   stats: ProjectStats;
   readiness: ProjectReadiness;

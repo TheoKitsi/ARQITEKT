@@ -47,6 +47,10 @@ vi.mock('./ProjectCard', () => ({
   ),
 }));
 
+vi.mock('./DashboardSummary', () => ({
+  DashboardSummary: () => <div data-testid="dashboard-summary" />,
+}));
+
 vi.mock('@/features/shared/CreateProjectModal', () => ({
   CreateProjectModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
     isOpen ? (

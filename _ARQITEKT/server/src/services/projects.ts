@@ -109,6 +109,7 @@ export async function listProjects(): Promise<Project[]> {
       projects.push({
         id: entry.id,
         path: projectPath,
+        mode: entry.mode,
         config: {
           ...projectConfig,
           name: projectConfig.name || entry.name,
@@ -144,6 +145,7 @@ export async function listProjects(): Promise<Project[]> {
         projects.push({
           id: dir.name,
           path: projectPath,
+          mode: 'local',
           config: projectConfig,
           stats,
           readiness,
@@ -186,6 +188,7 @@ export async function getProjectById(projectId: string): Promise<Project | null>
     return {
       id: projectId,
       path: projectPath,
+      mode: entry?.mode ?? 'local',
       config: {
         ...projectConfig,
         name: projectConfig.name || entry?.name || projectId,
@@ -300,6 +303,7 @@ export async function createProject(
   return {
     id: dirName,
     path: projectPath,
+    mode: 'local',
     config: {
       name,
       codename,
@@ -382,6 +386,7 @@ export async function importProject(
     return {
       id,
       path: resolvedSource,
+      mode: 'external' as const,
       config: { ...projectConfig, name, description },
       stats,
       readiness: { authored: 0, approved: 0 },
@@ -425,6 +430,7 @@ export async function importProject(
   return {
     id: dirName,
     path: projectPath,
+    mode: 'local',
     config: { name, codename, description, lifecycle: 'planning' },
     stats: { bc: 0, sol: 0, us: 0, cmp: 0, fn: 0, inf: 0, adr: 0, ntf: 0, conv: 0, fbk: 0 },
     readiness: { authored: 0, approved: 0 },

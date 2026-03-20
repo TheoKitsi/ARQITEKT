@@ -9,19 +9,12 @@ import { Input } from '@/components/ui/Input';
 import styles from './LoginPage.module.css';
 
 /* ------------------------------------------------------------------ */
-/*  ARQITEKT Logo (diamond with ruler ticks)                           */
+/*  ARQITEKT Logo (A-triangle)                                         */
 /* ------------------------------------------------------------------ */
 
 function Logo() {
   return (
-    <svg className={styles.logo} width="80" height="80" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-      <rect width="32" height="32" rx="6" fill="#1F1F1F"/>
-      <g transform="translate(16,16) rotate(45)">
-        <rect x="-8" y="-8" width="16" height="16" rx="2" fill="none" stroke="#FFD700" strokeWidth="2"/>
-        <line x1="-4" y1="0" x2="4" y2="0" stroke="#FFD700" strokeWidth="1.5" strokeLinecap="round"/>
-        <line x1="0" y1="-4" x2="0" y2="4" stroke="#FFD700" strokeWidth="1.5" strokeLinecap="round"/>
-      </g>
-    </svg>
+    <img className={styles.logo} src="/arqitekt-logo.png" alt="ARQITEKT" width="80" height="80" />
   );
 }
 

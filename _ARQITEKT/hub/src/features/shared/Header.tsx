@@ -90,14 +90,7 @@ export function Header() {
     <header className={styles.header}>
       {/* Left: Logo / brand */}
       <Link to="/" className={styles.brand}>
-        <svg className={styles.logoSvg} width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-          <rect width="32" height="32" rx="6" fill="var(--color-brand-anthracite)"/>
-          <g transform="translate(16,16) rotate(45)">
-            <rect x="-8" y="-8" width="16" height="16" rx="2" fill="none" stroke="var(--color-brand-gold)" strokeWidth="2"/>
-            <line x1="-4" y1="0" x2="4" y2="0" stroke="var(--color-brand-gold)" strokeWidth="1.5" strokeLinecap="round"/>
-            <line x1="0" y1="-4" x2="0" y2="4" stroke="var(--color-brand-gold)" strokeWidth="1.5" strokeLinecap="round"/>
-          </g>
-        </svg>
+        <img className={styles.logoSvg} src="/arqitekt-logo.png" alt="ARQITEKT" width="28" height="28" />
         <span className={styles.brandName}>ARQITEKT</span>
       </Link>
 
