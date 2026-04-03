@@ -41,9 +41,20 @@ export async function getStats(projectId: string): Promise<ProjectStats> {
 
 /**
  * Get readiness scores.
+ * Accepts optional pre-built tree to avoid redundant buildTree calls.
  */
-export async function getReadiness(projectId: string): Promise<{ authored: number; approved: number }> {
-  const tree = await buildTree(projectId);
+export async function getReadiness(
+  projectId: string,
+  prebuiltTree?: TreeNode[],
+): Promise<{ authored: number; approved: number }> {
+  const tree = prebuiltTree ?? await buildTree(projectId);
+  return getReadinessFromTree(tree);
+}
+
+/**
+ * Compute readiness from an already-built tree (no I/O).
+ */
+export function getReadinessFromTree(tree: TreeNode[]): { authored: number; approved: number } {
   let total = 0;
   let authored = 0;
   let approved = 0;

@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, readdir, stat as fsStat } from 'fs/promises';
 import { join } from 'path';
 import { resolveProjectById } from './projects.js';
 import { buildTree } from './requirements.js';
@@ -191,17 +191,74 @@ function evaluateBoundary(body: string, nodeType: string): number {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Helper: Read artifact body from file                               */
+/*  Helper: Build file index for all artifacts (single pass)           */
 /* ------------------------------------------------------------------ */
 
+interface ArtifactFile {
+  body: string;
+  filePath: string;
+}
+
+/**
+ * Scan requirements directory once and build a map of artifactId -> { body, filePath }.
+ * Replaces the old per-artifact recursive findArtifactBody.
+ */
+async function buildFileIndex(reqPath: string): Promise<Map<string, ArtifactFile>> {
+  const index = new Map<string, ArtifactFile>();
+
+  async function scan(dir: string): Promise<void> {
+    let entries: string[];
+    try {
+      entries = await readdir(dir);
+    } catch {
+      return;
+    }
+
+    for (const entry of entries) {
+      const fullPath = join(dir, entry);
+      let info;
+      try {
+        info = await fsStat(fullPath);
+      } catch {
+        continue;
+      }
+
+      if (info.isDirectory()) {
+        await scan(fullPath);
+      } else if (entry.endsWith('.md') && !entry.startsWith('_') && !entry.startsWith('.')) {
+        try {
+          const content = await readFile(fullPath, 'utf-8');
+          const { data: fm, body } = parseFrontmatter(content);
+          if (fm.id) {
+            index.set(String(fm.id), { body, filePath: fullPath });
+          }
+        } catch {
+          continue;
+        }
+      }
+    }
+  }
+
+  await scan(reqPath);
+  return index;
+}
+
+/**
+ * Find artifact body from a pre-built file index (fast) or fall back to
+ * recursive search (single-artifact queries).
+ */
 async function findArtifactBody(
   reqPath: string,
   artifactId: string,
-): Promise<{ body: string; filePath: string } | null> {
-  // Search recursively (reuse logic similar to requirements.ts)
-  const { readdir, stat } = await import('fs/promises');
+  fileIndex?: Map<string, ArtifactFile>,
+): Promise<ArtifactFile | null> {
+  // Fast path: use pre-built index
+  if (fileIndex) {
+    return fileIndex.get(artifactId) ?? null;
+  }
 
-  async function search(dir: string): Promise<{ body: string; filePath: string } | null> {
+  // Slow path: recursive search for single-artifact queries
+  async function search(dir: string): Promise<ArtifactFile | null> {
     let entries: string[];
     try {
       entries = await readdir(dir);
@@ -213,7 +270,7 @@ async function findArtifactBody(
       const fullPath = join(dir, entry);
       let info;
       try {
-        info = await stat(fullPath);
+        info = await fsStat(fullPath);
       } catch {
         continue;
       }
@@ -245,13 +302,16 @@ async function findArtifactBody(
 
 /**
  * Evaluate confidence score for a single artifact.
+ * Accepts optional pre-built data to avoid redundant I/O.
  */
 export async function evaluateConfidence(
   projectId: string,
   artifactId: string,
+  cached?: { tree: TreeNode[]; reqPath: string; fileIndex: Map<string, ArtifactFile> },
 ): Promise<ConfidenceScore> {
-  const tree = await buildTree(projectId);
-  const reqPath = join(await resolveProjectById(projectId), 'requirements');
+  const tree = cached?.tree ?? await buildTree(projectId);
+  const reqPath = cached?.reqPath ?? join(await resolveProjectById(projectId), 'requirements');
+  const fileIndex = cached?.fileIndex;
 
   // Find the node in the tree
   let foundNode: TreeNode | null = null;
@@ -282,7 +342,7 @@ export async function evaluateConfidence(
   const siblings: TreeNode[] = foundSiblings;
 
   // Get body content
-  const artifactData = await findArtifactBody(reqPath, artifactId);
+  const artifactData = await findArtifactBody(reqPath, artifactId, fileIndex);
   const body = artifactData?.body ?? '';
 
   // Evaluate each dimension
@@ -319,15 +379,22 @@ export async function evaluateConfidence(
 
 /**
  * Evaluate confidence scores for ALL artifacts in a project.
+ * Builds the tree and file index ONCE, then reuses for every artifact.
  */
-export async function evaluateAllConfidence(projectId: string): Promise<ConfidenceScore[]> {
-  const tree = await buildTree(projectId);
+export async function evaluateAllConfidence(
+  projectId: string,
+  prebuiltTree?: TreeNode[],
+): Promise<ConfidenceScore[]> {
+  const tree = prebuiltTree ?? await buildTree(projectId);
+  const reqPath = join(await resolveProjectById(projectId), 'requirements');
+  const fileIndex = await buildFileIndex(reqPath);
+  const cached = { tree, reqPath, fileIndex };
   const scores: ConfidenceScore[] = [];
 
   async function walk(nodes: TreeNode[]) {
     for (const node of nodes) {
       try {
-        const score = await evaluateConfidence(projectId, node.id);
+        const score = await evaluateConfidence(projectId, node.id, cached);
         scores.push(score);
       } catch {
         // Skip artifacts that can't be evaluated

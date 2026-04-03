@@ -7,6 +7,21 @@ echo.
 
 cd /d %~dp0mobile
 
+:: Check for pubspec.yaml
+if not exist "pubspec.yaml" (
+  echo ERROR: pubspec.yaml not found in mobile/
+  echo Make sure the mobile directory exists.
+  pause
+  exit /b 1
+)
+
+:: Get dependencies if needed
+if not exist ".dart_tool" (
+  echo Installing Flutter dependencies...
+  flutter pub get
+  echo.
+)
+
 echo Checking connected devices...
 flutter devices
 echo.

@@ -29,6 +29,7 @@ export function ChatPanel() {
   const { showToast } = useToast();
   const { isOpen, messages, model, isLoading } = useAppSelector((s) => s.chat);
   const panelRef = useRef<HTMLElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   /* ---- Close on Escape ---- */
   useEffect(() => {
@@ -36,6 +37,8 @@ export function ChatPanel() {
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
         dispatch(toggleChat());
       }
     };
@@ -44,11 +47,11 @@ export function ChatPanel() {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, dispatch]);
 
-  /* ---- Focus trap: keep focus inside panel ---- */
+  /* ---- Focus close button when panel opens ---- */
   useEffect(() => {
     if (isOpen) {
       requestAnimationFrame(() => {
-        panelRef.current?.focus();
+        closeBtnRef.current?.focus();
       });
     }
   }, [isOpen]);
@@ -104,7 +107,6 @@ export function ChatPanel() {
       ref={panelRef}
       className={styles.panel}
       aria-label={t('chat', 'Chat')}
-      tabIndex={-1}
     >
       {/* Header */}
       <div className={styles.header}>
@@ -115,6 +117,7 @@ export function ChatPanel() {
         <div className={styles.headerRight}>
           <ModelSelector />
           <button
+            ref={closeBtnRef}
             className={styles.closeBtn}
             onClick={() => dispatch(toggleChat())}
             aria-label={t('close')}

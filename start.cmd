@@ -5,6 +5,16 @@ echo   ARQITEKT Hub - Starting...
 echo ============================================
 echo.
 
+:: Install dependencies if needed
+if not exist "%~dp0_ARQITEKT\server\node_modules" (
+  echo [0/2] Installing backend dependencies...
+  cd /d "%~dp0_ARQITEKT\server" && npm install
+)
+if not exist "%~dp0_ARQITEKT\hub\node_modules" (
+  echo [0/2] Installing frontend dependencies...
+  cd /d "%~dp0_ARQITEKT\hub" && npm install
+)
+
 :: Start backend server in background
 echo [1/2] Starting Express backend on port 3334...
 start "ARQITEKT Backend" /min cmd /c "cd /d %~dp0_ARQITEKT\server && npm run dev"

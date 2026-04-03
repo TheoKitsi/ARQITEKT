@@ -6,7 +6,7 @@
   position: fixed;
   bottom: var(--space-6);
   right: var(--space-6);
-  z-index: 900;
+  z-index: 700;
 
   display: inline-flex;
   align-items: center;

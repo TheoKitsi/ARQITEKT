@@ -294,10 +294,24 @@ function identifyGaps(gateId: GateId, checks: GateCheck[], gateDef: GateDefiniti
 /* ------------------------------------------------------------------ */
 
 /**
+ * Pre-computed data shared across gates in a single pipeline evaluation.
+ */
+interface CachedPipelineData {
+  tree: TreeNode[];
+  validationResults: Array<{ ruleId: string; passed: boolean; details?: string }>;
+  allScores: ConfidenceScore[];
+}
+
+/**
  * Evaluate a single gate for a project.
  * Runs all structural checks + confidence scoring, returns gate result.
+ * Accepts optional cached data to avoid redundant I/O when called from getProjectPipeline.
  */
-export async function evaluateGate(projectId: string, gateId: GateId): Promise<GateResult> {
+export async function evaluateGate(
+  projectId: string,
+  gateId: GateId,
+  cached?: CachedPipelineData,
+): Promise<GateResult> {
   const definitions = await loadGateDefinitions();
   const gateDef = definitions.find((g) => g.id === gateId);
 
@@ -305,8 +319,8 @@ export async function evaluateGate(projectId: string, gateId: GateId): Promise<G
     throw Object.assign(new Error(`Unknown gate: ${gateId}`), { status: 400 });
   }
 
-  const tree = await buildTree(projectId);
-  const validationResults = await validateProject(projectId);
+  const tree = cached?.tree ?? await buildTree(projectId);
+  const validationResults = cached?.validationResults ?? await validateProject(projectId);
 
   // Run gate-specific checks
   let checks: GateCheck[];
@@ -324,7 +338,7 @@ export async function evaluateGate(projectId: string, gateId: GateId): Promise<G
   const gaps = identifyGaps(gateId, checks, gateDef);
 
   // Calculate confidence (average of all artifacts' confidence at this level)
-  const allScores = await evaluateAllConfidence(projectId);
+  const allScores = cached?.allScores ?? await evaluateAllConfidence(projectId, tree);
   const relevantScores = filterScoresForGate(allScores, tree, gateId);
   const confidence = averageConfidence(relevantScores);
 
@@ -363,15 +377,23 @@ export async function evaluateGate(projectId: string, gateId: GateId): Promise<G
 
 /**
  * Get the full pipeline status for a project (all gates).
+ * Builds tree, validation results, and confidence scores ONCE,
+ * then reuses across all 6 gate evaluations.
  */
 export async function getProjectPipeline(projectId: string): Promise<PipelineStatus> {
   const definitions = await loadGateDefinitions();
+
+  // Build expensive data ONCE
+  const tree = await buildTree(projectId);
+  const validationResults = await validateProject(projectId);
+  const allScores = await evaluateAllConfidence(projectId, tree);
+  const cached: CachedPipelineData = { tree, validationResults, allScores };
+
   const gates: GateResult[] = [];
   let locked = false;
 
   for (const def of definitions) {
     if (locked) {
-      // Previous gate not passed — mark subsequent gates as locked
       gates.push({
         gateId: def.id,
         name: def.name,
@@ -387,14 +409,12 @@ export async function getProjectPipeline(projectId: string): Promise<PipelineSta
     }
 
     try {
-      const result = await evaluateGate(projectId, def.id);
+      const result = await evaluateGate(projectId, def.id, cached);
       gates.push(result);
-      // If this gate is not passed/overridden, lock all subsequent gates
       if (result.status !== 'passed' && result.status !== 'overridden') {
         locked = true;
       }
     } catch {
-      // Return a pending result for gates that error
       gates.push({
         gateId: def.id,
         name: def.name,
