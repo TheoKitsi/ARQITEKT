@@ -1,0 +1,4 @@
+id: spa
+name: Single-Page Application
+description: Web app with authentication, dashboard, and data management. Pre-configured for React/Vue/Angular.
+artifacts: 17
