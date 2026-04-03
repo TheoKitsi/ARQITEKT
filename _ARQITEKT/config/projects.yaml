@@ -50,6 +50,6 @@ projects:
   - id: 001_TEST
     name: Test
     codename: TEST
-    mode: local
-    path: 001_TEST
+    mode: external
+    path: C:\Users\kitsi\Desktop\ARQITEKT_PROJECTS\001_TEST
     description: irgendwas

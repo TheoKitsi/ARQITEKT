@@ -16,8 +16,8 @@ ARQITEKT/
 ├── mobile/                 # Flutter mobile companion app (planned)
 └── CLAUDE.md               # This file
 
-# External projects (registered in _ARQITEKT/config/projects.yaml, mode: "external")
-# Located at: ../ARQITEKT_PROJECTS/001_SOCIAL ... 006_SCS_PLAY
+# All projects are external (registered in _ARQITEKT/config/projects.yaml, mode: "external")
+# Project data stored at: C:\Users\kitsi\Desktop\ARQITEKT_PROJECTS\
 ```
 
 ## Tech Stack
